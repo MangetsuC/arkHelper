@@ -1,0 +1,10 @@
+#vscode:
+.vscode
+arkHelper.code-workspace
+
+#python:
+foo/**/__pycache__/
+__pycache__/
+
+#adb:
+bin/adb/*.png
