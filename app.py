@@ -48,9 +48,9 @@ class APP():
 
     def beforeClosed(self):
         '窗口关闭事件'
-        #self.__battle.stop()
-        #if (self.__threadBattle != None) and (self.__threadBattle.is_alive()):
-            #self.__threadBattle.join()
+        self.__battle.stop()
+        if (self.__threadBattle != None) and (self.__threadBattle.is_alive()):
+            self.__threadBattle.join()
         self.__app.quit()
 
     def createWindowsControl(self):
