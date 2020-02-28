@@ -1,6 +1,7 @@
 from os import getcwd, listdir
 from sys import path
 from time import sleep
+from threading import Thread
 
 path.append(getcwd())
 from foo.pictureR import pictureFind
@@ -13,9 +14,14 @@ class BattleLoop:
         self.app = app
         self.listBattleImg = listdir(cwd + "/res/battle")
         self.switch = False
+        self.connectSwitch = False
     
     def run(self):
-        self.switch = self.adb.connect()
+        self.connectSwitch = True
+        times = 0
+        while (not self.switch) and times < 20 and self.connectSwitch:
+            self.switch = self.adb.connect()
+
         if not self.switch:
             self.app.setButton(1)
             self.app.setState("连接失败，请检查配置文件或重启模拟器")
@@ -53,4 +59,5 @@ class BattleLoop:
                             break
             sleep(1)
     def stop(self):
+        self.connectSwitch = False
         self.switch = False

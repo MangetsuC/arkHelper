@@ -48,9 +48,9 @@ class APP():
 
     def beforeClosed(self):
         '窗口关闭事件'
-        self.__battle.stop()
-        if self.__threadBattle.is_alive():
-            self.__threadBattle.join()
+        #self.__battle.stop()
+        #if (self.__threadBattle != None) and (self.__threadBattle.is_alive()):
+            #self.__threadBattle.join()
         self.__app.quit()
 
     def createWindowsControl(self):
@@ -87,7 +87,8 @@ class APP():
         if self.__buttonRunAndStopVar.get() == '启动虚拟博士':
             self.setState('正在尝试连接')
             self.__buttonRunAndStopVar.set('停止虚拟博士')
-            self.__threadBattle = Thread(target= self.__battle.run)
+            self.__threadBattle = Thread(target= self.start)
+            self.__threadBattle.setDaemon(True)
             self.__threadBattle.start()
             
         elif self.__buttonRunAndStopVar.get() == '停止虚拟博士':
@@ -110,7 +111,7 @@ class APP():
         else:
             self.__buttonRunAndStopVar.set('停止虚拟博士')
             
-    def startBattle(self):
+    def start(self):
         self.__battle.run()
     
 

@@ -15,15 +15,10 @@ class adb:
         self.screenY = 810
 
     def connect(self):
-        #times = 0
-
-        for times in range(20):
-            print(times)
-            self.cmdText = popen('{0}&&cd {1}&&adb connect {2}'.format(self.adbPath[0:2], self.adbPath, self.ip), 'r').read()
-            print(self.cmdText)
-            if 'already' in self.cmdText:
-                return True
-                break
+        self.cmdText = popen('{0}&&cd {1}&&adb connect {2}'.format(self.adbPath[0:2], self.adbPath, self.ip), 'r').read()
+        print(self.cmdText)
+        if 'already' in self.cmdText:
+            return True
         else:
             return False
 
@@ -70,6 +65,7 @@ class adb:
 
 if __name__ == "__main__":
     ad = adb('E:\\workSpace\\CodeRelease\\arknightHelper\\arkHelper\\bin\\adb', port="5555")
+    ad.connectSwitch = True
     ad.connect()
     while True:
         ad.screenShot("source")
