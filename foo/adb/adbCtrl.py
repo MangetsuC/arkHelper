@@ -1,5 +1,5 @@
 from os import path, popen, remove, system
-from time import sleep
+from time import sleep, perf_counter
 
 from PIL import Image
 
@@ -24,6 +24,8 @@ class adb:
             if 'already' in self.cmdText:
                 return True
                 break
+        else:
+            return False
 
     def screenShot(self, pngName = 'arktemp'):
         delImg("{0}/{1}.png".format(self.adbPath, pngName))
@@ -31,11 +33,12 @@ class adb:
         popen('{0}&&cd {1}&&adb -s {device} shell screencap -p /sdcard/arktemp.png&&adb -s {device} pull /sdcard/arktemp.png {2}/{3}.png'\
             .format(self.adbPath[0:2], self.adbPath, self.adbPath, pngName, device = self.ip))
 
-        while not path.exists("{0}/{1}.png".format(self.adbPath, pngName)):
+        start = perf_counter()
+        while (not path.exists("{0}/{1}.png".format(self.adbPath, pngName))) and (perf_counter() - start < 20):
             continue
         
         #sleep(1)
-        while True:
+        while perf_counter() - start < 20:
             try:
                 tempImg = Image.open(self.adbPath + '/' + pngName +'.png')
                 self.screenX = tempImg.size[0]
@@ -45,8 +48,11 @@ class adb:
                 continue
             else:
                 break
+        else:
+            return False
 
         out.save(self.adbPath + '/' + pngName +'.png', 'png')
+        return True
 
     def click(self, x, y):
         x = (x / 1440) * self.screenX
@@ -63,7 +69,7 @@ class adb:
         
 
 if __name__ == "__main__":
-    ad = adb('E:\\Code\\arkHelper\\bin\\adb', port="5555")
+    ad = adb('E:\\workSpace\\CodeRelease\\arknightHelper\\arkHelper\\bin\\adb', port="5555")
     ad.connect()
     while True:
         ad.screenShot("source")

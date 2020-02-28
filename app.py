@@ -17,14 +17,15 @@ class APP():
         self.__ip = self.__config.get("connect", "ip")
         self.__port = self.__config.get("connect", "port")
         self.__adb = adbCtrl.adb(self.__cwd + "/bin/adb", self.__ip, self.__port)
-
+        self.icon = self.__cwd + "/res/ico.ico"
+        
         self.__battle = Battle.BattleLoop(self.__adb, self.__cwd, self)
         self.__threadBattle = None
         
         #根窗口属性
         self.__app.resizable(width=False, height=False)
         self.__app.title('明日方舟虚拟博士')
-        self.__app.iconbitmap(bitmap = self.__cwd + "/res/ico.ico")
+        self.__app.iconbitmap(bitmap = self.icon)
         self.__app.protocol(name = "WM_DELETE_WINDOW", func = self.beforeClosed) #挂接窗口关闭事件
 
         #启动按钮属性
