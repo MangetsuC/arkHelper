@@ -67,8 +67,10 @@ if __name__ == "__main__":
     ad = adb('E:\\workSpace\\CodeRelease\\arknightHelper\\arkHelper\\bin\\adb', port="5555")
     ad.connectSwitch = True
     ad.connect()
+    i = 0
     while True:
-        ad.screenShot("source")
+        ad.screenShot("screenshot" + str(i))
         command = input("输入exit以退出：")
         if command == "exit":
             break
+        i += 1
