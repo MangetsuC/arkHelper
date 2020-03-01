@@ -17,7 +17,16 @@ class adb:
     def connect(self):
         self.cmdText = popen('{0}&&cd {1}&&adb connect {2}'.format(self.adbPath[0:2], self.adbPath, self.ip), 'r').read()
         print(self.cmdText)
-        if 'already' in self.cmdText:
+        if ('connected to' in self.cmdText) and ('nable' not in self.cmdText):
+            screenMsg = popen('{0}&&cd {1}&&adb -s {device} shell wm size'.format(self.adbPath[0:2], self.adbPath, device = self.ip)).read()
+            screenMsg = screenMsg.replace(' ', '')
+            screenMsg = screenMsg.replace('\n', '')
+            #print(screenMsg)
+            temp = screenMsg.partition("size:")
+            temp = temp[2].split('x')
+            self.screenX = int(temp[0])
+            self.screenY = int(temp[1])
+            #print(temp, self.screenX, self.screenY)
             return True
         else:
             return False
@@ -36,8 +45,6 @@ class adb:
         while perf_counter() - start < 20:
             try:
                 tempImg = Image.open(self.adbPath + '/' + pngName +'.png')
-                self.screenX = tempImg.size[0]
-                self.screenY = tempImg.size[1]
                 out = tempImg.resize((1440,810),Image.ANTIALIAS)
             except:
                 continue
@@ -49,24 +56,37 @@ class adb:
         out.save(self.adbPath + '/' + pngName +'.png', 'png')
         return True
 
-    def click(self, x, y):
+    def click(self, x, y, isSleep = True):
         x = (x / 1440) * self.screenX
-        y = (y / 810) * self.screenY
+        y = (int(y) / 810) * self.screenY
         popen('{0}&&cd {1}&&adb -s {device} shell input tap {2} {3}'\
             .format(self.adbPath[0:2], self.adbPath, x, y, device = self.ip))
+        if isSleep:
+            sleep(1)
 
     def swipeD(self):
         popen('{0}&&cd {1}&&adb -s {device} shell input swipe 800 300 800 100'.format(self.adbPath[0:2], self.adbPath, device = self.ip))
 
-    def swipe(self, startXY, endXY):
-        popen('{0}&&cd {1}&&adb -s {device} shell input swipe {2} {3} {4} {5}'.format(self.adbPath[0:2], self.adbPath, startXY[0], startXY[1], endXY[0], endXY[1], device = self.ip))
-        #popen('{0}&&cd {1}&&adb shell input swipe {2} {3} {4} {5}'.format(self.adbPath[0:2], self.adbPath, startXY[0], startXY[1], endXY[0], endXY[1]))
+    def swipeL(self):
+        '向左划'
+        popen('{0}&&cd {1}&&adb -s {device} shell input swipe {4} {3} {2} {5} 1000'.\
+            format(self.adbPath[0:2], self.adbPath, 0, int(self.screenY)/2, \
+                int(self.screenX)/4, int(self.screenY)/2, device = self.ip))
+        sleep(1.5)
+    def swipeR(self):
+        '向右划'
+        popen('{0}&&cd {1}&&adb -s {device} shell input swipe {2} {3} {4} {5} 1000'.\
+            format(self.adbPath[0:2], self.adbPath, 0, int(self.screenY)/2, \
+                int(self.screenX)/4, int(self.screenY)/2, device = self.ip))
+        sleep(1.5)
         
 
 if __name__ == "__main__":
     ad = adb('E:\\workSpace\\CodeRelease\\arknightHelper\\arkHelper\\bin\\adb', port="5555")
     ad.connectSwitch = True
     ad.connect()
+    '''ad.swipeL()
+    ad.swipeR()'''
     i = 0
     while True:
         ad.screenShot("screenshot" + str(i))

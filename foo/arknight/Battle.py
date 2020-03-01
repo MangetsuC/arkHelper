@@ -15,6 +15,9 @@ class BattleLoop:
         self.listBattleImg = listdir(cwd + "/res/battle")
         self.switch = False
         self.connectSwitch = False
+        self.screenShot = self.cwd + '/bin/adb/arktemp.png'
+        self.autoOff = self.cwd + "/res/panel/other/autoOff.png"
+        self.autoOn = self.cwd + "/res/panel/other/autoOn.png"
     
     def run(self):
         self.connectSwitch = True
@@ -43,7 +46,32 @@ class BattleLoop:
                     self.app.setButton(1)
                     self.switch = False
                     break
-                
+                #判断代理指挥是否勾选
+                picStartA = pictureFind.matchImg(self.screenShot, self.cwd + "/res/battle/startApart.png", confidencevalue= 0.9)
+                if picStartA != None:
+                    print('here')
+                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                    if picAutoOn == None:
+                        picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
+                        if picAutoOff != None:
+                            posAutoOff = picAutoOff['result']
+                            self.adb.click(posAutoOff[0], posAutoOff[1])
+
+                    isSSSuccess = self.adb.screenShot()
+                    if not isSSSuccess:
+                        self.app.setState("获取屏幕信息失败，请重启模拟器")
+                        toast.broadcastMsg("ArkHelper", "获取屏幕信息失败，请重启模拟器", self.app.icon)
+                        self.app.setButton(1)
+                        self.switch = False
+                        break
+                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                    if picAutoOn == None:
+                        self.app.setState("无法勾选代理指挥")
+                        toast.broadcastMsg("ArkHelper", "无法勾选代理指挥", self.app.icon)
+                        self.app.setButton(1)
+                        self.switch = False
+                        break
+
                 sleep(1)
                 for eachObj in self.listBattleImg:
                     if self.switch:
@@ -51,12 +79,12 @@ class BattleLoop:
                             confidence = 0.8
                         else:
                             confidence = 0.9
-                        print(self.cwd + '/bin/adb/arktemp.png', self.cwd + '/res/battle/' + eachObj)
-                        picInfo = pictureFind.matchImg(self.cwd + '/bin/adb/arktemp.png', self.cwd + '/res/battle/' + eachObj, confidence)
+                        print(self.screenShot, self.cwd + '/res/battle/' + eachObj)
+                        picInfo = pictureFind.matchImg(self.screenShot, self.cwd + '/res/battle/' + eachObj, confidence)
                         print(eachObj+ '：', picInfo)
                         if picInfo != None:
                             picPos = picInfo['result']
-                            self.adb.click(picPos[0], picPos[1])
+                            self.adb.click(picPos[0], picPos[1], isSleep = False)
                             if eachObj == "cancel.png":
                                 self.switch = False
                                 self.app.setState("理智耗尽")
