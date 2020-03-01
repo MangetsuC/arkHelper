@@ -1,10 +1,11 @@
 from aircv import imread, find_template
 from PIL import Image
-from os import remove, path
+from PIL.ImageOps import invert
+from os import remove, path, getcwd, listdir
 
-'''def delImg(dir):
+"""def delImg(dir):
     if path.exists(dir):
-        remove(dir)'''
+        remove(dir)"""
 
 
 def matchImg(imgsrc,imgobj,confidencevalue=0.8):  #imgsrc=原始图像，imgobj=待查找的图片
@@ -15,7 +16,7 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8):  #imgsrc=原始图像，imgobj=
         return None
     imobj = imread(imgobj)
 
-    match_result = find_template(imsrc,imobj,confidencevalue) 
+    match_result = find_template(imsrc,imobj,confidencevalue)
     if match_result != None:
         match_result['shape']=(imsrc.shape[1],imsrc.shape[0])  #0为长，1为宽
 
@@ -23,7 +24,7 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8):  #imgsrc=原始图像，imgobj=
     return match_result
 
 
-def matchMultiImg(imgsrc, imgobj, tempDir, confidencevalue=0.8, maxReturn=-1):
+def matchMultiImg(imgsrc, imgobj, tempDir, confidencevalue=0.8, maxReturn=-1, colorSpace = (0,0,0)):
     '用于查找原始图片中的多个目标图片，若不存在图片则返回None，否则返回一个目标图片坐标构成的元组；imgsrc为原始图片路径，imgobj为目标图片路径，tempDir为临时存放处理中的图片的目录，[confidencevalue为置信度，maxReturn在非负的情况下只会返回相应数值的坐标，为0则永远返回None]'
     maxReturn = int(maxReturn)
     try:
@@ -36,12 +37,12 @@ def matchMultiImg(imgsrc, imgobj, tempDir, confidencevalue=0.8, maxReturn=-1):
     while True:
         match_result = find_template(imsrc,imobj,confidencevalue) 
         if match_result != None and maxReturn != 0:
-            matchPositionXY.append(match_result['result'])
+            matchPositionXY.append(list(match_result['result']))
             maxReturn -= 1
             x1, y2 = match_result['rectangle'][0], match_result['rectangle'][3] #获取左上，右下坐标
             for x in range(y2[0]-x1[0]):
                 for y in range(y2[1]-x1[1]):
-                    imgTemp.putpixel((x1[0]+ x,x1[1]+ y), (0,0,0))
+                    imgTemp.putpixel((x1[0]+ x,x1[1]+ y), colorSpace)
             imgTemp.save(tempDir + '/temp.png')
         else:
             break
@@ -50,45 +51,113 @@ def matchMultiImg(imgsrc, imgobj, tempDir, confidencevalue=0.8, maxReturn=-1):
 
     #delImg(imgsrc)
     #delImg(tempDir + '/temp.png')
-    return tuple(matchPositionXY) if matchPositionXY != [] else None
+    return matchPositionXY if matchPositionXY != [] else None
     
-def matchForWork(imgsrc, imgobj, tempDir):
-    '只用于换班'
-    peoHaveTalentXY = matchMultiImg(imgsrc, imgobj, tempDir, 0.9)
-    onWork = matchMultiImg(imgsrc, 'E:\\Code\\arkHelper\\res\\construction\\onWork.png', tempDir,0.9)
-    if peoHaveTalentXY == None:
-        return None
-    elif onWork == None:
-        return peoHaveTalentXY[0]
-    else:
-        for i1 in range(len(peoHaveTalentXY)):
-            for i2 in onWork:
-                if abs(peoHaveTalentXY[i1][0]-i2[0])< 80 and abs(peoHaveTalentXY[i1][1]-i2[1])< 90:
-                    peoHaveTalentXY = list(peoHaveTalentXY)
-                    peoHaveTalentXY [i1] = None
-                    peoHaveTalentXY = tuple(peoHaveTalentXY)
-                    break
+def levelOcr(imgsrc, tempDir):
+    cwd = getcwd()
+    allNumList = []
+    confidence = 0.88 #调试时使用相似度
 
-        for eachXY in peoHaveTalentXY:
-            if eachXY != None:
-                return eachXY
+    for num in fontLibraryW:
+        oneNumList = matchMultiImg(imgsrc, cwd + "/res/fontLibrary/W/" + num, tempDir,confidencevalue=confidence)
+        if oneNumList == None:
+            continue
         else:
-            return None
+            for each in oneNumList:
+                each.append(path.splitext(num)[0])
+            allNumList.extend(oneNumList)
+            oneNumList = []
+
+    for num in fontLibraryB:
+        oneNumList = matchMultiImg(imgsrc, cwd + "/res/fontLibrary/B/" + num, tempDir, confidencevalue=confidence)
+        if oneNumList == None:
+            continue
+        else:
+            for each in oneNumList:
+                each.append(path.splitext(num)[0])
+            allNumList.extend(oneNumList)
+            oneNumList = []
+
+    if allNumList == []:
+        return None
+    
+    return levelAnalyse(allNumList)
+    
+
+def levelAnalyse(levelList):
+    levelList.sort(key = lambda x:x[0])
+
+    count = 0
+    totalx = 0
+    totaly = 0
+    totalNum = ''
+    eachNum = 0
+    interval = 1
+    beginNum = 0
+    lineList = []
+    dictResult = dict()
+    while eachNum <= len(levelList):
+        if eachNum == len(levelList):
+            dictResult[totalNum] = (int(totalx / count), int(totaly / count))
+            if lineList != []:
+                dictResult_temp = levelAnalyse(lineList)
+                dictResult.update(dictResult_temp)
+            break
+        elif eachNum == beginNum:
+            totalx += levelList[beginNum][0]
+            totaly += levelList[beginNum][1]
+            totalNum += levelList[beginNum][2]
+            count += 1
+            eachNum += 1
+            
+        else:
+            if ((levelList[eachNum][0] - levelList[eachNum - interval][0]) > 50) and ((levelList[eachNum][0] - levelList[eachNum - 1][0]) < 50):
+                interval += 1
+                lineList.append(levelList[eachNum])
+                eachNum += 1
+                continue
+            if (levelList[eachNum][0] - levelList[eachNum - interval][0]) < 50:
+                if (abs(levelList[eachNum][1] - levelList[eachNum - interval][1])) < 50:
+                    totalx += levelList[eachNum][0]
+                    totaly += levelList[eachNum][1]
+                    totalNum += levelList[eachNum][2]
+                    interval = 1
+                    count += 1
+                    eachNum += 1
+                else:
+                    interval += 1
+                    lineList.append(levelList[eachNum])
+                    eachNum += 1    
+            else:
+                dictResult[totalNum] = (int(totalx / count), int(totaly / count))
+                interval = 1
+                totalx = 0
+                totaly = 0
+                totalNum = ''
+                count = 0
+                beginNum = eachNum
+                continue
+
+    return dictResult
+
+fontLibraryB = listdir(getcwd() + "/res/fontLibrary/B")
+fontLibraryW = listdir(getcwd() + "/res/fontLibrary/W")
 
 if __name__ == "__main__":
-    from os import listdir
-    x = 'E:\\Code\\arkHelper\\res\\construction\\onWork.png'
-    talentTrade = ['E:/Code/arkHelper/res/construction/talentTrade/' + each for each in \
-            listdir('E:/Code/arkHelper/res/construction/talentTrade')]
-    print(talentTrade)
-    #for i in talentTrade:
-    b = matchMultiImg('E:/Code/arkHelper/bin/adb/arktemp.png', talentTrade[0], 'E:/Code/arkHelper/bin/adb',0.9)
-    a = matchMultiImg('E:/Code/arkHelper/bin/adb/arktemp.png', x, 'E:/Code/arkHelper/bin/adb',0.9)
-    for i1 in range(len(b)):
-        for i2 in a:
-            if abs(b[i1][0]-i2[0])< 80 and abs(b[i1][1]-i2[1])< 90:
-                b = list(b)
-                b [i1] = None
-                b = tuple(b)
+    '''for i in range(10):
+        imsrc = Image.open("E:/workSpace/CodeRelease/arknightHelper/source/after/" + str(i) + 'w.jpg')
+        imsrc = invert(imsrc)
+        imsrc.save("E:/workSpace/CodeRelease/arknightHelper/source/after/" + str(i) + 'b.jpg')'''
 
-    print(b)
+    
+    
+    '''a = matchMultiImg(r"E:\workSpace\CodeRelease\arknightHelper\source\screenshot35.png", \
+        r"E:\workSpace\CodeRelease\arknightHelper\source\after\5b.jpg",\
+             r"E:\workSpace\CodeRelease\arknightHelper\source\after", confidencevalue=0.8)'''
+
+    l1 = listdir(r"E:\workSpace\CodeRelease\arknightHelper\test")
+    for i in l1:
+        a = levelOcr("E:/workSpace/CodeRelease/arknightHelper/test/{0}".format(i), "E:/workSpace/CodeRelease/arknightHelper/source/temp")
+        
+    #a = levelOcr("E:/workSpace/CodeRelease/arknightHelper/test/screenshot29.png", "E:/workSpace/CodeRelease/arknightHelper/source/temp")
+        print(a)
