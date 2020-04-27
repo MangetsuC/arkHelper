@@ -34,8 +34,16 @@ class adb:
     def screenShot(self, pngName = 'arktemp'):
         delImg("{0}/{1}.png".format(self.adbPath, pngName))
 
-        popen('{0}&&cd {1}&&adb -s {device} shell screencap -p /sdcard/arktemp.png&&adb -s {device} pull /sdcard/arktemp.png {2}/{3}.png'\
+        #popen('{0}&&cd {1}&&adb -s {device} shell screencap -p /sdcard/arktemp.png&&adb -s {device} pull /sdcard/arktemp.png {2}/{3}.png'\
+        #    .format(self.adbPath[0:2], self.adbPath, self.adbPath, pngName, device = self.ip))
+            
+        system('{0}&&cd {1}&&adb -s {device} exec-out screencap -p > {2}/{3}.png'\
             .format(self.adbPath[0:2], self.adbPath, self.adbPath, pngName, device = self.ip))
+
+        with open(self.adbPath + '/' + pngName +'.png', 'br') as pic:
+            bys = pic.read().replace(b'\r\n', b'\n')
+        with open(self.adbPath + '/' + pngName +'.png', 'bw') as pic:    
+            pic.write(bys)
 
         start = perf_counter()
         while (not path.exists("{0}/{1}.png".format(self.adbPath, pngName))) and (perf_counter() - start < 20):
@@ -59,7 +67,7 @@ class adb:
     def click(self, x, y, isSleep = True):
         x = (x / 1440) * self.screenX
         y = (int(y) / 810) * self.screenY
-        popen('{0}&&cd {1}&&adb -s {device} shell input tap {2} {3}'\
+        system('{0}&&cd {1}&&adb -s {device} shell input tap {2} {3}'\
             .format(self.adbPath[0:2], self.adbPath, x, y, device = self.ip))
         if isSleep:
             sleep(1)

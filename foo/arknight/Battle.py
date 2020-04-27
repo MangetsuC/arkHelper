@@ -20,6 +20,7 @@ class BattleLoop:
         self.autoOn = self.cwd + "/res/panel/other/autoOn.png"
     
     def run(self):
+        isFirstTurn = True
         self.connectSwitch = True
         for times in range(20):
             if self.connectSwitch:
@@ -47,30 +48,32 @@ class BattleLoop:
                     self.switch = False
                     break
                 #判断代理指挥是否勾选
-                picStartA = pictureFind.matchImg(self.screenShot, self.cwd + "/res/battle/startApart.png", confidencevalue= 0.9)
-                if picStartA != None:
-                    print('here')
-                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                    if picAutoOn == None:
-                        picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
-                        if picAutoOff != None:
-                            posAutoOff = picAutoOff['result']
-                            self.adb.click(posAutoOff[0], posAutoOff[1])
+                if isFirstTurn:
+                    isFirstTurn = False
+                    picStartA = pictureFind.matchImg(self.screenShot, self.cwd + "/res/battle/startApart.png", confidencevalue= 0.9)
+                    if picStartA != None:
+                        print('here')
+                        picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                        if picAutoOn == None:
+                            picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
+                            if picAutoOff != None:
+                                posAutoOff = picAutoOff['result']
+                                self.adb.click(posAutoOff[0], posAutoOff[1])
 
-                    isSSSuccess = self.adb.screenShot()
-                    if not isSSSuccess:
-                        self.app.setState("获取屏幕信息失败，请重启模拟器")
-                        toast.broadcastMsg("ArkHelper", "获取屏幕信息失败，请重启模拟器", self.app.icon)
-                        self.app.setButton(1)
-                        self.switch = False
-                        break
-                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                    if picAutoOn == None:
-                        self.app.setState("无法勾选代理指挥")
-                        toast.broadcastMsg("ArkHelper", "无法勾选代理指挥", self.app.icon)
-                        self.app.setButton(1)
-                        self.switch = False
-                        break
+                        isSSSuccess = self.adb.screenShot()
+                        if not isSSSuccess:
+                            self.app.setState("获取屏幕信息失败，请重启模拟器")
+                            toast.broadcastMsg("ArkHelper", "获取屏幕信息失败，请重启模拟器", self.app.icon)
+                            self.app.setButton(1)
+                            self.switch = False
+                            break
+                        picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                        if picAutoOn == None:
+                            self.app.setState("无法勾选代理指挥")
+                            toast.broadcastMsg("ArkHelper", "无法勾选代理指挥", self.app.icon)
+                            self.app.setButton(1)
+                            self.switch = False
+                            break
 
                 sleep(1)
                 for eachObj in self.listBattleImg:
