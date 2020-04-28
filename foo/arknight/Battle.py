@@ -118,7 +118,7 @@ class BattleLoop:
                                 self.app.setState("理智耗尽")
                                 toast.broadcastMsg("ArkHelper", "理智耗尽", self.app.icon)
                                 #self.app.setButton(1)
-                                break
+                            break
                 #sleep(1)
     def stop(self):
         self.connectSwitch = False
