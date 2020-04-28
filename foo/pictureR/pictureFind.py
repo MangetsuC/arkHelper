@@ -2,6 +2,7 @@ from aircv import imread, find_template
 from PIL import Image
 from PIL.ImageOps import invert
 from os import remove, path, getcwd, listdir
+from re import split as resplit
 
 """def delImg(dir):
     if path.exists(dir):
@@ -19,6 +20,7 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8):  #imgsrc=原始图像，imgobj=
     match_result = find_template(imsrc,imobj,confidencevalue)
     if match_result != None:
         match_result['shape']=(imsrc.shape[1],imsrc.shape[0])  #0为长，1为宽
+        match_result['obj']=resplit(r'[\\ /]', imgobj)[-1]
 
     #delImg(imgsrc)
     return match_result
@@ -155,9 +157,10 @@ if __name__ == "__main__":
         r"E:\workSpace\CodeRelease\arknightHelper\source\after\5b.jpg",\
              r"E:\workSpace\CodeRelease\arknightHelper\source\after", confidencevalue=0.8)'''
 
-    l1 = listdir(r"E:\workSpace\CodeRelease\arknightHelper\test")
-    for i in l1:
-        a = levelOcr("E:/workSpace/CodeRelease/arknightHelper/test/{0}".format(i), "E:/workSpace/CodeRelease/arknightHelper/source/temp")
+    #l1 = listdir(r"E:\workSpace\CodeRelease\arknightHelper\test")
+    #for i in l1:
+    #    a = levelOcr("E:/workSpace/CodeRelease/arknightHelper/test/{0}".format(i), "E:/workSpace/CodeRelease/arknightHelper/source/temp")
         
     #a = levelOcr("E:/workSpace/CodeRelease/arknightHelper/test/screenshot29.png", "E:/workSpace/CodeRelease/arknightHelper/source/temp")
-        print(a)
+    a = matchImg(r'E:\workSpace\CodeRelease\arknightHelper\source\test\screenshot3.png', r'E:\workSpace\CodeRelease\arknightHelper\arkHelper\res\panel\other/get.png', 1.0)
+    print(a)
