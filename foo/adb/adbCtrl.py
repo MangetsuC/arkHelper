@@ -73,17 +73,17 @@ class adb:
             sleep(1)
 
     def swipeD(self):
-        popen('{0}&&cd {1}&&adb -s {device} shell input swipe 800 300 800 100'.format(self.adbPath[0:2], self.adbPath, device = self.ip))
+        system('{0}&&cd {1}&&adb -s {device} shell input swipe 800 300 800 100'.format(self.adbPath[0:2], self.adbPath, device = self.ip))
 
     def swipeL(self):
         '向左划'
-        popen('{0}&&cd {1}&&adb -s {device} shell input swipe {4} {3} {2} {5} 1000'.\
+        system('{0}&&cd {1}&&adb -s {device} shell input swipe {4} {3} {2} {5} 1000'.\
             format(self.adbPath[0:2], self.adbPath, 0, int(self.screenY)/2, \
                 int(self.screenX)/4, int(self.screenY)/2, device = self.ip))
         sleep(1.5)
     def swipeR(self):
         '向右划'
-        popen('{0}&&cd {1}&&adb -s {device} shell input swipe {2} {3} {4} {5} 1000'.\
+        system('{0}&&cd {1}&&adb -s {device} shell input swipe {2} {3} {4} {5} 1000'.\
             format(self.adbPath[0:2], self.adbPath, 0, int(self.screenY)/2, \
                 int(self.screenX)/4, int(self.screenY)/2, device = self.ip))
         sleep(1.5)
