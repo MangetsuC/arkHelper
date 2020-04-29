@@ -79,18 +79,23 @@ class Task:
 
     def submitTask(self):
         while self.switch:
-            gInfo = pictureFind.matchImg(self.screenShot, self.get, 1.0)
+            gInfo = pictureFind.matchImg(self.screenShot, self.get, 0.9999)
             if gInfo == None:
                 return True
                 #break
             self.adb.click(gInfo['result'][0], gInfo['result'][1])
-            self.adb.screenShot()
-            mInfo = pictureFind.matchImg(self.screenShot, self.getMaterial)
-            if mInfo != None:
-                self.adb.click(mInfo['result'][0], mInfo['result'][1])
+            while self.switch:
                 self.adb.screenShot()
+                mInfo = pictureFind.matchImg(self.screenShot, self.getMaterial)
+                hInfo = pictureFind.matchImg(self.screenShot, self.home)
+                if mInfo != None:
+                    self.adb.click(mInfo['result'][0], mInfo['result'][1])
+                elif hInfo != None:
+                    self.adb.screenShot()
+                    break
 
     def oneByOne(self):
+        #self.adb.screenShot()
         tryCount = 0
         self.submitTask()
         while self.switch:
