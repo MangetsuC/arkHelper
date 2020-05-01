@@ -29,6 +29,7 @@ class adb:
             #print(temp, self.screenX, self.screenY)
             return True
         else:
+            system('{0}&&cd {1}&&adb kill-server'.format(self.adbPath[0:2], self.adbPath))
             return False
 
     def screenShot(self, pngName = 'arktemp'):
