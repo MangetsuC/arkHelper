@@ -1,3 +1,4 @@
 aircv==1.4.6
 win10toast==0.9
-Pillow==7.0.0
+Pillow==7.1.2
+PyQt5==5.14.2
