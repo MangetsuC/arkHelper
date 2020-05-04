@@ -44,20 +44,20 @@ One Simple But Not Crude Arknight Helper	一款简单但不简陋的明日方舟
 ## 关于这个小助手：
 
 ### 界面
-![mainUI.png](https://i.loli.net/2020/05/04/pfaH1iC86BGmAjU.png "应用界面")
+![mainUI.png](https://i.loli.net/2020/05/04/pfaH1iC86BGmAjU.png)
 
 * metro风格的界面参考了windows10的菜单，简洁明了  
-![slrSel.png](https://i.loli.net/2020/05/04/6mrIBWk4v8fYAEw.png "菜单")
+![slrSel.png](https://i.loli.net/2020/05/04/6mrIBWk4v8fYAEw.png)
 * 可以方便地通过主界面上的菜单来选择您的模拟器！也可以自定义  
 ### 自动勾选代理指挥
-![auto.png](https://i.loli.net/2020/05/04/NbRDLEm437xFXWQ.png "未勾选代理指挥")
+![auto.png](https://i.loli.net/2020/05/04/NbRDLEm437xFXWQ.png)
 * 如果您忘记勾选代理，小助手会帮你选上！  
 ### 在战斗的任何阶段都可以启动小助手
-![start2.png](https://i.loli.net/2020/05/04/LeoNdSZYhraT9xb.png "队伍界面")
+![start2.png](https://i.loli.net/2020/05/04/LeoNdSZYhraT9xb.png)
 * 不管是刚选好关卡，还是已经开始战斗，或是在结算界面，你都可以直接启动小助手！
 * 注意：如果是结束后不会保留关卡选择的关卡（如教学关），小助手将无法正常工作  
 ### 简单的使用方法
-![level.png](https://i.loli.net/2020/05/04/gcGrf53Ih8tyRdp.png "剿灭作战")
+![level.png](https://i.loli.net/2020/05/04/gcGrf53Ih8tyRdp.png)
 1. 选择您想要重复的关卡
 2. 点下小助手的启动虚拟博士按钮！（无论您有没有勾选代理指挥）  
 ### 任务交付
@@ -65,6 +65,6 @@ One Simple But Not Crude Arknight Helper	一款简单但不简陋的明日方舟
 * 如果您不需要这个功能，可以单击以关闭
 > 在config.ini中，可以通过修改[function]下的值来设置默认勾选的状态
 ### 提示！
-![notice.png](https://i.loli.net/2020/05/04/bEJzCVqj37ADLmk.png "提示")
+![notice.png](https://i.loli.net/2020/05/04/bEJzCVqj37ADLmk.png)
 
 * 在理智耗尽或任务交付完成后，会通知提示您！
