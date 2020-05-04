@@ -1,5 +1,6 @@
-from os import path, popen, remove, system
+from os import path, remove
 from time import sleep, perf_counter
+from subprocess import Popen, PIPE
 
 from PIL import Image
 
@@ -7,21 +8,46 @@ def delImg(dir):
     if path.exists(dir):
         remove(dir)
 
-class adb:
-    def __init__(self, adbPath, ip = "127.0.0.1", port = "7555"):
+class Cmd():
+    def __init__(self, path):
+        self.path = path
+        self.p = None
+        self.path 
+
+    def run(self, code, waitTime = 60):
+        self.p = Popen(code, shell = True, stdout = PIPE, stderr = PIPE, bufsize = 1, cwd = self.path)
+        strout = self.p.communicate()[0].decode('gbk')
+        print(strout)
+        self.p.wait(timeout = waitTime)
+        return strout
+        
+        
+
+class Adb:
+    def __init__(self, adbPath, config = None):
         self.adbPath = adbPath
-        self.ip = ip + ':' + port
+        self.cmd = Cmd(self.adbPath)
+        self.ip = None
+        self.changeConfig(config)
         self.screenX = 1440
         self.screenY = 810
 
+    def changeConfig(self, config):
+        if config == None:
+            self.ip = '127.0.0.1:5555'
+        else:
+            self.ip = config.get('connect', 'ip') + ':' + config.get('connect', 'port')
+        print(self.ip)
+
+
     def connect(self):
-        self.cmdText = popen('{0}&&cd {1}&&adb connect {2}'.format(self.adbPath[0:2], self.adbPath, self.ip), 'r').read()
+        self.cmdText = self.cmd.run('adb connect {0}'.format(self.ip))
         print(self.cmdText)
         if ('connected to' in self.cmdText) and ('nable' not in self.cmdText):
-            screenMsg = popen('{0}&&cd {1}&&adb -s {device} shell wm size'.format(self.adbPath[0:2], self.adbPath, device = self.ip)).read()
+            screenMsg = self.cmd.run('adb -s {device} shell wm size'.format(device = self.ip))
             screenMsg = screenMsg.replace(' ', '')
             screenMsg = screenMsg.replace('\n', '')
-            #print(screenMsg)
+            print(screenMsg)
             temp = screenMsg.partition("size:")
             temp = temp[2].split('x')
             self.screenX = int(temp[0])
@@ -29,7 +55,7 @@ class adb:
             #print(temp, self.screenX, self.screenY)
             return True
         else:
-            system('{0}&&cd {1}&&adb kill-server'.format(self.adbPath[0:2], self.adbPath))
+            self.cmd.run('adb kill-server')
             return False
 
     def screenShot(self, pngName = 'arktemp'):
@@ -38,20 +64,20 @@ class adb:
         #popen('{0}&&cd {1}&&adb -s {device} shell screencap -p /sdcard/arktemp.png&&adb -s {device} pull /sdcard/arktemp.png {2}/{3}.png'\
         #    .format(self.adbPath[0:2], self.adbPath, self.adbPath, pngName, device = self.ip))
             
-        system('{0}&&cd {1}&&adb -s {device} exec-out screencap -p > {2}/{3}.png'\
-            .format(self.adbPath[0:2], self.adbPath, self.adbPath, pngName, device = self.ip))
+        self.cmd.run('adb -s {device} exec-out screencap -p > {0}/{1}.png'\
+            .format(self.adbPath, pngName, device = self.ip))
 
         with open(self.adbPath + '/' + pngName +'.png', 'br') as pic:
             bys = pic.read().replace(b'\r\n', b'\n')
         with open(self.adbPath + '/' + pngName +'.png', 'bw') as pic:    
             pic.write(bys)
 
-        start = perf_counter()
-        while (not path.exists("{0}/{1}.png".format(self.adbPath, pngName))) and (perf_counter() - start < 20):
-            continue
+        #start = perf_counter()
+        #while (not path.exists("{0}/{1}.png".format(self.adbPath, pngName))) and (perf_counter() - start < 20):
+        #    continue
         
         #sleep(1)
-        while perf_counter() - start < 20:
+        '''while perf_counter() - start < 20:
             try:
                 tempImg = Image.open(self.adbPath + '/' + pngName +'.png')
                 out = tempImg.resize((1440,810),Image.ANTIALIAS)
@@ -60,38 +86,23 @@ class adb:
             else:
                 break
         else:
-            return False
-
+            return False'''
+        tempImg = Image.open(self.adbPath + '/' + pngName +'.png')
+        out = tempImg.resize((1440,810),Image.ANTIALIAS)
         out.save(self.adbPath + '/' + pngName +'.png', 'png')
         return True
 
     def click(self, x, y, isSleep = True):
         x = (x / 1440) * self.screenX
         y = (int(y) / 810) * self.screenY
-        system('{0}&&cd {1}&&adb -s {device} shell input tap {2} {3}'\
-            .format(self.adbPath[0:2], self.adbPath, x, y, device = self.ip))
+        self.cmd.run('adb -s {device} shell input tap {0} {1}'\
+            .format(x, y, device = self.ip))
         if isSleep:
             sleep(1)
-
-    def swipeD(self):
-        system('{0}&&cd {1}&&adb -s {device} shell input swipe 800 300 800 100'.format(self.adbPath[0:2], self.adbPath, device = self.ip))
-
-    def swipeL(self):
-        '向左划'
-        system('{0}&&cd {1}&&adb -s {device} shell input swipe {4} {3} {2} {5} 1000'.\
-            format(self.adbPath[0:2], self.adbPath, 0, int(self.screenY)/2, \
-                int(self.screenX)/4, int(self.screenY)/2, device = self.ip))
-        sleep(1.5)
-    def swipeR(self):
-        '向右划'
-        system('{0}&&cd {1}&&adb -s {device} shell input swipe {2} {3} {4} {5} 1000'.\
-            format(self.adbPath[0:2], self.adbPath, 0, int(self.screenY)/2, \
-                int(self.screenX)/4, int(self.screenY)/2, device = self.ip))
-        sleep(1.5)
         
 
 if __name__ == "__main__":
-    ad = adb('E:\\workSpace\\CodeRelease\\arknightHelper\\arkHelper\\bin\\adb', port="5555")
+    ad = Adb('E:\\workSpace\\CodeRelease\\arknightHelper\\arkHelper\\bin\\adb')
     ad.connectSwitch = True
     ad.connect()
     '''ad.swipeL()
