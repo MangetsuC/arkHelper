@@ -7,11 +7,11 @@ from foo.pictureR import pictureFind
 from foo.win import toast
 
 class Task:
-    def __init__(self, adb, cwd):
+    def __init__(self, adb, cwd, ico):
         self.adb = adb
         self.cwd = cwd
         self.switch = False
-        self.icon = self.cwd + "/res/ico.ico"
+        self.icon = ico
         self.home = self.cwd + "/res/panel/other/home.png"
         self.mainpage = self.cwd + "/res/panel/other/mainpage.png"
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
@@ -123,13 +123,13 @@ class Task:
             condition1 = self.checkTask()
             if condition1:
                 self.oneByOne()
-        if (not condition0) and self.switch:
+        if self.switch and (not condition0):
             toast.broadcastMsg("ArkHelper", "任务交付出错", self.icon)
 
-        elif not condition1:
+        elif self.switch and (not condition1):
             toast.broadcastMsg("ArkHelper", "无需任务交付", self.icon)
             
-        else:
+        elif self.switch:
             self.goToMainpage()
             toast.broadcastMsg("ArkHelper", "任务交付完成", self.icon)
             
