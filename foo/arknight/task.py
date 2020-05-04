@@ -81,9 +81,12 @@ class Task:
         while self.switch:
             gInfo = pictureFind.matchImg(self.screenShot, self.get, 0.9999)
             if gInfo == None:
-                return True
+                mInfo = pictureFind.matchImg(self.screenShot, self.getMaterial)
+                if mInfo == None:
+                    return True
                 #break
-            self.adb.click(gInfo['result'][0], gInfo['result'][1])
+            else:
+                self.adb.click(gInfo['result'][0], gInfo['result'][1])
             while self.switch:
                 self.adb.screenShot()
                 mInfo = pictureFind.matchImg(self.screenShot, self.getMaterial)
