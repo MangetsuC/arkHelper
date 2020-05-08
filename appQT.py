@@ -65,9 +65,10 @@ class App(QWidget):
         self.actSlrMumu = QAction('Mumu模拟器', parent=self.actSimulator)
         self.actSlrYeshen = QAction('夜神模拟器', parent=self.actSimulator)
         self.actSlrXiaoyao = QAction('逍遥模拟器', parent=self.actSimulator)
+        self.actSlrLeidian = QAction('雷电模拟器', parent=self.actSimulator)
         self.actSlrCustom = QAction('自定义', parent=self.actSimulator)
         
-        self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrYeshen, self.actSlrCustom]
+        self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrYeshen, self.actSlrLeidian, self.actSlrCustom]
 
         self.actConsole = QAction('控制台', parent=self.settingMenu)
         self.checkUpdate = QAction('检查更新', parent=self.settingMenu)
@@ -160,8 +161,11 @@ class App(QWidget):
             self.actSlrYeshen.setIcon(QIcon(self.selectedPNG))
         elif slrName == 'xiaoyao':
             self.actSlrXiaoyao.setIcon(QIcon(self.selectedPNG))
+        elif slrName == 'leidian':
+            self.actSlrLeidian.setIcon(QIcon(self.selectedPNG))
         elif slrName == 'custom':
             self.actSlrCustom.setIcon(QIcon(self.selectedPNG))
+
 
     def center(self):
         #显示到屏幕中心
@@ -220,6 +224,8 @@ class App(QWidget):
             self.changeSlr('yeshen', '62026')
         elif slrName == '逍遥模拟器':
             self.changeSlr('xiaoyao', '21503')
+        elif slrName == '雷电模拟器':
+            self.changeSlr('leidian', '5555')
         else:
             customIp, isOk = QInputDialog.getText(self, '自定义', '请输入模拟器IP地址')
             if isOk:
