@@ -1,4 +1,5 @@
 import sys
+from webbrowser import open as openUrl
 from configparser import ConfigParser
 from os import getcwd
 from threading import Thread
@@ -12,10 +13,10 @@ from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QDesktopWidget,
 from foo.adb.adbCtrl import Adb
 from foo.arknight.Battle import BattleLoop
 from foo.arknight.task import Task
+from foo.ui.console import Console
 
 
 class App(QWidget):
-    
     def __init__(self):
         super().__init__()
         self.initVar()
@@ -68,11 +69,24 @@ class App(QWidget):
         
         self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrYeshen, self.actSlrCustom]
 
+        self.actConsole = QAction('控制台', parent=self.settingMenu)
+        self.checkUpdate = QAction('检查更新', parent=self.settingMenu)
+        self.index = QAction('访问主页', parent=self.settingMenu)
+
         #添加菜单选项
         self.settingMenu.addMenu(self.actSimulator) #模拟器二级菜单
         for eachSlr in self.slrList:
             self.actSimulator.addAction(eachSlr)
             eachSlr.triggered.connect(self.simulatorSel)
+
+        self.settingMenu.addAction(self.actConsole) #控制台
+        self.actConsole.triggered.connect(self.console.showOrHide)
+
+        self.settingMenu.addAction(self.checkUpdate) #蓝奏云地址
+        self.checkUpdate.triggered.connect(self.openUpdate)
+
+        self.settingMenu.addAction(self.index) #主页
+        self.index.triggered.connect(self.openIndex)
 
         self.btnSet.setMenu(self.settingMenu) #关联按钮与菜单
         self.btnSet.setStyleSheet('''QPushButton:menu-indicator{image:none;width:0px;}''')
@@ -108,6 +122,8 @@ class App(QWidget):
         self.ico = self.cwd + '/res/ico.ico'
         self.selectedPNG = self.cwd + '/res/gui/selected.png'
 
+        self.console = Console(self.cwd) #接管输出与报错
+
         self.configPath = self.cwd + '/config.ini'
         self.config = ConfigParser()
         self.config.read(filenames=self.configPath, encoding="UTF-8")
@@ -121,6 +137,7 @@ class App(QWidget):
         self.battleFlag = None
         self.taskFlag = None
         self.doctorFlag = False
+
 
     def initState(self):
         self.initSlrSel()
@@ -218,11 +235,18 @@ class App(QWidget):
     def exit(self):
         '退出按钮'
         self.stop()
+        self.console.exit()
         self.close()
 
     def minimize(self):
         '最小化按钮'
         self.showMinimized()
+
+    def openUpdate(self):
+        openUrl('https://www.lanzous.com/b0d1w6v7g')
+
+    def openIndex(self):
+        openUrl('https://github.com/MangetsuC/arkHelper')
 
     def start(self):
         self.doctorFlag = self.battle.connect()

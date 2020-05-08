@@ -20,7 +20,7 @@ class BattleLoop:
     
     def connect(self):
         self.connectSwitch = True
-        for times in range(20):
+        for times in range(10):
             if self.connectSwitch:
                 if self.adb.connect():
                     return True

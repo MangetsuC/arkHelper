@@ -16,8 +16,10 @@ class Cmd():
 
     def run(self, code, waitTime = 60):
         self.p = Popen(code, shell = True, stdout = PIPE, stderr = PIPE, bufsize = 1, cwd = self.path)
-        strout = self.p.communicate()[0].decode('gbk')
-        print(strout)
+        strout = self.p.communicate()[0].decode('gbk').replace('\r\n', '\n')
+        strerr = self.p.communicate()[1].decode('gbk').replace('\r\n', '\n')
+        if len(strerr) > 0:
+            print(strerr)
         self.p.wait(timeout = waitTime)
         return strout
         
