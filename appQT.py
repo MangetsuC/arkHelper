@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QDesktopWidget,
 from foo.adb.adbCtrl import Adb
 from foo.arknight.Battle import BattleLoop
 from foo.arknight.task import Task
+from foo.arknight.credit import Credit
 from foo.ui.console import Console
 
 
@@ -51,6 +52,11 @@ class App(QWidget):
         self.tbTask.setCheckable(True)
         self.tbTask.setFixedSize(75, 40)
         self.tbTask.clicked[bool].connect(self.functionSel)
+
+        self.tbCredit = QPushButton('获取信用', self)
+        self.tbCredit.setCheckable(True)
+        self.tbCredit.setFixedSize(75, 40)
+        self.tbCredit.clicked[bool].connect(self.functionSel)
 
         self.btnSet = QPushButton('设置',self) #设置按钮
         self.btnSet.setFixedSize(75, 40)
@@ -93,7 +99,7 @@ class App(QWidget):
         self.btnSet.setStyleSheet('''QPushButton:menu-indicator{image:none;width:0px;}''')
 
         self.btnMin = QPushButton('最小化',self) #最小化按钮
-        self.btnMin.setFixedSize(155, 40)
+        self.btnMin.setFixedSize(75, 40)
         self.btnMin.clicked.connect(self.minimize)
 
         self.btnClose = QPushButton('退出',self) #退出按钮
@@ -109,7 +115,8 @@ class App(QWidget):
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnMin, 1, 1, 1, 2, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbCredit, 1, 1, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnMin, 1, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnClose, 2, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.lNotice, 3, 1, 1, 2, alignment=Qt.AlignRight)
 
@@ -132,11 +139,13 @@ class App(QWidget):
         self.adb = Adb(self.cwd + '/bin/adb', self.config)
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
         self.task = Task(self.adb, self.cwd, self.ico)
+        self.credit = Credit(self.adb, self.cwd)
 
         self.btnMainClicked = False
 
         self.battleFlag = None
         self.taskFlag = None
+        self.creditFlag = None
         self.doctorFlag = False
 
 
@@ -148,6 +157,8 @@ class App(QWidget):
         self.tbBattle.setChecked(self.battleFlag) #战斗选项
         self.taskFlag = self.config.getboolean('function', 'task')
         self.tbTask.setChecked(self.taskFlag) #任务选项
+        self.creditFlag = self.config.getboolean('function', 'credit')
+        self.tbCredit.setChecked(self.creditFlag)
         pass
     
     def initSlrSel(self):
@@ -200,6 +211,8 @@ class App(QWidget):
             self.battleFlag = isChecked
         elif source.text() == '任务交付':
             self.taskFlag = isChecked
+        elif source.text() == '获取信用':
+            self.creditFlag = isChecked
 
         
 
@@ -260,12 +273,15 @@ class App(QWidget):
             self.battle.run(self.doctorFlag)
         if self.doctorFlag and self.taskFlag:
             self.task.run(self.doctorFlag)
+        if self.doctorFlag and self.creditFlag:
+            self.credit.run(self.doctorFlag)
         self.stop()
 
     def stop(self):
         self.doctorFlag = False
         self.battle.stop()
         self.task.stop()
+        self.credit.stop()
         self.btnMainClicked = False
         self.btnStartAndStop.setText('启动虚拟博士')
 

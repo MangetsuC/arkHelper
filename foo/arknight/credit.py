@@ -6,7 +6,7 @@ path.append(getcwd())
 from foo.pictureR import pictureFind
 from foo.win import toast
 
-class Task:
+class Credit:
     def __init__(self, adb, cwd):
         self.adb = adb
         self.cwd = cwd
@@ -16,7 +16,14 @@ class Task:
         self.mainpage = self.cwd + "/res/panel/other/mainpage.png"
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.mainpageMark = self.cwd + "/res/panel/other/act.png"
+        self.frendList = self.cwd + '/res/panel/other/friendList.png'
+        self.visitNext = self.cwd + '/res/panel/other/visitNext.png'
+        self.visitFinish = self.cwd + '/res/panel/other/visitFinish.png'
+        self.friends = self.cwd + '/res/panel/other/friends.png'
+        self.visit = self.cwd + '/res/panel/other/visit.png'
 
+        self.listGoTo = [self.mainpage, self.home, self.mainpageMark]
+        self.listGetCredit = [self.visitNext, self.visitFinish]
 
     def goToMainpage(self):
         listGoToTemp = self.listGoTo.copy()
@@ -31,11 +38,95 @@ class Task:
             else:
                 listGoToTemp = self.listGoTo.copy()
                 tryCount += 1
-                if tryCount > 5:
+                if tryCount > 10:
                     return False
 
             if bInfo != None:
-                if bInfo['obj'] == 'act.png':
+                if bInfo['obj'] == 'act.png': #self.mainpageMark
                     return True
                 else:
                     self.adb.click(bInfo['result'][0], bInfo['result'][1])
+
+    def openCard(self):
+        tryTime = 0
+        while self.switch:
+            fInfo = pictureFind.matchImg(self.screenShot, self.friends)
+            if fInfo != None:
+                self.adb.click(fInfo['result'][0], fInfo['result'][1])
+                self.adb.screenShot()
+            else:
+                fInfo = pictureFind.matchImg(self.screenShot, self.frendList)
+                if fInfo != None:
+                    return fInfo
+                elif tryTime > 10:
+                    return False
+                tryTime += 1
+
+    def openFriendList(self, fInfo):
+        tryTime = 0
+        while self.switch:
+            self.adb.click(fInfo['result'][0], fInfo['result'][1])
+            self.adb.screenShot()
+            vInfo = pictureFind.matchImg(self.screenShot, self.visit)
+            if vInfo != None:
+                return vInfo
+            elif tryTime > 10:
+                return False
+            tryTime += 1
+
+    def enterCons(self, vInfo):
+        tryTime = 0
+        breakFlag = False
+        while self.switch:
+            self.adb.click(vInfo['result'][0], vInfo['result'][1])
+            self.adb.screenShot()
+            for each in self.listGetCredit:
+                gInfo = pictureFind.matchImg(self.screenShot, each, 0.95)
+                if gInfo != None:
+                    breakFlag = True
+                    break
+            if breakFlag:
+                break
+            if tryTime > 10:
+                print("cannot visitCons")
+                return False
+            tryTime += 1
+
+        while self.switch:
+            if gInfo['obj'] == 'visitFinish.png':
+                break
+            else:
+                self.adb.click(gInfo['result'][0], gInfo['result'][1])
+                self.adb.screenShot()
+                for each in self.listGetCredit:
+                    gInfo = pictureFind.matchImg(self.screenShot, each)
+                    if gInfo != None:
+                        break
+
+    def run(self, switchI):
+        self.switch = switchI
+        isNormal = True
+        flag = self.goToMainpage()
+        if self.switch and flag:
+            infoFlag = self.openCard()
+            if self.switch and infoFlag != None:
+                infoFlag2 = self.openFriendList(infoFlag)
+                if self.switch and infoFlag2 != None:
+                    self.enterCons(infoFlag2)
+                else:
+                    isNormal = False
+            else:
+                isNormal = False
+        else:
+            isNormal = False
+
+        self.goToMainpage()
+        if isNormal:
+            toast.broadcastMsg("ArkHelper", "获取信用点成功", self.icon)
+        else:
+            toast.broadcastMsg("ArkHelper", "获取信用点出错", self.icon)
+
+        self.switch = False
+    
+    def stop(self):
+        self.switch = False
