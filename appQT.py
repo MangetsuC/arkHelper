@@ -27,6 +27,7 @@ class App(QWidget):
         
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
+        self.setWindowTitle('明日方舟小助手')
         self.setFixedSize(362,200)
         self.center()
 

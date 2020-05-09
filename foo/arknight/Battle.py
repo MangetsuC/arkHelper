@@ -29,6 +29,7 @@ class BattleLoop:
         
         else:
             toast.broadcastMsg("ArkHelper", "连接模拟器失败，请检查设置和模拟器", self.ico)
+            print('unable to connect simulator')
             return False
 
 
@@ -42,6 +43,7 @@ class BattleLoop:
                 isSSSuccess = self.adb.screenShot(pngName = 'check')
                 if not isSSSuccess:
                     toast.broadcastMsg("ArkHelper", "获取屏幕信息失败，请重启模拟器", self.ico)
+                    print('unable to get screenshot')
                     self.switch = False
                     break
 
@@ -71,11 +73,13 @@ class BattleLoop:
                         isSSSuccess = self.adb.screenShot()
                         if not isSSSuccess:
                             toast.broadcastMsg("ArkHelper", "获取屏幕信息失败，请重启模拟器", self.ico)
+                            print('unable to get screenshot')
                             self.switch = False
                             break
                         picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
                         if picAutoOn == None:
                             toast.broadcastMsg("ArkHelper", "无法勾选代理指挥", self.ico)
+                            print('auto mode still off')
                             self.switch = False
                             break
 
@@ -86,9 +90,9 @@ class BattleLoop:
                             confidence = 0.8
                         else:
                             confidence = 0.9
-                        print(self.screenShot + ' ' + self.cwd + '/res/battle/' + eachObj)
+                        #print(self.screenShot + ' ' + self.cwd + '/res/battle/' + eachObj)
                         picInfo = pictureFind.matchImg(self.screenShot, self.cwd + '/res/battle/' + eachObj, confidence)
-                        print(eachObj+ '：', picInfo)
+                        #print(eachObj+ '：', picInfo)
                         if picInfo != None:
                             picPos = picInfo['result']
                             self.adb.click(picPos[0], picPos[1], isSleep = False)

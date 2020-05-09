@@ -93,13 +93,25 @@ class Credit:
             tryTime += 1
 
         while self.switch:
-            if gInfo['obj'] == 'visitFinish.png':
+            tryTime = 0
+            if gInfo == None:
+                tryTime += 1
+                if tryTime > 5:
+                    print('visit next failed')
+                    break
+                self.adb.screenShot()
+                for each in self.listGetCredit:
+                    gInfo = pictureFind.matchImg(self.screenShot, each, 0.95)
+                    if gInfo != None:
+                        break
+            elif gInfo['obj'] == 'visitFinish.png':
                 break
             else:
+                tryTime = 0
                 self.adb.click(gInfo['result'][0], gInfo['result'][1])
                 self.adb.screenShot()
                 for each in self.listGetCredit:
-                    gInfo = pictureFind.matchImg(self.screenShot, each)
+                    gInfo = pictureFind.matchImg(self.screenShot, each, 0.95)
                     if gInfo != None:
                         break
 
@@ -121,9 +133,9 @@ class Credit:
             isNormal = False
 
         self.goToMainpage()
-        if isNormal:
+        if isNormal and self.switch:
             toast.broadcastMsg("ArkHelper", "获取信用点成功", self.icon)
-        else:
+        elif self.switch:
             toast.broadcastMsg("ArkHelper", "获取信用点出错", self.icon)
 
         self.switch = False
