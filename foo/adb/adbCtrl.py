@@ -101,18 +101,3 @@ class Adb:
             .format(x, y, device = self.ip))
         if isSleep:
             sleep(1)
-        
-
-if __name__ == "__main__":
-    ad = Adb('E:\\workSpace\\CodeRelease\\arknightHelper\\arkHelper\\bin\\adb')
-    ad.connectSwitch = True
-    ad.connect()
-    '''ad.swipeL()
-    ad.swipeR()'''
-    i = 0
-    while True:
-        ad.screenShot("screenshot" + str(i))
-        command = input("输入exit以退出：")
-        if command == "exit":
-            break
-        i += 1

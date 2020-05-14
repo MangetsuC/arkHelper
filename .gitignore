@@ -138,3 +138,4 @@ __pycache__/
 
 #adb:
 bin/adb/*.png
+foo/adb/getSource.py
