@@ -61,7 +61,7 @@ class UIPublicCall(QDialog):
         self.isShowAll = ischecked
     
     def getTextBrowser(self):
-        temp = perf_counter()
+        #tempT = perf_counter()
         self.monitorFlag = self.battle.connect()
         while self.monitorFlag:
             text = ''
@@ -82,13 +82,15 @@ class UIPublicCall(QDialog):
                         elif self.isShowAll:
                             tempStr = tempStr + f'{eachValue[0]}星：' + eachValue[1] + '；\n'
                         else:
+                            text = '无稳定高星组合'
                             break
                     else:
                         text = text + eachKeyValue[0] + '\n' + tempStr
             self.lock.acquire()
             self.text = text
+            #print(self.text)
             self.lock.release()
-            print('总'+str(perf_counter() - temp))
+            #print('总'+str(perf_counter() - tempT))
 
     def updateBrowser(self):
         if self.text != self.beforeText:

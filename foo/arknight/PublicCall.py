@@ -2,6 +2,7 @@ from os import getcwd, listdir
 from sys import path
 from time import perf_counter
 from aircv import imread
+from threading import Thread, Lock
 
 path.append(getcwd())
 from foo.pictureR import pictureFind
@@ -51,7 +52,8 @@ class PublicCall:
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.tag = listdir(self.cwd + '/res/publicCall')
         self.mark = 'E:/workSpace/CodeRelease/arknightHelper/arkHelper/res/panel/other/publicMark.png'
-        #self.tagOnScreenList = []
+        self.lock = Lock()
+        self.tagOnScreenList = []
         #self.monitorFlag = False
         self.test = ['快速复活', '输出', '治疗', '近卫', '特种']
 
@@ -117,36 +119,46 @@ class PublicCall:
         return ans
     
     def getTag(self, src):
-        temp = perf_counter()
+        #tempT = perf_counter()
+        self.tagOnScreenList = []
         imSrc = src
         trytime = 0
         tInfo = pictureFind.matchImg(imSrc, self.mark, 0.8, notDir=True)
         if tInfo == None:
             return []
-        while trytime < 5:
-            tagOnScreenList = []
-            for eachTag in self.tag:
-                if len(tagOnScreenList) == 5:
-                    break
-                tInfo = pictureFind.matchImg(self.screenShot, self.cwd + '/res/publicCall/' + eachTag, 0.8)
-                if tInfo != None:
-                    tagNow = tInfo['obj']
-                    tagNow = self.trans(tagNow)
-                    tagOnScreenList.append(tagNow)
-            if len(tagOnScreenList) != 5:
-                trytime += 1
-                continue
-            else:
-                break
+        th0 = Thread(target=self.matchTag, args=(imSrc, self.tag[0:4]))
+        th1 = Thread(target=self.matchTag, args=(imSrc, self.tag[4:8]))
+        th2 = Thread(target=self.matchTag, args=(imSrc, self.tag[8:12]))
+        th3 = Thread(target=self.matchTag, args=(imSrc, self.tag[12:16]))
+        th4 = Thread(target=self.matchTag, args=(imSrc, self.tag[16:20]))
+        th5 = Thread(target=self.matchTag, args=(imSrc, self.tag[20:24]))
+        th6 = Thread(target=self.matchTag, args=(imSrc, self.tag[24:28]))
+        thList = [th0, th1, th2, th3, th4, th5, th6]
+        for eachth in thList:
+            eachth.start()
+        for eachth in thList:
+            eachth.join()
 
-        print('识别'+str(perf_counter() - temp))
-        return tagOnScreenList
+        #print('识别'+str(perf_counter() - tempT))
+        #print(self.tagOnScreenList)
+        return self.tagOnScreenList
+
+    def matchTag(self, src, objList):
+        for each in objList:
+            if len(self.tagOnScreenList) == 5:
+                break
+            tInfo = pictureFind.matchImg(src, self.cwd + '/res/publicCall/' + each, notDir=True)
+            if tInfo != None:
+                self.lock.acquire()
+                self.tagOnScreenList.append(self.trans(tInfo['obj']))
+                self.lock.release()
 
     
     def getAns(self, tagOnScreenList):
-        temp = perf_counter()
+        tagOnScreenList.sort()
+        #tempT = perf_counter()
         if tagOnScreenList == []:
-            print('匹配'+str(perf_counter() - temp))
+            #print('匹配'+str(perf_counter() - tempT))
             return False
         tag0 = self.tagDict[tagOnScreenList[0]]
         tag1 = self.tagDict[tagOnScreenList[1]]
@@ -182,6 +194,30 @@ class PublicCall:
                                 temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
                                 temp.append(each)
                                 ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                if each in tag2:
+                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2], [])
+                    temp.append(each)
+                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2]] = temp
+                    if each in tag3:
+                        temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
+                        temp.append(each)
+                        ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
+                        if each in tag4:
+                            temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                            temp.append(each)
+                            ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                if each in tag3:
+                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
+                    temp.append(each)
+                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
+                    if each in tag4:
+                        temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                        temp.append(each)
+                        ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                if each in tag4:
+                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                    temp.append(each)
+                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
             if each in tag1:
                 temp = ans.get(tagOnScreenList[1], [])
                 temp.append(each)
@@ -198,6 +234,18 @@ class PublicCall:
                             temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
                             temp.append(each)
                             ans[tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                if each in tag3:
+                    temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
+                    temp.append(each)
+                    ans[tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
+                    if each in tag4:
+                        temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                        temp.append(each)
+                        ans[tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                if each in tag4:
+                    temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                    temp.append(each)
+                    ans[tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
             if each in tag2:
                 temp = ans.get(tagOnScreenList[2], [])
                 temp.append(each)
@@ -210,6 +258,10 @@ class PublicCall:
                         temp = ans.get(tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
                         temp.append(each)
                         ans[tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                if each in tag4:
+                    temp = ans.get(tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                    temp.append(each)
+                    ans[tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
             if each in tag3:
                 temp = ans.get(tagOnScreenList[3], [])
                 temp.append(each)
@@ -223,7 +275,7 @@ class PublicCall:
                 temp.append(each)
                 ans[tagOnScreenList[4]] = temp
 
-        print('匹配'+str(perf_counter() - temp))
+        #print('匹配'+str(perf_counter() - tempT))
         return ans
 
     def run(self):

@@ -31,7 +31,7 @@ class App(QWidget):
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
-        self.setFixedSize(362,250)
+        self.setFixedSize(362,210)
         self.center()
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
@@ -43,11 +43,11 @@ class App(QWidget):
                                 QInputDialog{background-color:#272626;}''')
 
         self.btnStartAndStop = QPushButton('启动虚拟博士', self) #启动/停止按钮
-        self.btnStartAndStop.setFixedSize(180, 180)
+        self.btnStartAndStop.setFixedSize(180, 140)
         self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
         self.btnStartAndStop.clicked.connect(self.clickBtnStartAndStop)
 
-        self.btnMonitorPublicCall = QPushButton('监测公开招募', self)
+        self.btnMonitorPublicCall = QPushButton('公开招募计算器', self)
         self.btnMonitorPublicCall.setFixedSize(180, 40)
         self.btnMonitorPublicCall.setCheckable(True)
         self.btnMonitorPublicCall.clicked[bool].connect(self.monitorPC)
@@ -120,15 +120,15 @@ class App(QWidget):
         self.grid = QGridLayout()
         self.grid.setSpacing(5)
         
-        self.grid.addWidget(self.btnStartAndStop, 0, 0, 4, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnMonitorPublicCall, 4, 0, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnStartAndStop, 0, 0, 3, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnMonitorPublicCall, 3, 0, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbCredit, 1, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnMin, 1, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnClose, 2, 2, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.lNotice, 4, 1, 1, 2, alignment=Qt.AlignRight)
+        self.grid.addWidget(self.lNotice, 3, 1, 1, 2, alignment=Qt.AlignRight)
 
         self.setLayout(self.grid)
 
