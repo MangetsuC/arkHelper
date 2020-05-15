@@ -31,7 +31,7 @@ class App(QWidget):
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
-        self.setFixedSize(362,210)
+        self.setFixedSize(362,199)
         self.center()
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
@@ -43,7 +43,7 @@ class App(QWidget):
                                 QInputDialog{background-color:#272626;}''')
 
         self.btnStartAndStop = QPushButton('启动虚拟博士', self) #启动/停止按钮
-        self.btnStartAndStop.setFixedSize(180, 140)
+        self.btnStartAndStop.setFixedSize(180, 131)
         self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
         self.btnStartAndStop.clicked.connect(self.clickBtnStartAndStop)
 
