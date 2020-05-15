@@ -162,5 +162,5 @@ if __name__ == "__main__":
     #    a = levelOcr("E:/workSpace/CodeRelease/arknightHelper/test/{0}".format(i), "E:/workSpace/CodeRelease/arknightHelper/source/temp")
         
     #a = levelOcr("E:/workSpace/CodeRelease/arknightHelper/test/screenshot29.png", "E:/workSpace/CodeRelease/arknightHelper/source/temp")
-    a = matchImg(r'E:\workSpace\CodeRelease\arknightHelper\source\test\screenshot4.png', r'E:\workSpace\CodeRelease\arknightHelper\arkHelper\res\panel\other/home.png')
+    a = matchImg(r'E:\workSpace\CodeRelease\arknightHelper\arkHelper\res\publicCall\jnvj.png', r'E:\workSpace\CodeRelease\arknightHelper\source\test\a.png', 0.1)
     print(a)

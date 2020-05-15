@@ -20,6 +20,7 @@ class Task:
         self.get = self.cwd + "/res/panel/other/get.png"
         self.getMaterial = self.cwd + "/res/panel/other/getMaterial.png"
         self.daySel = self.cwd + "/res/panel/other/dailyTaskSelect.png"
+        self.actSel = self.cwd + "/res/panel/other/actSelect.png"
         self.weekUnSel = self.cwd + "/res/panel/other/weeklyTaskUnSelect.png"
         self.weekSel = self.cwd + "/res/panel/other/weeklyTaskSelect.png"
         self.mainpageMark = self.cwd + "/res/panel/other/act.png"
@@ -71,6 +72,8 @@ class Task:
                 
                 self.adb.screenShot()
                 if pictureFind.matchImg(self.screenShot, self.daySel) != None:
+                    return True
+                elif pictureFind.matchImg(self.screenShot, self.actSel) != None:
                     return True
                 else:
                     tryCount += 1
