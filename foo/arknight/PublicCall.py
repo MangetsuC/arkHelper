@@ -49,7 +49,7 @@ class PublicCall:
         self.adb = adb
         #self.battle = battle
         self.cwd = cwd
-        self.screenShot = self.cwd + '/bin/adb/arktemp.png'
+        self.screenShot = self.cwd + '/bin/adb/PCScreenshot.png'
         self.tag = listdir(self.cwd + '/res/publicCall')
         self.mark = 'E:/workSpace/CodeRelease/arknightHelper/arkHelper/res/panel/other/publicMark.png'
         self.lock = Lock()
@@ -279,7 +279,7 @@ class PublicCall:
         return ans
 
     def run(self):
-        self.adb.screenShot()
+        self.adb.screenShot(pngName='PCScreenshot')
         src = imread(self.screenShot)
         tempTagList = self.getTag(src)
         #print(tempTagList)

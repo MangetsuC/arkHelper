@@ -53,7 +53,10 @@ class Adb:
         self.cmdText = self.cmd.run('adb connect {0}'.format(self.ip))
         print(self.cmdText)
         if ('connected to' in self.cmdText) and ('nable' not in self.cmdText):
-            screenMsg = self.cmd.run('adb -s {device} shell wm size'.format(device = self.ip))
+            while True:
+                screenMsg = self.cmd.run('adb -s {device} shell wm size'.format(device = self.ip))
+                if screenMsg != None:
+                    break
             screenMsg = screenMsg.replace(' ', '')
             screenMsg = screenMsg.replace('\n', '')
             print(screenMsg)
@@ -81,10 +84,13 @@ class Adb:
         self.cmd.run('adb -s {device} exec-out screencap -p > {0}/{1}.png'\
             .format(self.adbPath, pngName, device = self.ip))
 
-        with open(self.adbPath + '/' + pngName +'.png', 'br') as pic:
-            bys = pic.read().replace(b'\r\n', b'\n')
-        with open(self.adbPath + '/' + pngName +'.png', 'bw') as pic:    
-            pic.write(bys)
+        pic0 = open(self.adbPath + '/' + pngName +'.png', 'br')
+        bys = pic0.read().replace(b'\r\n', b'\n')
+        pic0.close()
+        
+        pic1 = open(self.adbPath + '/' + pngName +'.png', 'bw')   
+        pic1.write(bys)
+        pic1.close()
 
         #start = perf_counter()
         #while (not path.exists("{0}/{1}.png".format(self.adbPath, pngName))) and (perf_counter() - start < 20):

@@ -18,6 +18,7 @@ from foo.ui.console import Console
 from foo.ui.UIPublicCall import UIPublicCall
 
 
+
 class App(QWidget):
     def __init__(self):
         super().__init__()
@@ -309,6 +310,7 @@ class App(QWidget):
         if self.btnMainClicked:
             self.btnStartAndStop.setText('停止虚拟博士')
             if self.btnMonitorPublicCall.isChecked():
+                
                 self.publicCall.turnOff()
             self.thRun = Thread(target=self.start)
             self.thRun.setDaemon(True)

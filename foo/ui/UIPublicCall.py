@@ -73,10 +73,14 @@ class UIPublicCall(QDialog):
                 keyValueList = list(keyValueList)
                 keyValueList.sort(key = lambda x:len(x[0]), reverse = True)
                 for eachKeyValue in keyValueList:
+                    if not self.monitorFlag:
+                        break
                     eachKeyValue[1].sort()
 
                     tempStr = ''
                     for eachValue in eachKeyValue[1]:
+                        if not self.monitorFlag:
+                            break
                         if eachValue[0] >= 4:
                             tempStr = tempStr + f'{str(eachValue[0])[0]}星：' + eachValue[1] + '；\n'
                         elif self.isShowAll:
@@ -86,6 +90,8 @@ class UIPublicCall(QDialog):
                             break
                     else:
                         text = text + eachKeyValue[0] + '\n' + tempStr
+            if not self.monitorFlag:
+                break
             self.lock.acquire()
             self.text = text
             #print(self.text)
@@ -116,7 +122,7 @@ class UIPublicCall(QDialog):
         self.monitorFlag = False
         #self.timer.stop()
         self.hide()
-        #self.thSetText.join()
+        self.thSetText.join()
 
     def closeEvent(self, event):
         if not self.isExit:
