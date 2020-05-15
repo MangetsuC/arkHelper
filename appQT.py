@@ -15,6 +15,7 @@ from foo.arknight.Battle import BattleLoop
 from foo.arknight.task import Task
 from foo.arknight.credit import Credit
 from foo.ui.console import Console
+from foo.ui.UIPublicCall import UIPublicCall
 
 
 class App(QWidget):
@@ -23,12 +24,14 @@ class App(QWidget):
         self.initVar()
         self.initUI()
         self.initState()
+        self.initClass()
         self.isRun = False
+        #self.publicCall.start()
         
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
-        self.setFixedSize(362,200)
+        self.setFixedSize(362,250)
         self.center()
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
@@ -43,6 +46,11 @@ class App(QWidget):
         self.btnStartAndStop.setFixedSize(180, 180)
         self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
         self.btnStartAndStop.clicked.connect(self.clickBtnStartAndStop)
+
+        self.btnMonitorPublicCall = QPushButton('监测公开招募', self)
+        self.btnMonitorPublicCall.setFixedSize(180, 40)
+        self.btnMonitorPublicCall.setCheckable(True)
+        self.btnMonitorPublicCall.clicked[bool].connect(self.monitorPC)
 
         self.tbBattle = QPushButton('战斗', self) #战斗可选按钮
         self.tbBattle.setCheckable(True)
@@ -113,13 +121,14 @@ class App(QWidget):
         self.grid.setSpacing(5)
         
         self.grid.addWidget(self.btnStartAndStop, 0, 0, 4, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnMonitorPublicCall, 4, 0, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbCredit, 1, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnMin, 1, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnClose, 2, 2, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.lNotice, 3, 1, 1, 2, alignment=Qt.AlignRight)
+        self.grid.addWidget(self.lNotice, 4, 1, 1, 2, alignment=Qt.AlignRight)
 
         self.setLayout(self.grid)
 
@@ -136,11 +145,6 @@ class App(QWidget):
         self.configPath = self.cwd + '/config.ini'
         self.config = ConfigParser()
         self.config.read(filenames=self.configPath, encoding="UTF-8")
-
-        self.adb = Adb(self.cwd + '/bin/adb', self.config)
-        self.battle = BattleLoop(self.adb, self.cwd, self.ico)
-        self.task = Task(self.adb, self.cwd, self.ico)
-        self.credit = Credit(self.adb, self.cwd)
 
         self.btnMainClicked = False
 
@@ -162,6 +166,13 @@ class App(QWidget):
         self.tbCredit.setChecked(self.creditFlag)
         pass
     
+    def initClass(self):
+        self.adb = Adb(self.cwd + '/bin/adb', self.config)
+        self.battle = BattleLoop(self.adb, self.cwd, self.ico)
+        self.task = Task(self.adb, self.cwd, self.ico)
+        self.credit = Credit(self.adb, self.cwd)
+        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall) #公开招募
+
     def initSlrSel(self):
         '初始化模拟器选择'
         slrName = self.config.get('connect', 'simulator')
@@ -215,7 +226,11 @@ class App(QWidget):
         elif source.text() == '获取信用':
             self.creditFlag = isChecked
 
-        
+    def monitorPC(self, isChecked):
+        if isChecked:
+            self.publicCall.turnOn()
+        else:
+            self.publicCall.turnOff()
 
     def changeSlr(self, name, port, ip = '127.0.0.1'):
         self.config.set('connect', 'simulator', name)
@@ -256,6 +271,7 @@ class App(QWidget):
         '退出按钮'
         self.stop()
         self.console.exit()
+        self.publicCall.exit()
         self.close()
 
     def minimize(self):
@@ -285,16 +301,20 @@ class App(QWidget):
         self.credit.stop()
         self.btnMainClicked = False
         self.btnStartAndStop.setText('启动虚拟博士')
+        if self.btnMonitorPublicCall.isChecked():
+            self.publicCall.turnOn()
 
     def clickBtnStartAndStop(self):
         self.btnMainClicked = not self.btnMainClicked
         if self.btnMainClicked:
             self.btnStartAndStop.setText('停止虚拟博士')
+            if self.btnMonitorPublicCall.isChecked():
+                self.publicCall.turnOff()
             self.thRun = Thread(target=self.start)
             self.thRun.setDaemon(True)
             self.thRun.start()
         else:
-            self.stop()
+            self.stop()  
        
 if __name__ == '__main__':
     

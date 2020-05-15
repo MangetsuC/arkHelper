@@ -6,7 +6,14 @@ from PIL import Image
 
 def delImg(dir):
     if path.exists(dir):
-        remove(dir)
+        try:    
+            remove(dir)
+        except PermissionError:
+            return False
+
+    return True
+
+
 
 class Cmd():
     def __init__(self, path):
@@ -61,7 +68,12 @@ class Adb:
             return False
 
     def screenShot(self, pngName = 'arktemp'):
-        delImg("{0}/{1}.png".format(self.adbPath, pngName))
+        while True:
+            tempFlag = delImg("{0}/{1}.png".format(self.adbPath, pngName))
+            if tempFlag:
+                break
+            else:
+                sleep(1)
 
         #popen('{0}&&cd {1}&&adb -s {device} shell screencap -p /sdcard/arktemp.png&&adb -s {device} pull /sdcard/arktemp.png {2}/{3}.png'\
         #    .format(self.adbPath[0:2], self.adbPath, self.adbPath, pngName, device = self.ip))
