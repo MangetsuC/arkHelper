@@ -283,7 +283,7 @@ class PublicCall:
         src = imread(self.screenShot)
         while True:
             tempTagList = self.getTag(src)
-            if len(tempTagList) == 5:
+            if tempTagList == [] or len(tempTagList) == 5:
                 break
         #print(tempTagList)
         return self.getAns(tempTagList)

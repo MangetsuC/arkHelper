@@ -56,6 +56,8 @@ class UIPublicCall(QDialog):
                                 QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
                                 QPushButton:pressed{background:#606162;font:9pt;}
                                 QPushButton:checked{background:#70bbe4;}''')
+
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
     
     def showAllChange(self, ischecked):
         self.isShowAll = ischecked
