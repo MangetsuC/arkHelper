@@ -195,29 +195,29 @@ class PublicCall:
                                 temp.append(each)
                                 ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
                 if each in tag2:
-                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2], [])
+                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[2], [])
                     temp.append(each)
-                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2]] = temp
+                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[2]] = temp
                     if each in tag3:
-                        temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
+                        temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
                         temp.append(each)
-                        ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
+                        ans[tagOnScreenList[0] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
                         if each in tag4:
-                            temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                            temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
                             temp.append(each)
-                            ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                            ans[tagOnScreenList[0] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
                 if each in tag3:
-                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
+                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[3], [])
                     temp.append(each)
-                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
+                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[3]] = temp
                     if each in tag4:
-                        temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                        temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
                         temp.append(each)
-                        ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                        ans[tagOnScreenList[0] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
                 if each in tag4:
-                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[4], [])
                     temp.append(each)
-                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[4]] = temp
             if each in tag1:
                 temp = ans.get(tagOnScreenList[1], [])
                 temp.append(each)
@@ -235,17 +235,17 @@ class PublicCall:
                             temp.append(each)
                             ans[tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
                 if each in tag3:
-                    temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
+                    temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[3], [])
                     temp.append(each)
-                    ans[tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
+                    ans[tagOnScreenList[1] + '+' + tagOnScreenList[3]] = temp
                     if each in tag4:
-                        temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                        temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
                         temp.append(each)
-                        ans[tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                        ans[tagOnScreenList[1] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
                 if each in tag4:
-                    temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                    temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[4], [])
                     temp.append(each)
-                    ans[tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                    ans[tagOnScreenList[1] + '+' + tagOnScreenList[4]] = temp
             if each in tag2:
                 temp = ans.get(tagOnScreenList[2], [])
                 temp.append(each)
@@ -259,9 +259,9 @@ class PublicCall:
                         temp.append(each)
                         ans[tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
                 if each in tag4:
-                    temp = ans.get(tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
+                    temp = ans.get(tagOnScreenList[2] + '+' + tagOnScreenList[4], [])
                     temp.append(each)
-                    ans[tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
+                    ans[tagOnScreenList[2] + '+' + tagOnScreenList[4]] = temp
             if each in tag3:
                 temp = ans.get(tagOnScreenList[3], [])
                 temp.append(each)
@@ -281,7 +281,10 @@ class PublicCall:
     def run(self):
         self.adb.screenShot(pngName='PCScreenshot')
         src = imread(self.screenShot)
-        tempTagList = self.getTag(src)
+        while True:
+            tempTagList = self.getTag(src)
+            if len(tempTagList) == 5:
+                break
         #print(tempTagList)
         return self.getAns(tempTagList)
 
