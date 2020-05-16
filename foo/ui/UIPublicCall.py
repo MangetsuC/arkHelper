@@ -86,9 +86,12 @@ class UIPublicCall(QDialog):
                         elif self.isShowAll:
                             tempStr = tempStr + f'{eachValue[0]}星：' + eachValue[1] + '；\n'
                         else:
-                            text = '无稳定高星组合'
+                            if text == '':
+                                text = '无稳定高星组合'
                             break
                     else:
+                        if text == '无稳定高星组合':
+                            text = ''
                         text = text + eachKeyValue[0] + '\n' + tempStr
             if not self.monitorFlag:
                 break
