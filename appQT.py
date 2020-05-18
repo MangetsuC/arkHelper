@@ -5,7 +5,7 @@ from os import getcwd
 from threading import Thread
 
 from PyQt5.QtCore import QPoint, Qt
-from PyQt5.QtGui import QFont, QIcon, QMouseEvent
+from PyQt5.QtGui import QFont, QIcon, QMouseEvent, QCursor
 from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QDesktopWidget,
                              QGridLayout, QInputDialog, QLabel, QMenu,
                              QPushButton, QWidget)
@@ -24,9 +24,11 @@ class App(QWidget):
         super().__init__()
         self.initVar()
         self.initUI()
-        self.initState()
         self.initClass()
+        self.initRightClickMeun()
+        self.initState()
         self.isRun = False
+        self.show()
         #self.publicCall.start()
         
     def initUI(self): 
@@ -133,7 +135,17 @@ class App(QWidget):
 
         self.setLayout(self.grid)
 
-        self.show()
+        #self.show()
+
+    def initRightClickMeun(self):
+        self.tbBattle.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tbTask.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tbCredit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.btnMonitorPublicCall.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tbBattle.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        self.tbTask.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        self.tbCredit.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        self.btnMonitorPublicCall.customContextMenuRequested.connect(self.functionDefaultSetMeun)
 
     def initVar(self):
         self.cwd = getcwd().replace('\\', '/')
@@ -165,6 +177,11 @@ class App(QWidget):
         self.tbTask.setChecked(self.taskFlag) #任务选项
         self.creditFlag = self.config.getboolean('function', 'credit')
         self.tbCredit.setChecked(self.creditFlag)
+
+        self.PCFlag = self.config.getboolean('function', 'publiccall')
+        self.btnMonitorPublicCall.setChecked(self.creditFlag)
+        if self.PCFlag:
+            self.publicCall.turnOn()
         pass
     
     def initClass(self):
@@ -218,6 +235,52 @@ class App(QWidget):
         #停止窗口移动
         self.moveFlag = False
     
+    def functionDefaultSetMeun(self):
+        self.source = self.sender()
+        if self.source.text() == '战斗':
+            if self.config.getboolean('function', 'battle'):
+                text = '设为默认关闭'
+            else:
+                text = '设为默认开启'
+        elif self.source.text() == '任务交付':
+            if self.config.getboolean('function', 'task'):
+                text = '设为默认关闭'
+            else:
+                text = '设为默认开启'
+        elif self.source.text() == '获取信用':
+            if self.config.getboolean('function', 'credit'):
+                text = '设为默认关闭'
+            else:
+                text = '设为默认开启'
+        elif self.source.text() == '公开招募计算器':
+            if self.config.getboolean('function', 'publiccall'):
+                text = '设为默认关闭'
+            else:
+                text = '设为默认开启'
+        self.contextMenu = QMenu()
+        self.actionSetDeafult = self.contextMenu.addAction(text)
+        self.actionSetDeafult.triggered.connect(self.setDefault)
+        self.contextMenu.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;background-color:#222724; margin:3px;}
+                                        QMenu:item {padding:6px 15px;}
+                                        QMenu:item:selected { background-color: #3f4140;}''')
+        self.contextMenu.exec_(QCursor.pos())
+    
+    def setDefault(self):
+        if self.source.text() == '战斗':
+            key = 'battle'
+            value = not self.config.getboolean('function', 'battle')
+        elif self.source.text() == '任务交付':
+            key = 'task'
+            value = not self.config.getboolean('function', 'task')
+        elif self.source.text() == '获取信用':
+            key = 'credit'
+            value = not self.config.getboolean('function', 'credit')
+        elif self.source.text() == '公开招募计算器':
+            key = 'publiccall'
+            value = not self.config.getboolean('function', 'publiccall')
+
+        self.changeDefault(key, value)
+    
     def functionSel(self, isChecked):
         source = self.sender()
         if source.text() == '战斗':
@@ -242,6 +305,12 @@ class App(QWidget):
         self.config.write(configInI)
         configInI.close()
         self.adb.changeConfig(self.config)
+
+    def changeDefault(self, func, flag):
+        self.config.set('function', func, str(flag))
+        configInI = open(self.configPath, 'w')
+        self.config.write(configInI)
+        configInI.close()
 
 
     def simulatorSel(self):
