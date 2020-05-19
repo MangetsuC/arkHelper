@@ -1,6 +1,7 @@
 from os import path, remove
 from time import sleep, perf_counter
 from subprocess import Popen, PIPE
+from re import split as resplit
 
 from PIL import Image
 
@@ -68,8 +69,31 @@ class Adb:
             return True
         else:
             self.cmd.run('adb kill-server')
+            adbPidList = self.getTaskList('adb.exe')
+            if adbPidList != []:
+                for eachAdbPid in adbPidList:
+                    self.killTask(eachAdbPid)
             return False
 
+    def getTaskList(self, taskName):
+        task = self.cmd.run('tasklist')
+        taskList = task.split('\n')
+        taskAdb = []
+        for eachTask in taskList:
+            if taskName in eachTask:
+                taskAdb.append(eachTask)
+        pidList = []
+        if taskAdb != []:
+            for eachAdb in taskAdb:
+                pid = resplit(r'\s+', eachAdb)[1]
+                pidList.append(pid)
+
+        return pidList
+
+    def killTask(self, pid):
+        taskPid = pid
+        self.cmd.run(f'taskkill /PID {taskPid} /F')
+    
     def screenShot(self, pngName = 'arktemp'):
         while True:
             tempFlag = delImg("{0}/{1}.png".format(self.adbPath, pngName))
@@ -77,9 +101,6 @@ class Adb:
                 break
             else:
                 sleep(1)
-
-        #popen('{0}&&cd {1}&&adb -s {device} shell screencap -p /sdcard/arktemp.png&&adb -s {device} pull /sdcard/arktemp.png {2}/{3}.png'\
-        #    .format(self.adbPath[0:2], self.adbPath, self.adbPath, pngName, device = self.ip))
             
         self.cmd.run('adb -s {device} exec-out screencap -p > {0}/{1}.png'\
             .format(self.adbPath, pngName, device = self.ip))
@@ -92,21 +113,6 @@ class Adb:
         pic1.write(bys)
         pic1.close()
 
-        #start = perf_counter()
-        #while (not path.exists("{0}/{1}.png".format(self.adbPath, pngName))) and (perf_counter() - start < 20):
-        #    continue
-        
-        #sleep(1)
-        '''while perf_counter() - start < 20:
-            try:
-                tempImg = Image.open(self.adbPath + '/' + pngName +'.png')
-                out = tempImg.resize((1440,810),Image.ANTIALIAS)
-            except:
-                continue
-            else:
-                break
-        else:
-            return False'''
         tempImg = Image.open(self.adbPath + '/' + pngName +'.png')
         out = tempImg.resize((1440,810),Image.ANTIALIAS)
         out.save(self.adbPath + '/' + pngName +'.png', 'png')
