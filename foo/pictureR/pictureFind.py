@@ -4,11 +4,6 @@ from PIL.ImageOps import invert
 from os import remove, path, getcwd, listdir
 from re import split as resplit
 
-"""def delImg(dir):
-    if path.exists(dir):
-        remove(dir)"""
-
-
 def matchImg(imgsrc,imgobj,confidencevalue=0.8, notDir=False):  #imgsrc=原始图像，imgobj=待查找的图片
     '用于查找原始图片中的单一目标图片，如果原始图片中可找到多个目标图片，则随机返回一个匹配的结果，返回值为一个字典'
     try:

@@ -91,16 +91,19 @@ class Task:
             else:
                 self.adb.click(gInfo['result'][0], gInfo['result'][1])
             
-            trytime = 0
+            tryFlag = False
             while self.switch:
                 self.adb.screenShot()
                 mInfo = pictureFind.matchImg(self.screenShot, self.getMaterial)
                 hInfo = pictureFind.matchImg(self.screenShot, self.home)
                 if mInfo != None:
+                    tryFlag = True
                     self.adb.click(mInfo['result'][0], mInfo['result'][1])
                 elif hInfo != None:
-                    trytime += 1
-                    if trytime == 2:
+                    if tryFlag:
+                        tryFlag = False
+                        continue
+                    else:
                         self.adb.screenShot()
                         break
 
