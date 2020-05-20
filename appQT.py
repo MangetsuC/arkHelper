@@ -34,7 +34,7 @@ class App(QWidget):
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
-        self.setFixedSize(362,199)
+        self.setFixedSize(442,199)
         self.center()
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
@@ -69,6 +69,11 @@ class App(QWidget):
         self.tbCredit.setCheckable(True)
         self.tbCredit.setFixedSize(75, 40)
         self.tbCredit.clicked[bool].connect(self.functionSel)
+
+        self.tbShutdown = QPushButton('完成后关机', self)
+        self.tbShutdown.setCheckable(True)
+        self.tbShutdown.setFixedSize(155, 40)
+        self.tbShutdown.clicked[bool].connect(self.functionSel)
 
         self.btnSet = QPushButton('设置',self) #设置按钮
         self.btnSet.setFixedSize(75, 40)
@@ -115,7 +120,7 @@ class App(QWidget):
         self.btnMin.clicked.connect(self.minimize)
 
         self.btnClose = QPushButton('退出',self) #退出按钮
-        self.btnClose.setFixedSize(75, 40)
+        self.btnClose.setFixedSize(155, 40)
         self.btnClose.clicked.connect(self.exit)
         
         self.lNotice = QLabel('按此处可拖动窗口')
@@ -128,23 +133,31 @@ class App(QWidget):
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbCredit, 1, 1, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnMin, 1, 2, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnClose, 2, 2, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.lNotice, 3, 1, 1, 2, alignment=Qt.AlignRight)
+        self.grid.addWidget(self.tbCredit, 0, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbShutdown, 1, 1, 1, 2)
+        self.grid.addWidget(self.btnMin, 1, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnClose, 2, 2, 1, 2, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.lNotice, 3, 2, 1, 2, alignment=Qt.AlignRight)
 
         self.setLayout(self.grid)
 
         #self.show()
 
     def initRightClickMeun(self):
+        #战斗按钮
         self.tbBattle.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tbTask.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tbCredit.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.btnMonitorPublicCall.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tbBattle.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        #任务按钮
+        self.tbTask.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tbTask.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        #信用按钮
+        self.tbCredit.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tbCredit.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        #自动关机按钮
+        self.tbShutdown.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tbShutdown.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        #公开招募按钮
+        self.btnMonitorPublicCall.setContextMenuPolicy(Qt.CustomContextMenu)
         self.btnMonitorPublicCall.customContextMenuRequested.connect(self.functionDefaultSetMeun)
 
     def initVar(self):
@@ -164,6 +177,7 @@ class App(QWidget):
         self.battleFlag = None
         self.taskFlag = None
         self.creditFlag = None
+        self.shutdownFlag = None
         self.doctorFlag = False
 
 
@@ -177,6 +191,9 @@ class App(QWidget):
         self.tbTask.setChecked(self.taskFlag) #任务选项
         self.creditFlag = self.config.getboolean('function', 'credit')
         self.tbCredit.setChecked(self.creditFlag)
+
+        self.shutdownFlag = self.config.getboolean('function', 'shutdown')
+        self.tbShutdown.setChecked(self.creditFlag) #自动关机
 
         self.PCFlag = self.config.getboolean('function', 'publiccall')
         self.btnMonitorPublicCall.setChecked(self.creditFlag)
@@ -257,6 +274,11 @@ class App(QWidget):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
+        elif self.source.text() == '完成后关机':
+            if self.config.getboolean('function', 'shutdown'):
+                text = '设为默认关闭'
+            else:
+                text = '设为默认开启'
         self.contextMenu = QMenu()
         self.actionSetDeafult = self.contextMenu.addAction(text)
         self.actionSetDeafult.triggered.connect(self.setDefault)
@@ -278,6 +300,9 @@ class App(QWidget):
         elif self.source.text() == '公开招募计算器':
             key = 'publiccall'
             value = not self.config.getboolean('function', 'publiccall')
+        elif self.source.text() == '完成后关机':
+            key = 'shutdown'
+            value = not self.config.getboolean('function', 'shutdown')
 
         self.changeDefault(key, value)
     
@@ -289,6 +314,8 @@ class App(QWidget):
             self.taskFlag = isChecked
         elif source.text() == '获取信用':
             self.creditFlag = isChecked
+        elif source.text() == '完成后关机':
+            self.shutdownFlag = isChecked
 
     def monitorPC(self, isChecked):
         if isChecked:
@@ -339,6 +366,7 @@ class App(QWidget):
         
     def exit(self):
         '退出按钮'
+        self.hide()
         self.stop()
         self.console.exit()
         self.publicCall.exit()
@@ -363,7 +391,11 @@ class App(QWidget):
             self.task.run(self.doctorFlag)
         if self.doctorFlag and self.creditFlag:
             self.credit.run(self.doctorFlag)
-        self.stop()
+        if self.shutdownFlag:
+            self.adb.cmd.shutdown(time=120)
+            self.exit()
+        else:
+            self.stop()
 
     def stop(self):
         self.doctorFlag = False

@@ -31,6 +31,26 @@ class Cmd():
         self.p.wait(timeout = waitTime)
         return strout
         
+    def getTaskList(self, taskName):
+        task = self.run('tasklist')
+        taskList = task.split('\n')
+        taskAdb = []
+        for eachTask in taskList:
+            if taskName in eachTask:
+                taskAdb.append(eachTask)
+        pidList = []
+        if taskAdb != []:
+            for eachAdb in taskAdb:
+                pid = resplit(r'\s+', eachAdb)[1]
+                pidList.append(pid)
+
+        return pidList
+
+    def killTask(self, pid):
+        self.run(f'taskkill /PID {pid} /F')
+
+    def shutdown(self, time = 60):
+        self.run(f'shutdown /s /t {time}')
         
 
 class Adb:
@@ -73,29 +93,10 @@ class Adb:
 
     def killAdb(self):
         self.cmd.run('adb kill-server')
-        adbPidList = self.getTaskList('adb.exe')
+        adbPidList = self.cmd.getTaskList('adb.exe')
         if adbPidList != []:
             for eachAdbPid in adbPidList:
-                self.killTask(eachAdbPid)
-    
-    def getTaskList(self, taskName):
-        task = self.cmd.run('tasklist')
-        taskList = task.split('\n')
-        taskAdb = []
-        for eachTask in taskList:
-            if taskName in eachTask:
-                taskAdb.append(eachTask)
-        pidList = []
-        if taskAdb != []:
-            for eachAdb in taskAdb:
-                pid = resplit(r'\s+', eachAdb)[1]
-                pidList.append(pid)
-
-        return pidList
-
-    def killTask(self, pid):
-        taskPid = pid
-        self.cmd.run(f'taskkill /PID {taskPid} /F')
+                self.cmd.killTask(eachAdbPid)
     
     def screenShot(self, pngName = 'arktemp'):
         while True:
