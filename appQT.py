@@ -342,6 +342,7 @@ class App(QWidget):
         self.stop()
         self.console.exit()
         self.publicCall.exit()
+        self.adb.killAdb()
         self.close()
 
     def minimize(self):

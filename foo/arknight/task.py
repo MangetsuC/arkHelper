@@ -24,6 +24,7 @@ class Task:
         self.weekUnSel = self.cwd + "/res/panel/other/weeklyTaskUnSelect.png"
         self.weekSel = self.cwd + "/res/panel/other/weeklyTaskSelect.png"
         self.mainpageMark = self.cwd + "/res/panel/other/act.png"
+        self.waitForNew = self.cwd + "/res/panel/other/waitForNew.png"
 
         self.listGoTo = [self.mainpage, self.home, self.mainpageMark]
 
@@ -82,8 +83,13 @@ class Task:
 
     def submitTask(self):
         while self.switch:
-            gInfo = pictureFind.matchImg(self.screenShot, self.get, 0.9999)
+            gInfo = pictureFind.matchImg(self.screenShot, self.get, 0.9)
+            nInfo = pictureFind.matchImg(self.screenShot, self.waitForNew, 0.9)
+            if nInfo != None:
+                print('已完成')
+                return True
             if gInfo == None:
+                print()
                 mInfo = pictureFind.matchImg(self.screenShot, self.getMaterial)
                 if mInfo == None:
                     return True

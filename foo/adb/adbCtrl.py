@@ -68,13 +68,16 @@ class Adb:
             #print(temp, self.screenX, self.screenY)
             return True
         else:
-            self.cmd.run('adb kill-server')
-            adbPidList = self.getTaskList('adb.exe')
-            if adbPidList != []:
-                for eachAdbPid in adbPidList:
-                    self.killTask(eachAdbPid)
+            self.killAdb()
             return False
 
+    def killAdb(self):
+        self.cmd.run('adb kill-server')
+        adbPidList = self.getTaskList('adb.exe')
+        if adbPidList != []:
+            for eachAdbPid in adbPidList:
+                self.killTask(eachAdbPid)
+    
     def getTaskList(self, taskName):
         task = self.cmd.run('tasklist')
         taskList = task.split('\n')

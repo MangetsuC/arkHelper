@@ -142,23 +142,3 @@ def levelAnalyse(levelList):
 
 fontLibraryB = listdir(getcwd() + "/res/fontLibrary/B")
 fontLibraryW = listdir(getcwd() + "/res/fontLibrary/W")
-
-if __name__ == "__main__":
-    '''for i in range(10):
-        imsrc = Image.open("E:/workSpace/CodeRelease/arknightHelper/source/after/" + str(i) + 'w.jpg')
-        imsrc = invert(imsrc)
-        imsrc.save("E:/workSpace/CodeRelease/arknightHelper/source/after/" + str(i) + 'b.jpg')'''
-
-    
-    
-    '''a = matchMultiImg(r"E:\workSpace\CodeRelease\arknightHelper\source\screenshot35.png", \
-        r"E:\workSpace\CodeRelease\arknightHelper\source\after\5b.jpg",\
-             r"E:\workSpace\CodeRelease\arknightHelper\source\after", confidencevalue=0.8)'''
-
-    #l1 = listdir(r"E:\workSpace\CodeRelease\arknightHelper\test")
-    #for i in l1:
-    #    a = levelOcr("E:/workSpace/CodeRelease/arknightHelper/test/{0}".format(i), "E:/workSpace/CodeRelease/arknightHelper/source/temp")
-        
-    #a = levelOcr("E:/workSpace/CodeRelease/arknightHelper/test/screenshot29.png", "E:/workSpace/CodeRelease/arknightHelper/source/temp")
-    a = matchImg(r'E:\workSpace\CodeRelease\arknightHelper\arkHelper\res\publicCall\jnvj.png', r'E:\workSpace\CodeRelease\arknightHelper\source\test\a.png', 0.1)
-    print(a)
