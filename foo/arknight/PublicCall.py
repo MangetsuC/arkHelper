@@ -265,7 +265,7 @@ class PublicCall:
             if each in tag3:
                 temp = ans.get(tagOnScreenList[3], [])
                 temp.append(each)
-                ans[tagOnScreenList[3]] = ans.get(tagOnScreenList[3], [])
+                ans[tagOnScreenList[3]] = temp
                 if each in tag4:
                     temp = ans.get(tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
                     temp.append(each)
@@ -276,6 +276,7 @@ class PublicCall:
                 ans[tagOnScreenList[4]] = temp
 
         #print('匹配'+str(perf_counter() - tempT))
+        print(ans)
         return ans
 
     def run(self):

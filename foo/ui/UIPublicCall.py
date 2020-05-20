@@ -24,7 +24,7 @@ class UIPublicCall(QDialog):
         
         self.publicCall = PublicCall(adb, self.cwd)
         
-        self.text = '正在监测公开招募'
+        self.text = '正在连接'
         self.beforeText = 'init'
         self.isShowAll = False
         self.monitorFlag = False

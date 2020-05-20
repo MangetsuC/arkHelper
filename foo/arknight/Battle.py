@@ -18,7 +18,7 @@ class BattleLoop:
         self.autoOff = self.cwd + "/res/panel/other/autoOff.png"
         self.autoOn = self.cwd + "/res/panel/other/autoOn.png"
     
-    def connect(self):
+    def connect(self, broadcast = True):
         self.connectSwitch = True
         for times in range(10):
             if self.connectSwitch:
@@ -28,8 +28,11 @@ class BattleLoop:
                 return False
         
         else:
-            toast.broadcastMsg("ArkHelper", "连接模拟器失败，请检查设置和模拟器", self.ico)
-            print('unable to connect simulator')
+            if broadcast:
+                toast.broadcastMsg("ArkHelper", "连接模拟器失败，请检查设置和模拟器", self.ico)
+                print('unable to connect simulator')
+            else:
+                print("INIT:adb connect failed")
             return False
 
 
