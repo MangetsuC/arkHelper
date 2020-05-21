@@ -155,11 +155,11 @@ class PublicCall:
 
     
     def getAns(self, tagOnScreenList):
-        tagOnScreenList.sort()
         #tempT = perf_counter()
         if tagOnScreenList == []:
             #print('匹配'+str(perf_counter() - tempT))
             return False
+        tagOnScreenList.sort()
         tag0 = self.tagDict[tagOnScreenList[0]]
         tag1 = self.tagDict[tagOnScreenList[1]]
         tag2 = self.tagDict[tagOnScreenList[2]]
@@ -276,8 +276,8 @@ class PublicCall:
                 ans[tagOnScreenList[4]] = temp
 
         #print('匹配'+str(perf_counter() - tempT))
-        print(ans)
-        return ans
+        #print(ans)
+        return (ans, tagOnScreenList)
 
     def run(self):
         self.adb.screenShot(pngName='PCScreenshot')

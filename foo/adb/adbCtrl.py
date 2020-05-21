@@ -2,8 +2,11 @@ from os import path, remove
 from time import sleep, perf_counter
 from subprocess import Popen, PIPE
 from re import split as resplit
+from threading import Thread
 
-from PIL import Image
+from PIL import Image, ImageFile
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def delImg(dir):
     if path.exists(dir):
@@ -57,11 +60,16 @@ class Adb:
     def __init__(self, adbPath, config = None):
         self.adbPath = adbPath
         self.cmd = Cmd(self.adbPath)
+        self.thStartAdb = Thread(target=self.startAdb)
+        self.thStartAdb.start()
         self.ip = None
         self.changeConfig(config)
         self.screenX = 1440
         self.screenY = 810
 
+    def startAdb(self):
+        self.cmd.run('adb start-server')
+    
     def changeConfig(self, config):
         if config == None:
             self.ip = '127.0.0.1:5555'
