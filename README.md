@@ -58,9 +58,9 @@ One Simple But Not Crude Arknight Helper	一款简单但不简陋的明日方舟
 #### 这些是开关
 * 因此，如果您不需要这个功能，可以单击以关闭
 * 使用右键菜单来设置功能的默认状态
-![setDefault.png](https://i.loli.net/2020/06/16/trH8BGDjoxzdMPX.png)
-> 在config.ini中，可以通过修改[function]下的值来设置默认勾选的状态
-> ~~后续应该会增加一个配置默认功能的设置界面~~已实现
+* ![setDefault.png](https://i.loli.net/2020/06/16/trH8BGDjoxzdMPX.png)
+> ~~在config.ini中，可以通过修改[function]下的值来设置默认勾选的状态
+> 后续应该会增加一个配置默认功能的设置界面~~已实现
 ### 公开招募计算器
 ***
 ![publiccall.png](https://i.loli.net/2020/05/15/jqCLGFU25nSrOeW.png)
