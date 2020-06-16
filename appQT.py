@@ -4,8 +4,8 @@ from configparser import ConfigParser
 from os import getcwd
 from threading import Thread
 
-from PyQt5.QtCore import QPoint, Qt
-from PyQt5.QtGui import QFont, QIcon, QMouseEvent, QCursor
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QMouseEvent, QCursor, QScreen
 from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QDesktopWidget,
                              QGridLayout, QInputDialog, QLabel, QMenu,
                              QPushButton, QWidget)
@@ -16,7 +16,6 @@ from foo.arknight.task import Task
 from foo.arknight.credit import Credit
 from foo.ui.console import Console
 from foo.ui.UIPublicCall import UIPublicCall
-
 
 
 class App(QWidget):
@@ -34,7 +33,7 @@ class App(QWidget):
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
-        self.setFixedSize(442,199)
+        #self.setFixedSize(442,199)
         self.center()
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
@@ -126,7 +125,8 @@ class App(QWidget):
         self.lNotice = QLabel('按此处可拖动窗口')
 
         self.grid = QGridLayout()
-        self.grid.setSpacing(5)
+        self.grid.setVerticalSpacing(5)
+        self.grid.setHorizontalSpacing(5)
         
         self.grid.addWidget(self.btnStartAndStop, 0, 0, 3, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnMonitorPublicCall, 3, 0, 1, 1, alignment=Qt.AlignCenter)
@@ -421,7 +421,7 @@ class App(QWidget):
             self.stop()  
        
 if __name__ == '__main__':
-    
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_())

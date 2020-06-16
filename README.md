@@ -28,7 +28,7 @@ One Simple But Not Crude Arknight Helper	一款简单但不简陋的明日方舟
 | aircv      | 1.4.6 |
 | win10toast | 0.9   |
 | Pillow     | 7.1.2|
-|PyQt5|5.14.2|
+|PyQt5|5.15.0|
 
 > 你也可以在仓库里找到requirements.txt，并使用pip install -r requirements.txt来部署环境。
 ***
@@ -38,14 +38,15 @@ One Simple But Not Crude Arknight Helper	一款简单但不简陋的明日方舟
 ##### 特别适用的场景
 |活动|主线|剿灭作战|
 |----|----|----|
-|火蓝之心|1-7|全部|
+|骑兵与猎人|1-7|全部|
+|火蓝之心|||
 |生于黑夜|||
 ***
 ## 关于这个小助手：
 
 ### 界面
 ***
-![mainUI.png](https://i.loli.net/2020/05/15/rAS5fdn4C8KZWLl.png)
+![mainUI.png](https://i.loli.net/2020/06/16/HaLUPhEJMuy69RK.png)
 * metro风格的界面参考了windows10的菜单，简洁明了  
 * 可以方便地通过主界面上的菜单来选择您的模拟器！也可以自定义  
 #### 作战
@@ -56,8 +57,10 @@ One Simple But Not Crude Arknight Helper	一款简单但不简陋的明日方舟
 * 自动访问你的好友来获取更多的信用点数！
 #### 这些是开关
 * 因此，如果您不需要这个功能，可以单击以关闭
+* 使用右键菜单来设置功能的默认状态
+![setDefault.png](https://i.loli.net/2020/06/16/trH8BGDjoxzdMPX.png)
 > 在config.ini中，可以通过修改[function]下的值来设置默认勾选的状态
-> 后续应该会增加一个配置默认功能的设置界面
+> ~~后续应该会增加一个配置默认功能的设置界面~~已实现
 ### 公开招募计算器
 ***
 ![publiccall.png](https://i.loli.net/2020/05/15/jqCLGFU25nSrOeW.png)
