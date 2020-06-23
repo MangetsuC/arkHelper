@@ -2,7 +2,6 @@ from os import path, remove
 from time import sleep, perf_counter
 from subprocess import Popen, PIPE
 from re import split as resplit
-from threading import Thread
 
 from PIL import Image, ImageFile
 
@@ -60,8 +59,6 @@ class Adb:
     def __init__(self, adbPath, config = None):
         self.adbPath = adbPath
         self.cmd = Cmd(self.adbPath)
-        self.thStartAdb = Thread(target=self.startAdb)
-        self.thStartAdb.start()
         self.ip = None
         self.changeConfig(config)
         self.screenX = 1440
