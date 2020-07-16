@@ -50,8 +50,8 @@ class PublicCall:
         #self.battle = battle
         self.cwd = cwd
         self.screenShot = self.cwd + '/bin/adb/PCScreenshot.png'
-        self.tag = listdir(self.cwd + '/res/publicCall')
-        self.mark = self.cwd + '/res/panel/other/publicMark.png'
+        self.tag = pictureFind.picRead([self.cwd + '/res/publicCall/' + i for i in listdir(self.cwd + '/res/publicCall')])
+        self.mark = pictureFind.picRead(self.cwd + '/res/panel/other/publicMark.png')
         self.lock = Lock()
         self.tagOnScreenList = []
         #self.monitorFlag = False
@@ -123,7 +123,7 @@ class PublicCall:
         self.tagOnScreenList = []
         imSrc = src
         trytime = 0
-        tInfo = pictureFind.matchImg(imSrc, self.mark, 0.8, notDir=True)
+        tInfo = pictureFind.matchImg(imSrc, self.mark, 0.8)
         if tInfo == None:
             return []
         th0 = Thread(target=self.matchTag, args=(imSrc, self.tag[0:4]))
@@ -147,10 +147,12 @@ class PublicCall:
         for each in objList:
             if len(self.tagOnScreenList) == 5:
                 break
-            tInfo = pictureFind.matchImg(src, self.cwd + '/res/publicCall/' + each, notDir=True)
+            #tInfo = pictureFind.matchImg(src, self.cwd + '/res/publicCall/' + each)
+            tInfo = pictureFind.matchImg(src, each)
             if tInfo != None:
                 self.lock.acquire()
-                self.tagOnScreenList.append(self.trans(tInfo['obj']))
+                #self.tagOnScreenList.append(self.trans(tInfo['obj']))
+                self.tagOnScreenList.append(tInfo['obj'][:-4])
                 self.lock.release()
 
     

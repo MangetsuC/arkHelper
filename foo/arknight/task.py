@@ -12,19 +12,19 @@ class Task:
         self.cwd = cwd
         self.switch = False
         self.icon = ico
-        self.home = self.cwd + "/res/panel/other/home.png"
-        self.mainpage = self.cwd + "/res/panel/other/mainpage.png"
+        self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
+        self.mainpage = pictureFind.picRead(self.cwd + "/res/panel/other/mainpage.png")
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
-        self.task = self.cwd + "/res/panel/other/task.png"
-        self.taskNo = self.cwd + "/res/panel/other/taskNo.png"
-        self.get = self.cwd + "/res/panel/other/get.png"
-        self.getMaterial = self.cwd + "/res/panel/other/getMaterial.png"
-        self.daySel = self.cwd + "/res/panel/other/dailyTaskSelect.png"
-        self.actSel = self.cwd + "/res/panel/other/actSelect.png"
-        self.weekUnSel = self.cwd + "/res/panel/other/weeklyTaskUnSelect.png"
-        self.weekSel = self.cwd + "/res/panel/other/weeklyTaskSelect.png"
-        self.mainpageMark = self.cwd + "/res/panel/other/act.png"
-        self.waitForNew = self.cwd + "/res/panel/other/waitForNew.png"
+        self.task = pictureFind.picRead(self.cwd + "/res/panel/other/task.png")
+        self.taskNo = pictureFind.picRead(self.cwd + "/res/panel/other/taskNo.png")
+        self.get = pictureFind.picRead(self.cwd + "/res/panel/other/get.png")
+        self.getMaterial = pictureFind.picRead(self.cwd + "/res/panel/other/getMaterial.png")
+        self.daySel = pictureFind.picRead(self.cwd + "/res/panel/other/dailyTaskSelect.png")
+        self.actSel = pictureFind.picRead(self.cwd + "/res/panel/other/actSelect.png")
+        self.weekUnSel = pictureFind.picRead(self.cwd + "/res/panel/other/weeklyTaskUnSelect.png")
+        self.weekSel = pictureFind.picRead(self.cwd + "/res/panel/other/weeklyTaskSelect.png")
+        self.mainpageMark = pictureFind.picRead(self.cwd + "/res/panel/other/act.png")
+        self.waitForNew = pictureFind.picRead(self.cwd + "/res/panel/other/waitForNew.png")
 
         self.listGoTo = [self.mainpage, self.home, self.mainpageMark]
 

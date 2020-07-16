@@ -11,16 +11,16 @@ class Credit:
         self.adb = adb
         self.cwd = cwd
         self.switch = False
-        self.icon = self.cwd + "/res/ico.ico"
-        self.home = self.cwd + "/res/panel/other/home.png"
-        self.mainpage = self.cwd + "/res/panel/other/mainpage.png"
+        self.icon = pictureFind.picRead(self.cwd + "/res/ico.ico")
+        self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
+        self.mainpage = pictureFind.picRead(self.cwd + "/res/panel/other/mainpage.png")
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
-        self.mainpageMark = self.cwd + "/res/panel/other/act.png"
-        self.frendList = self.cwd + '/res/panel/other/friendList.png'
-        self.visitNext = self.cwd + '/res/panel/other/visitNext.png'
-        self.visitFinish = self.cwd + '/res/panel/other/visitFinish.png'
-        self.friends = self.cwd + '/res/panel/other/friends.png'
-        self.visit = self.cwd + '/res/panel/other/visit.png'
+        self.mainpageMark = pictureFind.picRead(self.cwd + "/res/panel/other/act.png")
+        self.frendList = pictureFind.picRead(self.cwd + '/res/panel/other/friendList.png')
+        self.visitNext = pictureFind.picRead(self.cwd + '/res/panel/other/visitNext.png')
+        self.visitFinish = pictureFind.picRead(self.cwd + '/res/panel/other/visitFinish.png')
+        self.friends = pictureFind.picRead(self.cwd + '/res/panel/other/friends.png')
+        self.visit = pictureFind.picRead(self.cwd + '/res/panel/other/visit.png')
 
         self.listGoTo = [self.mainpage, self.home, self.mainpageMark]
         self.listGetCredit = [self.visitNext, self.visitFinish]

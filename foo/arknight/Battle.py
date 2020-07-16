@@ -11,12 +11,13 @@ class BattleLoop:
         self.cwd = cwd
         self.adb = adb
         self.ico = ico
-        self.listBattleImg = listdir(cwd + "/res/battle")
         self.switch = False
         self.connectSwitch = False
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
-        self.autoOff = self.cwd + "/res/panel/other/autoOff.png"
-        self.autoOn = self.cwd + "/res/panel/other/autoOn.png"
+        self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(cwd + "/res/battle")])
+        self.startA = pictureFind.picRead(self.cwd + "/res/battle/startApart.png")
+        self.autoOff = pictureFind.picRead(self.cwd + "/res/panel/other/autoOff.png")
+        self.autoOn = pictureFind.picRead(self.cwd + "/res/panel/other/autoOn.png")
     
     def connect(self, broadcast = True):
         self.connectSwitch = True
@@ -63,7 +64,7 @@ class BattleLoop:
                 #判断代理指挥是否勾选
                 if isFirstTurn:
                     isFirstTurn = False
-                    picStartA = pictureFind.matchImg(self.screenShot, self.cwd + "/res/battle/startApart.png", confidencevalue= 0.9)
+                    picStartA = pictureFind.matchImg(self.screenShot, self.startA, confidencevalue= 0.9)
                     if picStartA != None:
                         print('> auto mode check <')
                         picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
@@ -89,17 +90,17 @@ class BattleLoop:
                 #sleep(1)
                 for eachObj in self.listBattleImg:
                     if self.switch:
-                        if eachObj == "end.png":
+                        if eachObj['obj'] == "end.png":
                             confidence = 0.8
                         else:
                             confidence = 0.9
                         #print(self.screenShot + ' ' + self.cwd + '/res/battle/' + eachObj)
-                        picInfo = pictureFind.matchImg(self.screenShot, self.cwd + '/res/battle/' + eachObj, confidence)
+                        picInfo = pictureFind.matchImg(self.screenShot, eachObj, confidence)
                         #print(eachObj+ '：', picInfo)
                         if picInfo != None:
                             picPos = picInfo['result']
                             self.adb.click(picPos[0], picPos[1], isSleep = False)
-                            if eachObj == "cancel.png":
+                            if eachObj['obj'] == "cancel.png":
                                 self.switch = False
                                 toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
                             break

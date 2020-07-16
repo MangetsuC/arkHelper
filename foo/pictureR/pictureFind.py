@@ -3,22 +3,45 @@ from PIL import Image
 from PIL.ImageOps import invert
 from os import remove, path, getcwd, listdir
 from re import split as resplit
+from cv2 import imdecode
+from numpy import fromfile
 
-def matchImg(imgsrc,imgobj,confidencevalue=0.8, notDir=False):  #imgsrc=原始图像，imgobj=待查找的图片
+def picRead(pics):
+    temp = []
+    tempDict = dict()
+    if isinstance(pics,list):
+        for eachPic in pics:
+            tempDict = dict()
+            tempDict['pic'] = imdecode(fromfile(eachPic,dtype="uint8"),-1)
+            tempDict['obj'] = resplit(r'[\\ /]', eachPic)[-1]
+            temp.append(tempDict)
+        return temp
+    else:
+        tempDict['pic'] = imdecode(fromfile(pics,dtype="uint8"),-1)
+        tempDict['obj'] = resplit(r'[\\ /]', pics)[-1]
+        return tempDict
+
+def matchImg(imgsrc,imgobj,confidencevalue=0.8):  #imgsrc=原始图像，imgobj=待查找的图片
     '用于查找原始图片中的单一目标图片，如果原始图片中可找到多个目标图片，则随机返回一个匹配的结果，返回值为一个字典'
     try:
-        if notDir:
-            imsrc = imgsrc
-        else:
+        if isinstance(imgsrc,str):
             imsrc = imread(imgsrc)
+        else:
+            imsrc = imgsrc
     except RuntimeError:
         return None
-    imobj = imread(imgobj)
+    #imobj = imread(imgobj)
+    if isinstance(imgobj,str):
+        imobj = imdecode(fromfile(imgobj,dtype="uint8"),-1)
+    else:
+        imobj = imgobj['pic']    #现在此情况传入的一定是字典
 
     match_result = find_template(imsrc,imobj,confidencevalue)
     if match_result != None:
-        match_result['shape']=(imsrc.shape[1],imsrc.shape[0])  #0为长，1为宽
-        match_result['obj']=resplit(r'[\\ /]', imgobj)[-1]
+        if isinstance(imgobj,str):
+            match_result['obj'] = resplit(r'[\\ /]', imgobj)[-1]
+        else:
+            match_result['obj']=imgobj['obj']
 
     #delImg(imgsrc)
     return match_result
