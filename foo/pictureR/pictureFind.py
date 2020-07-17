@@ -3,8 +3,8 @@ from PIL import Image
 from PIL.ImageOps import invert
 from os import remove, path, getcwd, listdir
 from re import split as resplit
-from cv2 import imdecode
-from numpy import fromfile
+from cv2 import imdecode,fillConvexPoly,imshow,waitKey,copyTo
+from numpy import fromfile,array,zeros
 
 def picRead(pics):
     temp = []
@@ -47,52 +47,61 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8):  #imgsrc=原始图像，imgobj=
     return match_result
 
 
-def matchMultiImg(imgsrc, imgobj, tempDir, confidencevalue=0.8, maxReturn=-1, colorSpace = (0,0,0)):
-    '用于查找原始图片中的多个目标图片，若不存在图片则返回None，否则返回一个目标图片坐标构成的元组；imgsrc为原始图片路径，imgobj为目标图片路径，tempDir为临时存放处理中的图片的目录，[confidencevalue为置信度，maxReturn在非负的情况下只会返回相应数值的坐标，为0则永远返回None]'
+def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, maxReturn=-1, colorSpace = (0,0,0), debugMode = False):
+    '用于查找原始图片中的多个目标图片，若不存在图片则返回None，否则返回一个目标图片坐标构成的元组；imgsrc为原始图片路径，imgobj为目标图片路径，confidencevalue为置信度，maxReturn在非负的情况下只会返回相应数值的坐标，为0则永远返回None]'
     maxReturn = int(maxReturn)
-    try:
-        imsrc = imread(imgsrc)
-    except RuntimeError:
-        return None
+    if isinstance(imgsrc,str):
+        try:
+            imsrc = imread(imgsrc)
+        except RuntimeError:
+            return None
+    else:
+        imsrc = imgsrc
     imobj = imread(imgobj)
-    imgTemp = Image.open(imgsrc)
+    matchRect = []
     matchPositionXY = []
     while True:
         match_result = find_template(imsrc,imobj,confidencevalue) 
         if match_result != None and maxReturn != 0:
             matchPositionXY.append(list(match_result['result']))
             maxReturn -= 1
-            x1, y2 = match_result['rectangle'][0], match_result['rectangle'][3] #获取左上，右下坐标
-            for x in range(y2[0]-x1[0]):
-                for y in range(y2[1]-x1[1]):
-                    imgTemp.putpixel((x1[0]+ x,x1[1]+ y), colorSpace)
-            imgTemp.save(tempDir + '/temp.png')
+            matchRect.append(match_result['rectangle'])
+            rect = array([match_result['rectangle'][0],match_result['rectangle'][1],match_result['rectangle'][3],match_result['rectangle'][2]])
+            fillConvexPoly(imsrc,rect,0)
         else:
             break
-        imsrc = imread(tempDir + '/temp.png')
-        imgTemp = Image.open(tempDir + '/temp.png')
-
-    #delImg(imgsrc)
-    #delImg(tempDir + '/temp.png')
-    return matchPositionXY if matchPositionXY != [] else None
+    if debugMode:
+        imshow('img', imsrc)
+        waitKey(0)
+    return [matchPositionXY,imsrc,matchRect] if matchPositionXY != [] else [None,imsrc,None]
     
-def levelOcr(imgsrc, tempDir):
-    cwd = getcwd()
+def levelOcr(imgsrc):
     allNumList = []
     confidence = 0.88 #调试时使用相似度
 
-    for num in fontLibraryW:
-        oneNumList = matchMultiImg(imgsrc, cwd + "/res/fontLibrary/W/" + num, tempDir,confidencevalue=confidence)
-        if oneNumList == None:
-            continue
-        else:
-            for each in oneNumList:
-                each.append(path.splitext(num)[0])
-            allNumList.extend(oneNumList)
-            oneNumList = []
-
+    mask = zeros((810,1440),dtype = "uint8")
+    nowLevel = imread(imgsrc)
+    operationList = matchMultiImg(nowLevel, cwd + "/res/fontLibrary/other/OPERATION.png", colorSpace=0)
+    if operationList[2] != None:
+        for eachRect in operationList[2]:
+            opRect = array([(eachRect[0][0]-45,eachRect[0][1]),(eachRect[0][0]+106,eachRect[0][1]),
+                            (eachRect[0][0]+106,eachRect[0][1]+50),(eachRect[0][0]-45,eachRect[0][1]+50)])
+            fillConvexPoly(mask,opRect,(255,255,255))
+    operationWGList = matchMultiImg(nowLevel, cwd + "/res/fontLibrary/other/OPERATIONWG.png", colorSpace=0)
+    if operationWGList[2] != None:
+        for eachRect in operationWGList[2]:
+            opRect = array([(eachRect[0][0]-45,eachRect[0][1]),(eachRect[0][0]+106,eachRect[0][1]),
+                            (eachRect[0][0]+106,eachRect[0][1]+50),(eachRect[0][0]-45,eachRect[0][1]+50)])
+            fillConvexPoly(mask,opRect,(255,255,255))
+    #cv2.imshow('mask',mask)
+    #cv2.waitKey(0)
+    nowLevel = copyTo(nowLevel,mask)
+    #imshow('op',nowLevel)
+    #waitKey(0)
     for num in fontLibraryB:
-        oneNumList = matchMultiImg(imgsrc, cwd + "/res/fontLibrary/B/" + num, tempDir, confidencevalue=confidence)
+        matchResult = matchMultiImg(nowLevel, cwd + "/res/fontLibrary/B/" + num, confidencevalue=confidence, colorSpace=0)
+        oneNumList = matchResult[0]
+        #nowLevel = matchResult[1]
         if oneNumList == None:
             continue
         else:
@@ -100,7 +109,19 @@ def levelOcr(imgsrc, tempDir):
                 each.append(path.splitext(num)[0])
             allNumList.extend(oneNumList)
             oneNumList = []
-
+    #cv2.imshow('B',nowLevel)
+    #cv2.waitKey(0)
+    for num in fontLibraryW:
+        oneNumList = matchMultiImg(nowLevel, cwd + "/res/fontLibrary/W/" + num, confidencevalue=confidence, colorSpace=0, debugMode=False)[0]
+        if oneNumList == None:
+            continue
+        else:
+            for each in oneNumList:
+                each.append(path.splitext(num)[0])
+            allNumList.extend(oneNumList)
+            oneNumList = []
+    #cv2.imshow('W',nowLevel)
+    #cv2.waitKey(0)
     if allNumList == []:
         return None
     
@@ -108,6 +129,8 @@ def levelOcr(imgsrc, tempDir):
     
 
 def levelAnalyse(levelList):
+    if levelList == []:
+        return dict()
     levelList.sort(key = lambda x:x[0])
 
     count = 0
@@ -117,51 +140,36 @@ def levelAnalyse(levelList):
     eachNum = 0
     interval = 1
     beginNum = 0
-    lineList = []
+    sndList = []
     dictResult = dict()
-    while eachNum <= len(levelList):
-        if eachNum == len(levelList):
-            dictResult[totalNum] = (int(totalx / count), int(totaly / count))
-            if lineList != []:
-                dictResult_temp = levelAnalyse(lineList)
-                dictResult.update(dictResult_temp)
-            break
-        elif eachNum == beginNum:
-            totalx += levelList[beginNum][0]
-            totaly += levelList[beginNum][1]
-            totalNum += levelList[beginNum][2]
-            count += 1
-            eachNum += 1
-            
-        else:
-            if ((levelList[eachNum][0] - levelList[eachNum - interval][0]) > 50) and ((levelList[eachNum][0] - levelList[eachNum - 1][0]) < 50):
-                interval += 1
-                lineList.append(levelList[eachNum])
-                eachNum += 1
-                continue
-            if (levelList[eachNum][0] - levelList[eachNum - interval][0]) < 50:
-                if (abs(levelList[eachNum][1] - levelList[eachNum - interval][1])) < 50:
-                    totalx += levelList[eachNum][0]
-                    totaly += levelList[eachNum][1]
-                    totalNum += levelList[eachNum][2]
-                    interval = 1
-                    count += 1
-                    eachNum += 1
-                else:
-                    interval += 1
-                    lineList.append(levelList[eachNum])
-                    eachNum += 1    
-            else:
-                dictResult[totalNum] = (int(totalx / count), int(totaly / count))
-                interval = 1
-                totalx = 0
-                totaly = 0
-                totalNum = ''
-                count = 0
-                beginNum = eachNum
-                continue
+    lastx = levelList[0][0]
+    lasty = levelList[0][1]
 
+    for eachLetter in levelList:
+        
+        if eachLetter[0] - lastx <40:
+            if abs(eachLetter[1] - lasty) < 5:
+                if eachLetter[0] - lastx <25:
+                    totalNum += eachLetter[2]
+                else:
+                    totalNum = totalNum + '-' + eachLetter[2]
+                lastx = eachLetter[0]
+                lasty = eachLetter[1]
+            else:
+                sndList.append(eachLetter)
+                continue
+        else:
+            dictResult[totalNum] = [lastx,lasty]
+            lastx = eachLetter[0]
+            lasty = eachLetter[1]
+            totalNum = eachLetter[2]
+        
+    dictResult[totalNum] = [lastx,lasty]
+    sndrResult = levelAnalyse(sndList)
+    dictResult.update(sndrResult)
+    
     return dictResult
 
-fontLibraryB = listdir(getcwd() + "/res/fontLibrary/B")
-fontLibraryW = listdir(getcwd() + "/res/fontLibrary/W")
+cwd = getcwd()
+fontLibraryB = listdir(cwd + "/res/fontLibrary/B")
+fontLibraryW = listdir(cwd + "/res/fontLibrary/W")
