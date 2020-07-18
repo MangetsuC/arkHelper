@@ -1,0 +1,15 @@
+{
+"levels":[
+{
+	"part":"EX",
+	"chap":"ex1",
+	"objLevel":"ex1",
+	"times":"3"
+},
+{
+	"part":"EX",
+	"chap":"ex3",
+	"objLevel":"ex3",
+	"times":"1"
+}
+]}

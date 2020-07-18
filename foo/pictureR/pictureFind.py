@@ -168,6 +168,7 @@ def levelAnalyse(levelList):
     sndrResult = levelAnalyse(sndList)
     dictResult.update(sndrResult)
     
+    #print(dictResult)  #调试时启用
     return dictResult
 
 cwd = getcwd()

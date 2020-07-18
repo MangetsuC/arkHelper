@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QDesktopWidget,
 
 from foo.adb.adbCtrl import Adb
 from foo.arknight.Battle import BattleLoop
+from foo.arknight.Schedule import BattleSchedule
 from foo.arknight.task import Task
 from foo.arknight.credit import Credit
 from foo.ui.console import Console
@@ -204,6 +205,7 @@ class App(QWidget):
     def initClass(self):
         self.adb = Adb(self.cwd + '/bin/adb', self.config)
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
+        self.schedule = BattleSchedule(self.adb, self.cwd) #处于测试
         self.task = Task(self.adb, self.cwd, self.ico)
         self.credit = Credit(self.adb, self.cwd)
         self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall) #公开招募
@@ -385,6 +387,7 @@ class App(QWidget):
 
     def start(self):
         self.doctorFlag = self.battle.connect()
+        #self.schedule.run(self.doctorFlag)
         if self.doctorFlag and self.battleFlag:
             self.battle.run(self.doctorFlag)
         if self.doctorFlag and self.taskFlag:
@@ -399,6 +402,7 @@ class App(QWidget):
 
     def stop(self):
         self.doctorFlag = False
+        self.schedule.stop()
         self.battle.stop()
         self.task.stop()
         self.credit.stop()

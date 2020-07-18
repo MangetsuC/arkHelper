@@ -134,3 +134,20 @@ class Adb:
             .format(x, y, device = self.ip))
         if isSleep:
             sleep(1)
+    
+    def swipe(self,x0, y0, x1, y1, lastTime = 1000):
+        x0 = (x0 / 1440) * self.screenX
+        y0 = (int(y0) / 810) * self.screenY
+        x1 = (x1 / 1440) * self.screenX
+        y1 = (int(y1) / 810) * self.screenY
+        self.cmd.run('adb -s {device} shell input swipe {x0_start} {y0_start} {x1_end} {y1_end} {time}'.\
+                    format(device = self.ip, x0_start = x0, y0_start = y0, x1_end = x1, y1_end = y1, time = lastTime))
+        pass
+
+    def speedToLeft(self):
+        self.swipe(0,405,1440,405,100)
+        sleep(1)
+
+    def onePageRight(self):
+        self.swipe(450,405,0,405,1000)
+        sleep(1)

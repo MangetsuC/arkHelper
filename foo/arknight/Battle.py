@@ -14,7 +14,7 @@ class BattleLoop:
         self.switch = False
         self.connectSwitch = False
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
-        self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(cwd + "/res/battle")])
+        self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
         self.startA = pictureFind.picRead(self.cwd + "/res/battle/startApart.png")
         self.autoOff = pictureFind.picRead(self.cwd + "/res/panel/other/autoOff.png")
         self.autoOn = pictureFind.picRead(self.cwd + "/res/panel/other/autoOn.png")
