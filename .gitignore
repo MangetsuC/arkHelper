@@ -131,6 +131,7 @@ dmypy.json
 #vscode:
 .vscode
 arkHelper.code-workspace
+.pylintrc
 
 #python:
 foo/**/__pycache__/
