@@ -28,7 +28,7 @@ class JsonEdit(QWidget):
         self.setWindowIcon(QIcon(ico))
         self.isshow = False
         self.json = getcwd() + '/schedule.json'
-        self.scheduleAdd = {'part':'MAIN', 'chap':None, 'objLevel':None, 'times':None}
+        self.scheduleAdd = {'part':'MAIN', 'chap':'', 'objLevel':'', 'times':''}
         self.transEX = {'ex1':'切尔诺伯格','ex2':'龙门外环','ex3':'龙门市区'}
 
         self.partList = ['主线','物资筹备','芯片搜索','剿灭作战']
@@ -244,7 +244,9 @@ class JsonEdit(QWidget):
     
     def addLine(self):
         tempLevel = self.level2Edit.text()
+        self.scheduleAdd['objLevel'] = tempLevel
         tempTimes = self.timeEdit.text()
+        self.scheduleAdd['times'] = tempTimes
         if 'ex' in self.scheduleAdd['chap']:
             self.scheduleAdd['objLevel'] = self.scheduleAdd['chap']
         elif tempLevel != '':
@@ -254,7 +256,7 @@ class JsonEdit(QWidget):
             self.scheduleAdd['objLevel'] = part1 + '-' + tempLevel
         if tempTimes.isdecimal():
                 self.scheduleAdd['times'] = tempTimes
-        if self.scheduleAdd['objLevel'] != None and self.scheduleAdd['times'] != None:
+        if self.scheduleAdd['objLevel'] != '' and self.scheduleAdd['times'] != '':
             self.jsonDict.append(self.scheduleAdd.copy())
             self.refreshJsonView()
     
