@@ -124,7 +124,7 @@ class UIPublicCall(QDialog):
     def myTimer(self):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateBrowser)
-        self.timer.start(100)
+        self.timer.start(10)
         
 
     def updateUI(self):
@@ -139,7 +139,6 @@ class UIPublicCall(QDialog):
 
     def turnOff(self):
         self.monitorFlag = False
-        self.monitorFlag = False
         #self.timer.stop()
         self.hide()
         self.thSetText.join()
@@ -150,9 +149,13 @@ class UIPublicCall(QDialog):
             self.btnCheck.setChecked(False)
             self.turnOff()
         else:
+            if self.monitorFlag:
+                self.thSetText.join()
             event.accept()
 
     def exit(self):
         self.isExit = True
+        self.totalFlag = False
+        self.timer.stop()
         self.close()
 

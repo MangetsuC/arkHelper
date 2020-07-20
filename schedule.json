@@ -1,15 +1,13 @@
 {
-"levels":[
+"levels": [
 {
-	"part":"EX",
-	"chap":"ex1",
-	"objLevel":"ex1",
-	"times":"3"
-},
+	"part": "RS",
+	"chap": "CE",
+	"objLevel": "CE-5",
+	"times": "3"},
 {
-	"part":"EX",
-	"chap":"ex3",
-	"objLevel":"ex3",
-	"times":"1"
-}
+	"part": "EX",
+	"chap": "ex1",
+	"objLevel": "ex1",
+	"times": "3"}
 ]}

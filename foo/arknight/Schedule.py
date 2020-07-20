@@ -236,22 +236,9 @@ class BattleSchedule:
         data = loads(data)
         return data
 
-    def updateJson(self):
-        newData = dumps(self.levelSchedule)
-        newData = newData.replace(',',',\n')
-        newData = newData.replace('[','[\n')
-        newData = newData.replace('{','{\n')
-        newData = newData.replace(']','\n]')
-        newData = newData.replace(' {','{')
-        newData = newData.replace('\"part\"','\t\"part\"')
-        newData = newData.replace(' \"chap\"','\t\"chap\"')
-        newData = newData.replace(' \"objLevel\"','\t\"objLevel\"')
-        newData = newData.replace(' \"times\"','\t\"times\"')
-        with open(self.json,'w') as j:
-            j.write(newData)
-
     def run(self, switchI):
         self.switch = switchI
+        self.levelSchedule = self.readJson()
         levelList = self.levelSchedule['levels']
         for eachLevel in levelList:
             if not self.switch:

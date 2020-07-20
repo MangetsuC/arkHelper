@@ -17,6 +17,7 @@ from foo.arknight.task import Task
 from foo.arknight.credit import Credit
 from foo.ui.console import Console
 from foo.ui.UIPublicCall import UIPublicCall
+from foo.ui.UIschedule import JsonEdit
 
 
 class App(QWidget):
@@ -45,6 +46,7 @@ class App(QWidget):
                                 QPushButton:checked{background:#70bbe4;}
                                 QInputDialog{background-color:#272626;}''')
 
+        
         self.btnStartAndStop = QPushButton('启动虚拟博士', self) #启动/停止按钮
         self.btnStartAndStop.setFixedSize(180, 131)
         self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
@@ -59,6 +61,15 @@ class App(QWidget):
         self.tbBattle.setCheckable(True)
         self.tbBattle.setFixedSize(75, 40)
         self.tbBattle.clicked[bool].connect(self.functionSel)
+
+        self.tbSchedule = QPushButton('计划战斗', self) #计划战斗可选按钮
+        self.tbSchedule.setCheckable(True)
+        self.tbSchedule.setFixedSize(75, 40)
+        self.tbSchedule.clicked[bool].connect(self.functionSel)
+
+        self.btnSchJson = QPushButton('路线规划', self) #更改计划json
+        self.btnSchJson.setFixedSize(155, 40)
+        self.btnSchJson.clicked.connect(self.openSchEdit)
 
         self.tbTask = QPushButton('任务交付', self) #任务交付可选按钮
         self.tbTask.setCheckable(True)
@@ -120,7 +131,7 @@ class App(QWidget):
         self.btnMin.clicked.connect(self.minimize)
 
         self.btnClose = QPushButton('退出',self) #退出按钮
-        self.btnClose.setFixedSize(155, 40)
+        self.btnClose.setFixedSize(75, 85)
         self.btnClose.clicked.connect(self.exit)
         
         self.lNotice = QLabel('按此处可拖动窗口')
@@ -132,13 +143,15 @@ class App(QWidget):
         self.grid.addWidget(self.btnStartAndStop, 0, 0, 3, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnMonitorPublicCall, 3, 0, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbSchedule, 0, 4, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbCredit, 0, 3, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbShutdown, 1, 1, 1, 2)
         self.grid.addWidget(self.btnMin, 1, 3, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnClose, 2, 2, 1, 2, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.lNotice, 3, 2, 1, 2, alignment=Qt.AlignRight)
+        self.grid.addWidget(self.btnClose, 1, 4, 2, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnSchJson, 2, 2, 1, 2, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.lNotice, 3, 3, 1, 2, alignment=Qt.AlignRight)
 
         self.setLayout(self.grid)
 
@@ -148,6 +161,9 @@ class App(QWidget):
         #战斗按钮
         self.tbBattle.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tbBattle.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        #计划战斗按钮
+        self.tbSchedule.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tbSchedule.customContextMenuRequested.connect(self.functionDefaultSetMeun)
         #任务按钮
         self.tbTask.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tbTask.customContextMenuRequested.connect(self.functionDefaultSetMeun)
@@ -176,6 +192,7 @@ class App(QWidget):
         self.btnMainClicked = False
 
         self.battleFlag = None
+        self.scheduleFlag = None
         self.taskFlag = None
         self.creditFlag = None
         self.shutdownFlag = None
@@ -188,6 +205,8 @@ class App(QWidget):
         #功能开关
         self.battleFlag = self.config.getboolean('function', 'battle')
         self.tbBattle.setChecked(self.battleFlag) #战斗选项
+        self.scheduleFlag = self.config.getboolean('function', 'schedule')
+        self.tbSchedule.setChecked(self.scheduleFlag)
         self.taskFlag = self.config.getboolean('function', 'task')
         self.tbTask.setChecked(self.taskFlag) #任务选项
         self.creditFlag = self.config.getboolean('function', 'credit')
@@ -209,6 +228,7 @@ class App(QWidget):
         self.task = Task(self.adb, self.cwd, self.ico)
         self.credit = Credit(self.adb, self.cwd)
         self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall) #公开招募
+        self.schJsonEditer = JsonEdit(self.ico)
 
     def initSlrSel(self):
         '初始化模拟器选择'
@@ -261,6 +281,11 @@ class App(QWidget):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
+        elif self.source.text() == '计划战斗':
+            if self.config.getboolean('function', 'schedule'):
+                text = '设为默认关闭'
+            else:
+                text = '设为默认开启'
         elif self.source.text() == '任务交付':
             if self.config.getboolean('function', 'task'):
                 text = '设为默认关闭'
@@ -293,6 +318,9 @@ class App(QWidget):
         if self.source.text() == '战斗':
             key = 'battle'
             value = not self.config.getboolean('function', 'battle')
+        elif self.source.text() == '计划战斗':
+            key = 'schedule'
+            value = not self.config.getboolean('function', 'schedule')
         elif self.source.text() == '任务交付':
             key = 'task'
             value = not self.config.getboolean('function', 'task')
@@ -312,6 +340,8 @@ class App(QWidget):
         source = self.sender()
         if source.text() == '战斗':
             self.battleFlag = isChecked
+        elif source.text() == '计划战斗':
+            self.scheduleFlag = isChecked
         elif source.text() == '任务交付':
             self.taskFlag = isChecked
         elif source.text() == '获取信用':
@@ -319,6 +349,9 @@ class App(QWidget):
         elif source.text() == '完成后关机':
             self.shutdownFlag = isChecked
 
+    def openSchEdit(self):
+        self.schJsonEditer.editerShow()
+    
     def monitorPC(self, isChecked):
         if isChecked:
             self.publicCall.turnOn()
@@ -368,6 +401,7 @@ class App(QWidget):
         
     def exit(self):
         '退出按钮'
+        self.schJsonEditer.close()
         self.hide()
         self.stop()
         self.console.exit()
@@ -387,7 +421,8 @@ class App(QWidget):
 
     def start(self):
         self.doctorFlag = self.battle.connect()
-        #self.schedule.run(self.doctorFlag)
+        if self.scheduleFlag:
+            self.schedule.run(self.doctorFlag)
         if self.doctorFlag and self.battleFlag:
             self.battle.run(self.doctorFlag)
         if self.doctorFlag and self.taskFlag:
@@ -408,16 +443,11 @@ class App(QWidget):
         self.credit.stop()
         self.btnMainClicked = False
         self.btnStartAndStop.setText('启动虚拟博士')
-        if self.btnMonitorPublicCall.isChecked():
-            self.publicCall.turnOn()
 
     def clickBtnStartAndStop(self):
         self.btnMainClicked = not self.btnMainClicked
         if self.btnMainClicked:
             self.btnStartAndStop.setText('停止虚拟博士')
-            if self.btnMonitorPublicCall.isChecked():
-                
-                self.publicCall.turnOff()
             self.thRun = Thread(target=self.start)
             self.thRun.setDaemon(True)
             self.thRun.start()
