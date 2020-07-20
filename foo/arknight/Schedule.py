@@ -215,7 +215,7 @@ class BattleSchedule:
                             self.switchB = False
                             return True
                         picPos = picInfo['result']
-                        self.adb.click(picPos[0], picPos[1], isSleep = False)
+                        self.adb.click(picPos[0], picPos[1], isSleep = True)
                         if eachObj['obj'] == "cancel.png":
                             self.switch = False
                             self.switchB = False
@@ -246,26 +246,3 @@ class BattleSchedule:
     def stop(self):
         self.switch = False
         self.switchB = False
-
-
-if __name__ == "__main__":
-    with open('E:/workSpace/CodeRelease/arknightHelper/arkHelper/schedule.json','r') as s:
-            data = s.read()
-    #data = data.replace('\n','')
-    #data = data.replace('	','')
-    print(data)
-    data = loads(data)
-    print(data)
-    newData = dumps(data)
-    newData = newData.replace(',',',\n')
-    newData = newData.replace('[','[\n')
-    newData = newData.replace('{','{\n')
-    newData = newData.replace(']','\n]')
-    newData = newData.replace(' {','{')
-    newData = newData.replace('\"part\"','\t\"part\"')
-    newData = newData.replace(' \"chap\"','\t\"chap\"')
-    newData = newData.replace(' \"objLevel\"','\t\"objLevel\"')
-    newData = newData.replace(' \"times\"','\t\"times\"')
-    with open('E:/workSpace/CodeRelease/arknightHelper/test.json','w') as s:
-            data = s.write(newData)
-    print(newData)

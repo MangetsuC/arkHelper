@@ -125,6 +125,10 @@ class JsonEdit(QWidget):
         else:
             self.close()
 
+    def closeEvent(self,event):
+        self.isshow = False
+        event.accept()
+
     def myTimer(self):
         self.updateTimer = QTimer()
         self.updateTimer.timeout.connect(self.updateList)

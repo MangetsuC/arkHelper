@@ -99,7 +99,7 @@ class BattleLoop:
                         #print(eachObj+ '：', picInfo)
                         if picInfo != None:
                             picPos = picInfo['result']
-                            self.adb.click(picPos[0], picPos[1], isSleep = False)
+                            self.adb.click(picPos[0], picPos[1], isSleep = True)
                             if eachObj['obj'] == "cancel.png":
                                 self.switch = False
                                 toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
