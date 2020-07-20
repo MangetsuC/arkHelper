@@ -118,9 +118,6 @@ class JsonEdit(QWidget):
         self.myTimer()
         #self.show()
 
-        a = self.geometry().topLeft()
-        print(a)
-
     def editerShow(self):
         self.isshow = not self.isshow
         if self.isshow:
