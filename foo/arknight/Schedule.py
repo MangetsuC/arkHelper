@@ -161,14 +161,6 @@ class BattleSchedule:
         totalCount = 0
         twiceTry = 0
         while self.switch and self.switchB:
-            picInfoCompare = pictureFind.matchImg(self.screenShot, self.cwd + "/bin/adb/check.png", confidencevalue= 0.9)
-            if picInfoCompare != None:
-                twiceTry += 1
-            else:
-                twiceTry = 0
-            if twiceTry > 1:
-                twiceTry -= 1
-                continue
             
             self.adb.screenShot()
             #判断代理指挥是否勾选
