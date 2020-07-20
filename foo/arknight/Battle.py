@@ -44,22 +44,6 @@ class BattleLoop:
         if self.switch:
             twiceTry = 0
             while self.switch:
-                isSSSuccess = self.adb.screenShot(pngName = 'check')
-                if not isSSSuccess:
-                    toast.broadcastMsg("ArkHelper", "获取屏幕信息失败，请重启模拟器", self.ico)
-                    print('unable to get screenshot')
-                    self.switch = False
-                    break
-
-                picInfoCompare = pictureFind.matchImg(self.screenShot, self.cwd + "/bin/adb/check.png", confidencevalue= 0.9)
-                if picInfoCompare != None:
-                    twiceTry += 1
-                else:
-                    twiceTry = 0
-                if twiceTry > 1:
-                    twiceTry -= 1
-                    continue
-                
                 self.adb.screenShot()
                 #判断代理指挥是否勾选
                 if isFirstTurn:
