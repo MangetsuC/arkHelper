@@ -1,20 +1,20 @@
 import sys
-from webbrowser import open as openUrl
 from configparser import ConfigParser
-from os import getcwd
+from os import getcwd, path
 from threading import Thread
+from webbrowser import open as openUrl
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QMouseEvent, QCursor, QScreen
+from PyQt5.QtGui import QCursor, QIcon, QMouseEvent, QScreen
 from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QDesktopWidget,
                              QGridLayout, QInputDialog, QLabel, QMenu,
                              QPushButton, QWidget)
 
 from foo.adb.adbCtrl import Adb
 from foo.arknight.Battle import BattleLoop
+from foo.arknight.credit import Credit
 from foo.arknight.Schedule import BattleSchedule
 from foo.arknight.task import Task
-from foo.arknight.credit import Credit
 from foo.ui.console import Console
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
@@ -24,6 +24,7 @@ class App(QWidget):
     def __init__(self):
         super().__init__()
         self.initVar()
+        self.initFile()
         self.initUI()
         self.initClass()
         self.initRightClickMeun()
@@ -32,6 +33,12 @@ class App(QWidget):
         self.show()
         #self.publicCall.start()
         
+    def initFile(self):
+        if not path.exists(self.cwd + '/schedule.json'):
+            with open(self.cwd + '/schedule.json', 'w') as j:
+                j.write('{\n\"levels\":[\n]}')
+    
+    
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
@@ -224,7 +231,7 @@ class App(QWidget):
     def initClass(self):
         self.adb = Adb(self.cwd + '/bin/adb', self.config)
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
-        self.schedule = BattleSchedule(self.adb, self.cwd) #处于测试
+        self.schedule = BattleSchedule(self.adb, self.cwd, self.ico) #处于测试
         self.task = Task(self.adb, self.cwd, self.ico)
         self.credit = Credit(self.adb, self.cwd)
         self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall) #公开招募

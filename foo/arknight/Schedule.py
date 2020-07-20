@@ -9,9 +9,10 @@ from foo.pictureR import pictureFind
 from foo.win import toast
 
 class BattleSchedule:
-    def __init__(self, adb, cwd):
+    def __init__(self, adb, cwd, ico):
         self.cwd = cwd
         self.adb = adb
+        self.ico = ico
         self.json = self.cwd + '/schedule.json'
         self.levelSchedule = self.readJson()
         self.switch = False

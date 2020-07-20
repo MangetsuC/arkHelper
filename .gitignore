@@ -141,3 +141,5 @@ __pycache__/
 bin/adb/*.png
 foo/adb/getSource.py
 foo/pictureR/picMatchTest.py
+
+schedule.json
