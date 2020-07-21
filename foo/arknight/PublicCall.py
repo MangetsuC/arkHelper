@@ -1,6 +1,6 @@
 from os import getcwd, listdir
 from sys import path
-from time import perf_counter
+from time import perf_counter,sleep
 from aircv import imread
 from threading import Thread, Lock
 
@@ -47,6 +47,8 @@ class PublicCall:
         '支援机械':[[10,'Castle-3'],[10,'Lancet-2'],[10,'THRM-EX']]}
 
         self.adb = adb
+        self.srcBefore = None
+        self.regAns = None
         #self.battle = battle
         self.cwd = cwd
         self.screenShot = self.cwd + '/bin/adb/PCScreenshot.png'
@@ -284,12 +286,33 @@ class PublicCall:
     def run(self):
         self.adb.screenShot(pngName='PCScreenshot')
         src = imread(self.screenShot)
-        while True:
-            tempTagList = self.getTag(src)
-            if tempTagList == [] or len(tempTagList) == 5:
-                break
-        #print(tempTagList)
-        return self.getAns(tempTagList)
+        if self.srcBefore != None:
+            isSame = pictureFind.matchImg(src,self.srcBefore,confidencevalue=0.99)
+            if isSame == None:
+                self.srcBefore = {'pic':src,'obj':'tags'}
+                while True:
+                    tempTagList = self.getTag(src)
+                    if tempTagList == [] or len(tempTagList) == 5:
+                        break
+                    elif '资深干员' in tempTagList and '高级资深干员' in tempTagList:
+                        tempTagList.remove('资深干员')
+                        break
+                #print(tempTagList)
+                self.regAns = self.getAns(tempTagList)
+            else:
+                sleep(0.5)
+        else:
+            self.srcBefore = {'pic':src,'obj':'tags'}
+            while True:
+                tempTagList = self.getTag(src)
+                if tempTagList == [] or len(tempTagList) == 5:
+                    break
+                elif '资深干员' in tempTagList and '高级资深干员' in tempTagList:
+                    tempTagList.remove('资深干员')
+                    break
+                #print(tempTagList)
+            self.regAns = self.getAns(tempTagList)
+        return self.regAns
 
 
 if __name__ == "__main__":
