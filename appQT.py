@@ -37,7 +37,7 @@ class App(QWidget):
         self.cwd = getcwd().replace('\\', '/')
         
         if not path.exists(self.cwd + '/config.ini'):
-            with open(self.cwd + '/config.ini') as c:
+            with open(self.cwd + '/config.ini', 'w') as c:
                 c.write('')
 
         self.configPath = self.cwd + '/config.ini'  #读
@@ -266,10 +266,10 @@ class App(QWidget):
         self.tbCredit.setChecked(self.creditFlag)
 
         self.shutdownFlag = self.config.getboolean('function', 'shutdown')
-        self.tbShutdown.setChecked(self.creditFlag) #自动关机
+        self.tbShutdown.setChecked(self.shutdownFlag) #自动关机
 
         self.PCFlag = self.config.getboolean('function', 'publiccall')
-        self.btnMonitorPublicCall.setChecked(self.creditFlag)
+        self.btnMonitorPublicCall.setChecked(self.PCFlag)
         if self.PCFlag:
             self.publicCall.turnOn()
         pass
