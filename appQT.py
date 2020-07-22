@@ -23,8 +23,8 @@ from foo.ui.UIschedule import JsonEdit
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.initVar()
         self.initFile()
+        self.initVar()
         self.initUI()
         self.initClass()
         self.initRightClickMeun()
@@ -34,9 +34,60 @@ class App(QWidget):
         #self.publicCall.start()
         
     def initFile(self):
+        self.cwd = getcwd().replace('\\', '/')
+        
+        if not path.exists(self.cwd + '/config.ini'):
+            with open(self.cwd + '/config.ini') as c:
+                c.write('')
+
+        self.configPath = self.cwd + '/config.ini'  #读
+        self.config = ConfigParser()
+        self.config.read(filenames=self.configPath, encoding="UTF-8")
+
+        isNeedWrite = False
+        if not self.config.has_section('connect'):
+            self.config.add_section('connect')
+            isNeedWrite = True
+        if not self.config.has_option('connect', 'ip'):
+            self.config.set('connect','ip','127.0.0.1')
+            isNeedWrite = True
+        if not self.config.has_option('connect', 'port'):
+            self.config.set('connect','port','5555')
+            isNeedWrite = True
+        if not self.config.has_option('connect', 'simulator'):
+            self.config.set('connect','simulator','bluestacks')
+            isNeedWrite = True
+
+        if not self.config.has_section('function'):
+            self.config.add_section('function')
+            isNeedWrite = True
+        if not self.config.has_option('function', 'battle'):
+            self.config.set('function','battle','True')
+            isNeedWrite = True
+        if not self.config.has_option('function', 'schedule'):
+            self.config.set('function','schedule','False')
+            isNeedWrite = True
+        if not self.config.has_option('function', 'task'):
+            self.config.set('function','task','True')
+            isNeedWrite = True
+        if not self.config.has_option('function', 'credit'):
+            self.config.set('function','credit','False')
+            isNeedWrite = True
+        if not self.config.has_option('function', 'shutdown'):
+            self.config.set('function','shutdown','False')
+            isNeedWrite = True
+        if not self.config.has_option('function', 'publiccall'):
+            self.config.set('function','publiccall','False')
+            isNeedWrite = True
+
+        if isNeedWrite:
+            configInI = open(self.configPath, 'w')  #写
+            self.config.write(configInI)
+            configInI.close()  #配置文件初始化结束
+
         if not path.exists(self.cwd + '/schedule.json'):
             with open(self.cwd + '/schedule.json', 'w') as j:
-                j.write('{\n\"levels\":[\n]}')
+                j.write('{\n\"levels\":[\n]}')  #计划json初始化结束
     
     
     def initUI(self): 
@@ -185,16 +236,11 @@ class App(QWidget):
         self.btnMonitorPublicCall.customContextMenuRequested.connect(self.functionDefaultSetMeun)
 
     def initVar(self):
-        self.cwd = getcwd().replace('\\', '/')
 
         self.ico = self.cwd + '/res/ico.ico'
         self.selectedPNG = self.cwd + '/res/gui/selected.png'
 
         self.console = Console(self.cwd) #接管输出与报错
-
-        self.configPath = self.cwd + '/config.ini'
-        self.config = ConfigParser()
-        self.config.read(filenames=self.configPath, encoding="UTF-8")
 
         self.btnMainClicked = False
 
