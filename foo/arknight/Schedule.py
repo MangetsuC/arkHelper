@@ -17,14 +17,28 @@ class BattleSchedule:
         self.levelSchedule = self.readJson()
         self.switch = False
         self.switchB = False
+        self.autoRecMed = False
+        self.autoRecStone = False
+        self.stoneMaxNum = 0
         self.imgInit()
 
+    def recChange(self, num, inputData):
+        if num == 0:
+            self.autoRecMed = inputData
+        elif num == 1:
+            self.autoRecStone = inputData
+        elif num == 2:
+            self.stoneMaxNum = inputData
+
     def imgInit(self):
+        self.recMed = pictureFind.picRead(self.cwd + "/res/panel/recovery/medicament.png")
+        self.recStone = pictureFind.picRead(self.cwd + "/res/panel/recovery/stone.png")
+        self.confirm = pictureFind.picRead(self.cwd + "/res/panel/recovery/confirm.png")
+
         self.exPos = {'ex1':(220,280),'ex2':(845,580),'ex3':(1230,340)}
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.act = self.cwd + "/res/panel/other/act.png"
         self.battle = self.cwd + "/res/panel/other/battle.png"
-        self.confirm = self.cwd + "/res/panel/other/confirm.png"
         self.home = self.cwd + "/res/panel/other/home.png"
         self.visitNext = self.cwd + "/res/panel/other/visitNext.png"
         self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
@@ -215,12 +229,63 @@ class BattleSchedule:
                             self.switchB = False
                             return True
                         picPos = picInfo['result']
-                        self.adb.click(picPos[0], picPos[1], isSleep = True)
+                        '''self.adb.click(picPos[0], picPos[1], isSleep = True)
                         if eachObj['obj'] == "cancel.png":
                             self.switch = False
                             self.switchB = False
                             toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
                             return False
+                        break'''
+                        if eachObj['obj'] == "cancel.png":
+                            if self.autoRecMed or self.autoRecStone:
+                                medInfo = pictureFind.matchImg(self.screenShot, self.recMed)
+                                stoneInfo = pictureFind.matchImg(self.screenShot, self.recStone)
+                                confirmInfo = pictureFind.matchImg(self.screenShot, self.confirm)
+                                if (not self.autoRecMed) and (self.autoRecStone):
+                                    if medInfo != None and stoneInfo == None:
+                                        self.adb.click(medInfo['result'][0]+350, medInfo['result'][1], isSleep= True)
+                                        self.adb.screenShot()
+                                        medInfo = pictureFind.matchImg(self.screenShot, self.recMed)
+                                        stoneInfo = pictureFind.matchImg(self.screenShot, self.recStone)
+                                        if medInfo == None and stoneInfo != None:
+                                            if self.restStone >0:
+                                                self.adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
+                                                self.restStone -= 1
+                                                break
+                                    elif medInfo == None and stoneInfo != None:
+                                        if self.restStone >0:
+                                                self.adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
+                                                self.restStone -= 1
+                                                break
+                                    self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                    self.switch = False
+                                    self.switchB = False
+                                    toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                    return False
+                                else:
+                                    if self.autoRecMed:
+                                        if medInfo != None:
+                                            self.adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
+                                            break
+                                    if self.autoRecStone:
+                                        if stoneInfo != None:
+                                            if self.restStone >0:
+                                                self.adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
+                                                self.restStone -= 1
+                                                break
+                                    self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                    self.switch = False
+                                    self.switchB = False
+                                    toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                    return False
+                            else:
+                                self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                self.switch = False
+                                self.switchB = False
+                                toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                return False
+                        else:
+                            self.adb.click(picPos[0], picPos[1], isSleep = True)
                         break
     
     def readJson(self):
@@ -231,6 +296,7 @@ class BattleSchedule:
 
     def run(self, switchI):
         self.switch = switchI
+        self.restStone = self.stoneMaxNum
         self.levelSchedule = self.readJson()
         levelList = self.levelSchedule['levels']
         for eachLevel in levelList:

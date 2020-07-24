@@ -80,6 +80,29 @@ class App(QWidget):
             self.config.set('function','publiccall','False')
             isNeedWrite = True
 
+        if not self.config.has_section('medicament'):
+            self.config.add_section('medicament')
+            isNeedWrite = True
+        if not self.config.has_option('medicament', 'loop'):
+            self.config.set('medicament','loop','False')
+            isNeedWrite = True
+        if not self.config.has_option('medicament', 'schedule'):
+            self.config.set('medicament','schedule','False')
+            isNeedWrite = True
+
+        if not self.config.has_section('stone'):
+            self.config.add_section('stone')
+            isNeedWrite = True
+        if not self.config.has_option('stone', 'loop'):
+            self.config.set('stone','loop','False')
+            isNeedWrite = True
+        if not self.config.has_option('stone', 'schedule'):
+            self.config.set('stone','schedule','False')
+            isNeedWrite = True
+        if not self.config.has_option('stone', 'maxnum'):
+            self.config.set('stone','maxnum','0')
+            isNeedWrite = True
+
         if isNeedWrite:
             configInI = open(self.configPath, 'w')  #写
             self.config.write(configInI)
@@ -159,18 +182,41 @@ class App(QWidget):
         self.actSlrXiaoyao = QAction('逍遥模拟器', parent=self.actSimulator)
         self.actSlrLeidian = QAction('雷电模拟器', parent=self.actSimulator)
         self.actSlrCustom = QAction('自定义', parent=self.actSimulator)
-        
-        self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrYeshen, self.actSlrLeidian, self.actSlrCustom]
+
+        self.actRecovery = QMenu('额外理智', parent=self.settingMenu)
+        self.actMedicament = QMenu('理智顶液', parent=self.actRecovery)
+        self.actAtuoMedicament = QAction('自动使用（普通）', parent=self.actMedicament)
+        self.actAtuoMedicament.triggered.connect(self.changeRecStateMedLoop)
+        self.actAtuoMedicamentSch = QAction('自动使用（计划）', parent=self.actMedicament)
+        self.actAtuoMedicamentSch.triggered.connect(self.changeRecStateMedSche)
+        self.actStone = QMenu('源石', parent=self.actRecovery)
+        self.actAutoStone = QAction('自动使用（普通）', self.actStone)
+        self.actAutoStone.triggered.connect(self.changeRecStateStoneLoop)
+        self.actAutoStoneSche = QAction('自动使用（计划）', self.actStone)
+        self.actAutoStoneSche.triggered.connect(self.changeRecStateStoneSche)
+        self.actMaxNumber = QAction('设置上限', self.actStone)
+        self.actMaxNumber.triggered.connect(self.changeMaxNum)
 
         self.actConsole = QAction('控制台', parent=self.settingMenu)
         self.checkUpdate = QAction('检查更新', parent=self.settingMenu)
         self.index = QAction('访问主页', parent=self.settingMenu)
 
+
+        self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrYeshen, self.actSlrLeidian, self.actSlrCustom]
         #添加菜单选项
         self.settingMenu.addMenu(self.actSimulator) #模拟器二级菜单
         for eachSlr in self.slrList:
             self.actSimulator.addAction(eachSlr)
             eachSlr.triggered.connect(self.simulatorSel)
+
+        self.settingMenu.addMenu(self.actRecovery)
+        self.actRecovery.addMenu(self.actMedicament)
+        self.actRecovery.addMenu(self.actStone)
+        self.actMedicament.addAction(self.actAtuoMedicament)
+        self.actMedicament.addAction(self.actAtuoMedicamentSch)
+        self.actStone.addAction(self.actAutoStone)
+        self.actStone.addAction(self.actAutoStoneSche)
+        self.actStone.addAction(self.actMaxNumber)
 
         self.settingMenu.addAction(self.actConsole) #控制台
         self.actConsole.triggered.connect(self.console.showOrHide)
@@ -236,9 +282,9 @@ class App(QWidget):
         self.btnMonitorPublicCall.customContextMenuRequested.connect(self.functionDefaultSetMeun)
 
     def initVar(self):
-
         self.ico = self.cwd + '/res/ico.ico'
         self.selectedPNG = self.cwd + '/res/gui/selected.png'
+        self.unSelPNG = self.cwd + '/res/gui/unSelected.png'
 
         self.console = Console(self.cwd) #接管输出与报错
 
@@ -251,10 +297,95 @@ class App(QWidget):
         self.shutdownFlag = None
         self.doctorFlag = False
 
+    def changeRecStateMedLoop(self):
+        if self.autoMediFlag:
+            self.actAtuoMedicament.setIcon(QIcon(self.unSelPNG))
+            self.battle.recChange(0, False)
+        else:
+            self.actAtuoMedicament.setIcon(QIcon(self.selectedPNG))
+            self.battle.recChange(0, True)
+        self.autoMediFlag = not self.autoMediFlag
+        self.changeDefault('loop', self.autoMediFlag, 'medicament')
+
+    def changeRecStateMedSche(self):
+        if self.autoMediScheFlag:
+            self.actAtuoMedicamentSch.setIcon(QIcon(self.unSelPNG))
+            self.schedule.recChange(0, False)
+        else:
+            self.actAtuoMedicamentSch.setIcon(QIcon(self.selectedPNG))
+            self.schedule.recChange(0, True)
+        self.autoMediScheFlag = not self.autoMediScheFlag
+        self.changeDefault('schedule', self.autoMediScheFlag, 'medicament')
+
+    def changeRecStateStoneLoop(self):
+        if self.autoStoneFlag:
+            self.actAutoStone.setIcon(QIcon(self.unSelPNG))
+            self.battle.recChange(1, False)
+        else:
+            self.actAutoStone.setIcon(QIcon(self.selectedPNG))
+            self.battle.recChange(1, True)
+        self.autoStoneFlag = not self.autoStoneFlag
+        self.changeDefault('loop', self.autoStoneFlag, 'stone')
+
+    def changeRecStateStoneSche(self):
+        if self.autoStoneScheFlag:
+            self.actAutoStoneSche.setIcon(QIcon(self.unSelPNG))
+            self.schedule.recChange(1, False)
+        else:
+            self.actAutoStoneSche.setIcon(QIcon(self.selectedPNG))
+            self.schedule.recChange(1, True)
+        self.autoStoneScheFlag = not self.autoStoneScheFlag
+        self.changeDefault('schedule', self.autoStoneScheFlag, 'stone')
+
+    def changeMaxNum(self):
+        num, ok = QInputDialog.getText(self, f'当前（{self.stoneMaxNum}）', '请输入最大源石消耗数量：')
+        if ok:
+            if not num.isdecimal():
+                num = '0'
+
+            self.stoneMaxNum = int(num)
+            self.battle.recChange(2, int(num))
+            self.schedule.recChange(2, int(num))
+            self.changeDefault('maxnum', num, 'stone')
+            self.actMaxNumber.setText(f'设置上限（当前：{self.stoneMaxNum}）')
 
     def initState(self):
         self.initSlrSel()
         
+        #额外理智恢复设置初始化
+        self.autoMediFlag = self.config.getboolean('medicament', 'loop')
+        if self.autoMediFlag:
+            self.actAtuoMedicament.setIcon(QIcon(self.selectedPNG))
+            self.battle.recChange(0, True)
+        else:
+            self.actAtuoMedicament.setIcon(QIcon(self.unSelPNG))
+            self.battle.recChange(0, False)
+        self.autoMediScheFlag = self.config.getboolean('medicament', 'schedule')
+        if self.autoMediScheFlag:
+            self.actAtuoMedicamentSch.setIcon(QIcon(self.selectedPNG))
+            self.schedule.recChange(0, True)
+        else:
+            self.actAtuoMedicamentSch.setIcon(QIcon(self.unSelPNG))
+            self.schedule.recChange(0, False)
+        self.autoStoneFlag = self.config.getboolean('stone', 'loop')
+        if self.autoStoneFlag:
+            self.actAutoStone.setIcon(QIcon(self.selectedPNG))
+            self.battle.recChange(1, True)
+        else:
+            self.actAutoStone.setIcon(QIcon(self.unSelPNG))
+            self.battle.recChange(1, False)
+        self.autoStoneScheFlag = self.config.getboolean('stone', 'schedule')
+        if self.autoStoneScheFlag:
+            self.actAutoStoneSche.setIcon(QIcon(self.selectedPNG))
+            self.schedule.recChange(1, True)
+        else:
+            self.actAutoStoneSche.setIcon(QIcon(self.unSelPNG))
+            self.schedule.recChange(1, False)
+        self.stoneMaxNum = self.config.getint('stone', 'maxnum')
+        self.actMaxNumber.setText(f'设置上限（当前：{self.stoneMaxNum}）')
+        self.battle.recChange(2, self.stoneMaxNum)
+        self.schedule.recChange(2, self.stoneMaxNum)
+
         #功能开关
         self.battleFlag = self.config.getboolean('function', 'battle')
         self.tbBattle.setChecked(self.battleFlag) #战斗选项
@@ -421,8 +552,8 @@ class App(QWidget):
         configInI.close()
         self.adb.changeConfig(self.config)
 
-    def changeDefault(self, func, flag):
-        self.config.set('function', func, str(flag))
+    def changeDefault(self, func, flag, sec = 'function'):
+        self.config.set(sec, func, str(flag))
         configInI = open(self.configPath, 'w')
         self.config.write(configInI)
         configInI.close()

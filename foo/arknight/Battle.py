@@ -13,11 +13,28 @@ class BattleLoop:
         self.ico = ico
         self.switch = False
         self.connectSwitch = False
+        self.autoRecMed = False
+        self.autoRecStone = False
+        self.stoneMaxNum = 0
+
+
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
         self.startA = pictureFind.picRead(self.cwd + "/res/battle/startApart.png")
         self.autoOff = pictureFind.picRead(self.cwd + "/res/panel/other/autoOff.png")
         self.autoOn = pictureFind.picRead(self.cwd + "/res/panel/other/autoOn.png")
+
+        self.recMed = pictureFind.picRead(self.cwd + "/res/panel/recovery/medicament.png")
+        self.recStone = pictureFind.picRead(self.cwd + "/res/panel/recovery/stone.png")
+        self.confirm = pictureFind.picRead(self.cwd + "/res/panel/recovery/confirm.png")
+    
+    def recChange(self, num, inputData):
+        if num == 0:
+            self.autoRecMed = inputData
+        elif num == 1:
+            self.autoRecStone = inputData
+        elif num == 2:
+            self.stoneMaxNum = inputData
     
     def connect(self, broadcast = True):
         self.connectSwitch = True
@@ -38,6 +55,7 @@ class BattleLoop:
 
 
     def run(self, switchI):
+        restStone = self.stoneMaxNum
         isFirstTurn = True
         self.switch = switchI
 
@@ -83,10 +101,50 @@ class BattleLoop:
                         #print(eachObj+ '：', picInfo)
                         if picInfo != None:
                             picPos = picInfo['result']
-                            self.adb.click(picPos[0], picPos[1], isSleep = True)
                             if eachObj['obj'] == "cancel.png":
-                                self.switch = False
-                                toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                if self.autoRecMed or self.autoRecStone:
+                                    medInfo = pictureFind.matchImg(self.screenShot, self.recMed)
+                                    stoneInfo = pictureFind.matchImg(self.screenShot, self.recStone)
+                                    confirmInfo = pictureFind.matchImg(self.screenShot, self.confirm)
+                                    if (not self.autoRecMed) and (self.autoRecStone):
+                                        if medInfo != None and stoneInfo == None:
+                                            self.adb.click(medInfo['result'][0]+350, medInfo['result'][1], isSleep= True)
+                                            self.adb.screenShot()
+                                            medInfo = pictureFind.matchImg(self.screenShot, self.recMed)
+                                            stoneInfo = pictureFind.matchImg(self.screenShot, self.recStone)
+                                            if medInfo == None and stoneInfo != None:
+                                                if restStone >0:
+                                                    self.adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
+                                                    restStone -= 1
+                                                    break
+                                        elif medInfo == None and stoneInfo != None:
+                                            if restStone >0:
+                                                    self.adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
+                                                    restStone -= 1
+                                                    break
+                                        self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                        self.switch = False
+                                        toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                    else:
+                                        if self.autoRecMed:
+                                            if medInfo != None:
+                                                self.adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
+                                                break
+                                        if self.autoRecStone:
+                                            if stoneInfo != None:
+                                                if restStone >0:
+                                                    self.adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
+                                                    restStone -= 1
+                                                    break
+                                        self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                        self.switch = False
+                                        toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                else:
+                                    self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                    self.switch = False
+                                    toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                            else:
+                                self.adb.click(picPos[0], picPos[1], isSleep = True)
                             break
                 #sleep(1)
     def stop(self):
