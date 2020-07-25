@@ -18,6 +18,7 @@ from foo.arknight.task import Task
 from foo.ui.console import Console
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
+from foo.ui.launch import Launch
 
 
 class App(QWidget):
@@ -30,8 +31,8 @@ class App(QWidget):
         self.initRightClickMeun()
         self.initState()
         self.isRun = False
+        self.center()
         self.show()
-        #self.publicCall.start()
         
     def initFile(self):
         self.cwd = getcwd().replace('\\', '/')
@@ -116,8 +117,9 @@ class App(QWidget):
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
-        #self.setFixedSize(442,199)
-        self.center()
+        #self.setFixedSize(522,196)
+        self.resize(522,196)
+        
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
         self.setStyleSheet('''App{background:#272626}QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:9pt;}
@@ -641,5 +643,8 @@ class App(QWidget):
 if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
+    exLaunch = Launch()
+    app.processEvents()
     ex = App()
+    exLaunch.finish(ex)
     sys.exit(app.exec_())
