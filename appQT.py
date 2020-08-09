@@ -3,6 +3,7 @@ from configparser import ConfigParser
 from os import getcwd, path
 from threading import Thread
 from webbrowser import open as openUrl
+from json import loads,dumps
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor, QIcon, QMouseEvent, QScreen
@@ -110,8 +111,19 @@ class App(QWidget):
             configInI.close()  #配置文件初始化结束
 
         if not path.exists(self.cwd + '/schedule.json'):
-            with open(self.cwd + '/schedule.json', 'w') as j:
-                j.write('{\n\"levels\":[\n]}')  #计划json初始化结束
+            with open(self.cwd + '/schedule.json', 'w', encoding = 'UTF-8') as j:
+                j.write('{\n\t\"main\": [\n\t\t{\n\t\t\t\"allplan\": \"未选择\",\n\t\t\t\"sel\": []\n\t\t},\n\t\t{\n\t\t\t\"未选择\": []\n\t\t}\n\t]\n}')
+        else:
+            with open(self.cwd + '/schedule.json', 'r', encoding = 'UTF-8') as j:
+                tempText = j.read()
+            if 'allplan' not in tempText:
+                oldJson = loads(tempText)
+                newJson = dict()
+                newJson['main'] = [{'allplan':'未选择','sel':oldJson['levels']},{'未选择':[]}]
+                newJson = dumps(newJson, sort_keys=True, indent=4, separators=(',', ': '), ensure_ascii=False)
+                with open(self.cwd + '/schedule.json', 'w', encoding = 'UTF-8') as j:
+                    j.write(newJson)
+                #计划json初始化结束
     
     
     def initUI(self): 

@@ -289,7 +289,7 @@ class BattleSchedule:
                         break
     
     def readJson(self):
-        with open(self.json,'r') as s:
+        with open(self.json,'r', encoding='UTF-8') as s:
             data = s.read()
         data = loads(data)
         return data
@@ -298,7 +298,7 @@ class BattleSchedule:
         self.switch = switchI
         self.restStone = self.stoneMaxNum
         self.levelSchedule = self.readJson()
-        levelList = self.levelSchedule['levels']
+        levelList = self.levelSchedule['main'][0]['sel']
         for eachLevel in levelList:
             if not self.switch:
                 break

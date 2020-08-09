@@ -1,6 +1,6 @@
 import sys
 from os import getcwd
-from PyQt5.QtWidgets import QWidget,QApplication,QGridLayout,QListView,QPushButton,QMenu,QComboBox,QLineEdit,QLabel,QListView
+from PyQt5.QtWidgets import QWidget,QApplication,QGridLayout,QListView,QPushButton,QMenu,QComboBox,QLineEdit,QLabel,QListView,QInputDialog
 from PyQt5.QtCore import Qt,QStringListModel,QTimer
 from PyQt5.QtGui import QIcon
 from json import loads,dumps
@@ -23,7 +23,8 @@ class JsonEdit(QWidget):
                                 QComboBox:down-arrow{width:0px}
                                 QComboBox:selected{background-color:#606162;}
                                 QComboBox:QAbstractItemView::item{font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
-                                QComboBox:QAbstractItemView::item:selected{background-color:#606162;}''')
+                                QComboBox:QAbstractItemView::item:selected{background-color:#606162;}
+                                QInputDialog{background-color:#272626;}''')
 
         self.setWindowIcon(QIcon(ico))
         self.isshow = False
@@ -89,6 +90,25 @@ class JsonEdit(QWidget):
         self.addBtn.clicked.connect(self.addLine)
         self.addBtn.setFixedHeight(40)
 
+        self.planCb = QComboBox()
+        self.planCb.setFixedSize(200, 40)
+        self.planCb.setView(QListView())
+
+        self.loadPlanBtn = QPushButton()
+        self.loadPlanBtn.setText('加载配置')
+        self.loadPlanBtn.setFixedHeight(40)
+        self.loadPlanBtn.clicked.connect(self.loadPlan)
+
+        self.addPlanBtn = QPushButton()
+        self.addPlanBtn.setText('以当前配置新建')
+        self.addPlanBtn.setFixedHeight(40)
+        self.addPlanBtn.clicked.connect(self.addPlan)
+
+        self.delPlanBtn = QPushButton()
+        self.delPlanBtn.setText('删除此配置')
+        self.delPlanBtn.setFixedHeight(40)
+        self.delPlanBtn.clicked.connect(self.delPlan)
+
         self.listScheduleBefore = []
         self.listSchedule = []
         self.initJson()
@@ -109,6 +129,10 @@ class JsonEdit(QWidget):
         self.grid.addWidget(self.addBtn,1,1,1,7)
         self.grid.addWidget(self.delBtn,2,1,1,4)
         self.grid.addWidget(self.clearBtn,2,5,1,3)
+        self.grid.addWidget(self.planCb,3,0,1,1)
+        self.grid.addWidget(self.loadPlanBtn,3,1,1,1)
+        self.grid.addWidget(self.addPlanBtn,3,2,1,3)
+        self.grid.addWidget(self.delPlanBtn,3,5,1,3)
 
         self.setLayout(self.grid)
 
@@ -135,11 +159,22 @@ class JsonEdit(QWidget):
         self.updateTimer.start(10)
     
     def initJson(self):
-        with open(self.json,'r') as s:
+        with open(self.json,'r', encoding='UTF-8') as s:
             data = s.read()
-        data = loads(data)
-        self.jsonDict = data['levels']
-        for eachDict in self.jsonDict:
+        self.jsonAll = loads(data)["main"]
+        self.selPlan = self.jsonAll[0]
+        self.allPlanList = self.selPlan['allplan'].split('|')
+
+        #配置选单显示
+        self.planCb.addItems(self.allPlanList)
+
+        self.jsonDict = self.jsonAll[0]['sel']
+        self.selList = self.jsonDict.copy()
+        self.refreshJsonView()
+
+    def refreshJsonView(self):
+        self.listSchedule = []
+        for eachDict in self.selList:
             temp = eachDict['objLevel']
             if 'ex' in temp:
                 temp = self.transEX[temp]
@@ -147,27 +182,13 @@ class JsonEdit(QWidget):
                 temp = temp.replace('S', 'LS')
             self.listSchedule.append('{0}（共{1}次）'.format(temp,eachDict['times']))
 
-    def refreshJsonView(self):
-        temp = self.jsonDict[-1]['objLevel']
-        if 'ex' in temp:
-            temp = self.transEX[temp]
-        if self.jsonDict[-1]['chap'] == 'LS':
-            temp = temp.replace('S', 'LS')
-        self.listSchedule.append('{0}（共{1}次）'.format(temp,self.jsonDict[-1]['times']))
-
     def updateJson(self):
-        tempNewJson = {'levels':self.jsonDict}
-        newData = dumps(tempNewJson)
-        newData = newData.replace(',',',\n')
-        newData = newData.replace('[','[\n')
-        newData = newData.replace('{','{\n')
-        newData = newData.replace(']','\n]')
-        newData = newData.replace(' {','{')
-        newData = newData.replace('\"part\"','\t\"part\"')
-        newData = newData.replace(' \"chap\"','\t\"chap\"')
-        newData = newData.replace(' \"objLevel\"','\t\"objLevel\"')
-        newData = newData.replace(' \"times\"','\t\"times\"')
-        with open(self.json,'w') as j:
+        self.jsonAll[0]['sel'] = self.selList.copy()
+        self.jsonAll[0]['allplan'] = '|'.join(self.allPlanList)
+        #self.jsonAll[0]['selno'] = str(self.selNo)
+        tempNewJson = {'main':self.jsonAll}
+        newData = dumps(tempNewJson, sort_keys=True, indent=4, separators=(',', ': '), ensure_ascii=False)
+        with open(self.json,'w', encoding = 'UTF-8') as j:
             j.write(newData)
 
     def updateList(self):
@@ -257,7 +278,7 @@ class JsonEdit(QWidget):
         if tempTimes.isdecimal():
                 self.scheduleAdd['times'] = tempTimes
         if self.scheduleAdd['objLevel'] != '' and self.scheduleAdd['times'] != '':
-            self.jsonDict.append(self.scheduleAdd.copy())
+            self.selList.append(self.scheduleAdd.copy())
             self.refreshJsonView()
     
     def clickSchedule(self,qModelIndex):
@@ -266,13 +287,43 @@ class JsonEdit(QWidget):
     def delLine(self):
         if self.selIndex != None:
             self.listSchedule.pop(self.selIndex)
-            self.jsonDict.pop(self.selIndex)
+            self.selList.pop(self.selIndex)
         self.selIndex = None
 
     def clearLine(self):
         self.listSchedule.clear()
-        self.jsonDict.clear()
+        self.selList.clear()
 
+    def loadPlan(self):
+        if self.planCb.currentIndex() != 0:
+            #self.selNo = self.planCb.currentIndex() + 1
+            self.jsonDict = self.jsonAll[self.planCb.currentIndex() + 1][self.allPlanList[self.planCb.currentIndex()]]
+            self.selList = self.jsonDict.copy()
+            self.refreshJsonView()
+
+    def addPlan(self):
+        planName, ok = QInputDialog.getText(self, '配置名称', '请输入配置名称：')
+        if ok:
+            if '|' in planName:
+                planName.replace('|', '·')
+            self.allPlanList.append(planName)
+            tempDict = dict()
+            tempDict[planName] = self.selList.copy()
+            self.jsonAll.append(tempDict)
+            self.updateJson()
+            self.planCb.clear()
+            self.planCb.addItems(self.allPlanList)
+        pass
+
+    def delPlan(self):
+        if self.planCb.currentIndex() != 0:
+            self.allPlanList.pop(self.planCb.currentIndex())
+            self.jsonAll.pop(self.planCb.currentIndex() + 1)
+            self.updateJson()
+            self.planCb.clear()
+            self.planCb.addItems(self.allPlanList)
+        pass
+    
     
     def test(self):
         self.listSchedule.append('add')
