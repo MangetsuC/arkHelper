@@ -1,9 +1,9 @@
 import sys
 from configparser import ConfigParser
+from json import dumps, loads
 from os import getcwd, path
 from threading import Thread
 from webbrowser import open as openUrl
-from json import loads,dumps
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor, QIcon, QMouseEvent, QScreen
@@ -17,9 +17,9 @@ from foo.arknight.credit import Credit
 from foo.arknight.Schedule import BattleSchedule
 from foo.arknight.task import Task
 from foo.ui.console import Console
+from foo.ui.launch import Launch
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
-from foo.ui.launch import Launch
 
 
 class App(QWidget):

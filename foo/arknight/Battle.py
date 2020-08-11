@@ -20,6 +20,10 @@ class BattleLoop:
 
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
+        self.listActImg = pictureFind.picRead([self.cwd + "/res/actBattle/" + i for i in listdir(self.cwd + "/res/actBattle")])
+        
+        self.listImg = self.listActImg + self.listBattleImg
+
         self.startA = pictureFind.picRead(self.cwd + "/res/battle/startApart.png")
         self.autoOff = pictureFind.picRead(self.cwd + "/res/panel/other/autoOff.png")
         self.autoOn = pictureFind.picRead(self.cwd + "/res/panel/other/autoOn.png")
@@ -60,6 +64,7 @@ class BattleLoop:
         self.switch = switchI
 
         if self.switch:
+            OFCount = 0
             twiceTry = 0
             while self.switch:
                 self.adb.screenShot()
@@ -90,7 +95,7 @@ class BattleLoop:
                             break
 
                 #sleep(1)
-                for eachObj in self.listBattleImg:
+                for eachObj in self.listImg:
                     if self.switch:
                         if eachObj['obj'] == "end.png":
                             confidence = 0.8
@@ -145,6 +150,13 @@ class BattleLoop:
                                     toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
                             else:
                                 self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                if eachObj['obj'] == 'startApartOF.png':
+                                    self.adb.screenShot()
+                                    OFend = pictureFind.matchImg(self.screenShot, self.cwd + '/res/act/OFend.png', 0.8)
+                                    if OFend != None:
+                                        self.switch = False
+                                        toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
+
                             break
                 #sleep(1)
     def stop(self):
