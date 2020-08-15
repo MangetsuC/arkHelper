@@ -1,5 +1,5 @@
 # simpleArknightHelper
-One Simple But Not Crude Arknight Helper	一款简单但不简陋的明日方舟小助手
+One Easy-Use Arknight Helper	一款明日方舟护肝小助手
 
 
 
@@ -46,7 +46,7 @@ One Simple But Not Crude Arknight Helper	一款简单但不简陋的明日方舟
 
 ### 界面
 ***
-![mainUI.png](https://i.loli.net/2020/06/16/HaLUPhEJMuy69RK.png)
+![newUI.png](https://i.loli.net/2020/08/15/7kVP6Jc34GHzBsK.png)
 * metro风格的界面参考了windows10的菜单，简洁明了  
 * 可以方便地通过主界面上的菜单来选择您的模拟器！也可以自定义  
 #### 作战
@@ -58,12 +58,12 @@ One Simple But Not Crude Arknight Helper	一款简单但不简陋的明日方舟
 #### 这些是开关
 * 因此，如果您不需要这个功能，可以单击以关闭
 * 使用右键菜单来设置功能的默认状态
-* ![setDefault.png](https://i.loli.net/2020/06/16/trH8BGDjoxzdMPX.png)
+* ![setDefault.png](https://i.loli.net/2020/08/15/T9CavxGuVpzDRoE.png)
 > ~~在config.ini中，可以通过修改[function]下的值来设置默认勾选的状态
 > 后续应该会增加一个配置默认功能的设置界面~~已实现
 ### 公开招募计算器
 ***
-![publiccall.png](https://i.loli.net/2020/05/15/jqCLGFU25nSrOeW.png)
+![publiccall.png](https://i.loli.net/2020/08/15/oXJdm3SKv6zltRV.png)
 * 便捷的公开招募计算器，从你的模拟器屏幕上直接获取标签信息！
 * 主要的作用是避免错过一些不起眼的标签组合
 ### 自动勾选代理指挥
