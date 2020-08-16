@@ -3,9 +3,11 @@ from sys import path
 from time import sleep
 from threading import Thread
 from json import loads,dumps
+from cv2 import imread
 
 path.append(getcwd())
 from foo.pictureR import pictureFind
+from foo.pictureR import bootyCount
 from foo.win import toast
 
 class BattleSchedule:
@@ -20,6 +22,7 @@ class BattleSchedule:
         self.autoRecMed = False
         self.autoRecStone = False
         self.stoneMaxNum = 0
+        self.BootyDetect = bootyCount.Booty(self.cwd)
         self.imgInit()
 
     def recChange(self, num, inputData):
@@ -170,9 +173,19 @@ class BattleSchedule:
         return False
 
     def runTimes(self, times = 1):
+        bootyName = None
+        if isinstance(times, dict):
+            bootyMode = True
+            bootyName = times['bootyName']
+            times = int(times['bootyNum'])
+        else:
+            bootyMode = False
+            times = int(times)
+
         isFirstTurn = True
         countStep = 0
         totalCount = 0
+        bootyTotalCount = 0
         twiceTry = 0
         while self.switch and self.switchB:
             
@@ -213,22 +226,35 @@ class BattleSchedule:
                     picInfo = pictureFind.matchImg(self.screenShot, eachObj, confidence)
                     #print(eachObj+ '：', picInfo)
                     if picInfo != None:
+                        picPos = picInfo['result']
                         if countStep == 0:
                             if eachObj['obj'] == 'startBpart.png':
                                 countStep += 1
                         elif countStep == 1:
                             if eachObj['obj'] == 'endNormal.png':
                                 countStep += 1
+                                if bootyMode:
+                                    for i in range(10):
+                                        temp = imread(self.screenShot)
+                                        self.adb.screenShot()
+                                        if pictureFind.matchImg(temp, self.screenShot, confidencevalue=0.99) != None:
+                                            break
+                                        sleep(1)
+                                    bootyTotalCount += self.BootyDetect.bootyCheck(bootyName, self.screenShot)
+                                    
                         elif countStep == 2:
                             if eachObj['obj'] == 'startApart.png':
                                 countStep += 1
                         if countStep == 3:
                             countStep =0
                             totalCount += 1
-                        if totalCount == times:
+                        if (totalCount == times) and (not bootyMode):
                             self.switchB = False
                             return True
-                        picPos = picInfo['result']
+                        if (bootyTotalCount >= times) and bootyMode:
+                            self.adb.click(picPos[0], picPos[1], isSleep = True)
+                            self.switchB = False
+                            return True
                         '''self.adb.click(picPos[0], picPos[1], isSleep = True)
                         if eachObj['obj'] == "cancel.png":
                             self.switch = False
@@ -304,7 +330,7 @@ class BattleSchedule:
                 break
             self.switchB = self.goLevel(eachLevel)
             if self.switchB and self.switch:
-                levelCondition = self.runTimes(times=int(eachLevel['times']))
+                levelCondition = self.runTimes(times=eachLevel['times'])
                 if not levelCondition:
                     self.stop()
                     break

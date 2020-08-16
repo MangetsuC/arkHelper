@@ -1,6 +1,6 @@
 import sys
 from os import getcwd
-from PyQt5.QtWidgets import QWidget,QApplication,QGridLayout,QListView,QPushButton,QMenu,QComboBox,QLineEdit,QLabel,QListView,QInputDialog
+from PyQt5.QtWidgets import QWidget,QApplication,QGridLayout,QListView,QPushButton,QMenu,QComboBox,QLineEdit,QLabel,QListView,QInputDialog,QDesktopWidget
 from PyQt5.QtCore import Qt,QStringListModel,QTimer
 from PyQt5.QtGui import QIcon
 from json import loads,dumps
@@ -13,6 +13,7 @@ class JsonEdit(QWidget):
         self.setStyleSheet('''JsonEdit{background:#272626}QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
                                 QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:11pt;}
                                 QPushButton:pressed{background:#606162;font:10pt;}
+                                QPushButton:checked{background:#70bbe4;}
                                 QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
                                 QLineEdit{background-color:#4d4d4d;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;border:0px;padding-left:5px}
                                 QLineEdit:hover{border-style:solid;border-width:1px;border-color:#ffffff;padding-left:4px;}
@@ -28,6 +29,12 @@ class JsonEdit(QWidget):
 
         self.setWindowIcon(QIcon(ico))
         self.isshow = False
+
+        self.isBootyMode = False
+        self.bootyName = '固源岩'
+
+        self.selPanel = BootyChoice(self, ico)
+
         self.json = getcwd() + '/schedule.json'
         self.scheduleAdd = {'part':'MAIN', 'chap':'', 'objLevel':'', 'times':''}
         self.transEX = {'ex1':'切尔诺伯格','ex2':'龙门外环','ex3':'龙门市区'}
@@ -75,6 +82,17 @@ class JsonEdit(QWidget):
 
         self.timeEdit = QLineEdit()
         self.timeEdit.setFixedSize(50, 40)
+
+        self.bootyModeBtn = QPushButton()
+        self.bootyModeBtn.setCheckable(True)
+        self.bootyModeBtn.setText('素材模式')
+        self.bootyModeBtn.setFixedHeight(40)
+        self.bootyModeBtn.clicked[bool].connect(self.setBootMode)
+
+        self.bootySelBtn = QPushButton()
+        self.bootySelBtn.setText('——')
+        self.bootySelBtn.setFixedHeight(40)
+        self.bootySelBtn.clicked.connect(self.selPanel.myShow)
 
         self.delBtn = QPushButton()
         self.delBtn.setText('删除')
@@ -126,7 +144,9 @@ class JsonEdit(QWidget):
         self.grid.addWidget(self.level2Edit,0,5,1,1)
         self.grid.addWidget(self.timesLable,0,6,1,1)
         self.grid.addWidget(self.timeEdit,0,7,1,1)
-        self.grid.addWidget(self.addBtn,1,1,1,7)
+        self.grid.addWidget(self.bootyModeBtn,1,1,1,1)
+        self.grid.addWidget(self.bootySelBtn,1,2,1,1)
+        self.grid.addWidget(self.addBtn,1,3,1,5)
         self.grid.addWidget(self.delBtn,2,1,1,4)
         self.grid.addWidget(self.clearBtn,2,5,1,3)
         self.grid.addWidget(self.planCb,3,0,1,1)
@@ -180,7 +200,10 @@ class JsonEdit(QWidget):
                 temp = self.transEX[temp]
             if eachDict['chap'] == 'LS':
                 temp = temp.replace('S', 'LS')
-            self.listSchedule.append('{0}（共{1}次）'.format(temp,eachDict['times']))
+            if isinstance(eachDict['times'], dict):
+                self.listSchedule.append('{0}（{1}共{2}个）'.format(temp,eachDict['times']['bootyName'],eachDict['times']['bootyNum']))
+            else:
+                self.listSchedule.append('{0}（共{1}次）'.format(temp,eachDict['times']))
 
     def updateJson(self):
         self.jsonAll[0]['sel'] = self.selList.copy()
@@ -265,17 +288,21 @@ class JsonEdit(QWidget):
     
     def addLine(self):
         tempLevel = self.level2Edit.text()
-        self.scheduleAdd['objLevel'] = tempLevel
+        self.scheduleAdd['objLevel'] = ''
         tempTimes = self.timeEdit.text()
-        self.scheduleAdd['times'] = tempTimes
+        self.scheduleAdd['times'] = ''
         if 'ex' in self.scheduleAdd['chap']:
             self.scheduleAdd['objLevel'] = self.scheduleAdd['chap']
         elif tempLevel != '':
             part1 = self.level1Cb.currentText()
             if part1 == 'LS':
                 part1 = 'S'
-            self.scheduleAdd['objLevel'] = part1 + '-' + tempLevel
+            if tempLevel.isdecimal():
+                self.scheduleAdd['objLevel'] = part1 + '-' + tempLevel
         if tempTimes.isdecimal():
+            if self.isBootyMode:
+                self.scheduleAdd['times'] = {'bootyName':self.bootyName,'bootyNum':tempTimes}
+            else:
                 self.scheduleAdd['times'] = tempTimes
         if self.scheduleAdd['objLevel'] != '' and self.scheduleAdd['times'] != '':
             self.selList.append(self.scheduleAdd.copy())
@@ -325,9 +352,215 @@ class JsonEdit(QWidget):
         pass
     
     
+    def setBootMode(self, isChecked):
+        self.isBootyMode = isChecked
+        if self.isBootyMode:
+            self.timesLable.setText('个数:')
+            self.bootySelBtn.setText('选择掉落物')
+        else:
+            self.timesLable.setText('次数:')
+            self.bootySelBtn.setText('———')
+    
     def test(self):
         self.listSchedule.append('add')
         print(self.listSchedule)
+
+class BootyChoice(QWidget):
+    def __init__(self, scheduleEdit, ico):
+        super().__init__()
+        self.scheduleEdit = scheduleEdit
+        self.setWindowIcon(QIcon(ico))
+
+        self.setStyleSheet('''BootyChoice{background:#272626}
+                                QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:15pt;qproperty-iconSize:60px 60px;}
+                                QPushButton:pressed{background:#606162;font:14pt;}
+                                QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}''')
+
+        self.resPath = getcwd() + '/res/booty/btn/'
+        self.RMA70L1 = QPushButton(icon=QIcon(self.resPath + 'RMA70-24.png'), text='RMA70-24')
+        self.RMA70L1.clicked.connect(self.setBooty)
+        self.RMA70L0 = QPushButton(icon=QIcon(self.resPath + 'RMA70-12.png'), text='RMA70-12')
+        self.RMA70L0.clicked.connect(self.setBooty)
+        self.alcholL1 = QPushButton(icon=QIcon(self.resPath + '白马醇.png'), text='白马醇')
+        self.alcholL1.clicked.connect(self.setBooty)
+        self.alcholL0 = QPushButton(icon=QIcon(self.resPath + '扭转醇.png'), text='扭转醇')
+        self.alcholL0.clicked.connect(self.setBooty)
+        self.MnL1 = QPushButton(icon=QIcon(self.resPath + '三水锰矿.png'), text='三水锰矿')
+        self.MnL1.clicked.connect(self.setBooty)
+        self.MnL0 = QPushButton(icon=QIcon(self.resPath + '轻锰矿.png'), text='轻锰矿')
+        self.MnL0.clicked.connect(self.setBooty)
+        self.alloyL1 = QPushButton(icon=QIcon(self.resPath + '炽合金块.png'), text='炽合金块')
+        self.alloyL1.clicked.connect(self.setBooty)
+        self.alloyL0 = QPushButton(icon=QIcon(self.resPath + '炽合金.png'), text='炽合金')
+        self.alloyL0.clicked.connect(self.setBooty)
+        self.gelL1 = QPushButton(icon=QIcon(self.resPath + '聚合凝胶.png'), text='聚合凝胶')
+        self.gelL1.clicked.connect(self.setBooty)
+        self.gelL0 = QPushButton(icon=QIcon(self.resPath + '凝胶.png'), text='凝胶')
+        self.gelL0.clicked.connect(self.setBooty)
+        self.pStoneL1 = QPushButton(icon=QIcon(self.resPath + '五水研磨石.png'), text='五水研磨石')
+        self.pStoneL1.clicked.connect(self.setBooty)
+        self.pStoneL0 = QPushButton(icon=QIcon(self.resPath + '研磨石.png'), text='研磨石')
+        self.pStoneL0.clicked.connect(self.setBooty)
+        self.deviceL3 = QPushButton(icon=QIcon(self.resPath + '改量装置.png'), text='改量装置')
+        self.deviceL3.clicked.connect(self.setBooty)
+        self.deviceL2 = QPushButton(icon=QIcon(self.resPath + '全新装置.png'), text='全新装置')
+        self.deviceL2.clicked.connect(self.setBooty)
+        self.deviceL1 = QPushButton(icon=QIcon(self.resPath + '装置.png'), text='装置')
+        self.deviceL1.clicked.connect(self.setBooty)
+        self.deviceL0 = QPushButton(icon=QIcon(self.resPath + '破损装置.png'), text='破损装置')
+        self.deviceL0.clicked.connect(self.setBooty)
+        self.stoneL3 = QPushButton(icon=QIcon(self.resPath + '提纯源岩.png'), text='提纯源岩')
+        self.stoneL3.clicked.connect(self.setBooty)
+        self.stoneL2 = QPushButton(icon=QIcon(self.resPath + '固源岩组.png'), text='固源岩组')
+        self.stoneL2.clicked.connect(self.setBooty)
+        self.stoneL1 = QPushButton(icon=QIcon(self.resPath + '固源岩.png'), text='固源岩')
+        self.stoneL1.clicked.connect(self.setBooty)
+        self.stoneL0 = QPushButton(icon=QIcon(self.resPath + '源岩.png'), text='源岩')
+        self.stoneL0.clicked.connect(self.setBooty)
+        self.ironL3 = QPushButton(icon=QIcon(self.resPath + '异铁块.png'), text='异铁块')
+        self.ironL3.clicked.connect(self.setBooty)
+        self.ironL2 = QPushButton(icon=QIcon(self.resPath + '异铁组.png'), text='异铁组')
+        self.ironL2.clicked.connect(self.setBooty)
+        self.ironL1 = QPushButton(icon=QIcon(self.resPath + '异铁.png'), text='异铁')
+        self.ironL1.clicked.connect(self.setBooty)
+        self.ironL0 = QPushButton(icon=QIcon(self.resPath + '异铁碎片.png'), text='异铁碎片')
+        self.ironL0.clicked.connect(self.setBooty)
+        self.ketoneL3 = QPushButton(icon=QIcon(self.resPath + '酮阵列.png'), text='酮阵列')
+        self.ketoneL3.clicked.connect(self.setBooty)
+        self.ketoneL2 = QPushButton(icon=QIcon(self.resPath + '酮凝集组.png'), text='酮凝集组')
+        self.ketoneL2.clicked.connect(self.setBooty)
+        self.ketoneL1 = QPushButton(icon=QIcon(self.resPath + '酮凝集.png'), text='酮凝集')
+        self.ketoneL1.clicked.connect(self.setBooty)
+        self.ketoneL0 = QPushButton(icon=QIcon(self.resPath + '双酮.png'), text='双酮')
+        self.ketoneL0.clicked.connect(self.setBooty)
+        self.sugarL3 = QPushButton(icon=QIcon(self.resPath + '糖聚块.png'), text='糖聚块')
+        self.sugarL3.clicked.connect(self.setBooty)
+        self.sugarL2 = QPushButton(icon=QIcon(self.resPath + '糖组.png'), text='糖组')
+        self.sugarL2.clicked.connect(self.setBooty)
+        self.sugarL1 = QPushButton(icon=QIcon(self.resPath + '糖.png'), text='糖')
+        self.sugarL1.clicked.connect(self.setBooty)
+        self.sugarL0 = QPushButton(icon=QIcon(self.resPath + '代糖.png'), text='代糖')
+        self.sugarL0.clicked.connect(self.setBooty)
+        self.esterL3 = QPushButton(icon=QIcon(self.resPath + '聚酸酯块.png'), text='聚酸酯块')
+        self.esterL3.clicked.connect(self.setBooty)
+        self.esterL2 = QPushButton(icon=QIcon(self.resPath + '聚酸酯组.png'), text='聚酸酯组')
+        self.esterL2.clicked.connect(self.setBooty)
+        self.esterL1 = QPushButton(icon=QIcon(self.resPath + '聚酸酯.png'), text='聚酸酯')
+        self.esterL1.clicked.connect(self.setBooty)
+        self.esterL0 = QPushButton(icon=QIcon(self.resPath + '酯原料.png'), text='酯原料')
+        self.esterL0.clicked.connect(self.setBooty)
+
+        self.suppoerterL1 = QPushButton(icon=QIcon(self.resPath + '辅助双芯片.png'), text='辅助双芯片')
+        self.suppoerterL1.clicked.connect(self.setBooty)
+        self.suppoerterL0 = QPushButton(icon=QIcon(self.resPath + '辅助芯片.png'), text='辅助芯片')
+        self.suppoerterL0.clicked.connect(self.setBooty)
+        self.guardL1 = QPushButton(icon=QIcon(self.resPath + '近卫双芯片.png'), text='近卫双芯片')
+        self.guardL1.clicked.connect(self.setBooty)
+        self.guardL0 = QPushButton(icon=QIcon(self.resPath + '近卫芯片.png'), text='近卫芯片')
+        self.guardL0.clicked.connect(self.setBooty)
+        self.sniperL1 = QPushButton(icon=QIcon(self.resPath + '狙击双芯片.png'), text='狙击双芯片')
+        self.sniperL1.clicked.connect(self.setBooty)
+        self.sniperL0 = QPushButton(icon=QIcon(self.resPath + '狙击芯片.png'), text='狙击芯片')
+        self.sniperL0.clicked.connect(self.setBooty)
+        self.casterL1 = QPushButton(icon=QIcon(self.resPath + '术师双芯片.png'), text='术师双芯片')
+        self.casterL1.clicked.connect(self.setBooty)
+        self.casterL0 = QPushButton(icon=QIcon(self.resPath + '术师芯片.png'), text='术师芯片')
+        self.casterL0.clicked.connect(self.setBooty)
+        self.specialistL1 = QPushButton(icon=QIcon(self.resPath + '特种双芯片.png'), text='特种双芯片')
+        self.specialistL1.clicked.connect(self.setBooty)
+        self.specialistL0 = QPushButton(icon=QIcon(self.resPath + '特种芯片.png'), text='特种芯片')
+        self.specialistL0.clicked.connect(self.setBooty)
+        self.vanguardL1 = QPushButton(icon=QIcon(self.resPath + '先锋双芯片.png'), text='先锋双芯片')
+        self.vanguardL1.clicked.connect(self.setBooty)
+        self.vanguardL0 = QPushButton(icon=QIcon(self.resPath + '先锋芯片.png'), text='先锋芯片')
+        self.vanguardL0.clicked.connect(self.setBooty)
+        self.medicL1 = QPushButton(icon=QIcon(self.resPath + '医疗双芯片.png'), text='医疗双芯片')
+        self.medicL1.clicked.connect(self.setBooty)
+        self.medicL0 = QPushButton(icon=QIcon(self.resPath + '医疗芯片.png'), text='医疗芯片')
+        self.medicL0.clicked.connect(self.setBooty)
+        self.defenderL1 = QPushButton(icon=QIcon(self.resPath + '重装双芯片.png'), text='重装双芯片')
+        self.defenderL1.clicked.connect(self.setBooty)
+        self.defenderL0 = QPushButton(icon=QIcon(self.resPath + '重装芯片.png'), text='重装芯片')
+        self.defenderL0.clicked.connect(self.setBooty)
+
+        self.grid = QGridLayout()
+
+        self.grid.addWidget(self.RMA70L1,0,0)
+        self.grid.addWidget(self.RMA70L0,0,1)
+        self.grid.addWidget(self.alcholL1,0,2)
+        self.grid.addWidget(self.alcholL0,0,3)
+        self.grid.addWidget(self.MnL1,0,4)
+        self.grid.addWidget(self.MnL0,0,5)
+        self.grid.addWidget(self.alloyL1,1,0)
+        self.grid.addWidget(self.alloyL0,1,1)
+        self.grid.addWidget(self.gelL1,1,2)
+        self.grid.addWidget(self.gelL0,1,3)
+        self.grid.addWidget(self.pStoneL1,0,6)
+        self.grid.addWidget(self.pStoneL0,0,7)
+        self.grid.addWidget(self.deviceL3,2,0)
+        self.grid.addWidget(self.deviceL2,2,1)
+        self.grid.addWidget(self.deviceL1,2,2)
+        self.grid.addWidget(self.deviceL0,2,3)
+        self.grid.addWidget(self.stoneL3,2,4)
+        self.grid.addWidget(self.stoneL2,2,5)
+        self.grid.addWidget(self.stoneL1,2,6)
+        self.grid.addWidget(self.stoneL0,2,7)
+        self.grid.addWidget(self.ironL3,3,0)
+        self.grid.addWidget(self.ironL2,3,1)
+        self.grid.addWidget(self.ironL1,3,2)
+        self.grid.addWidget(self.ironL0,3,3)
+        self.grid.addWidget(self.ketoneL3,3,4)
+        self.grid.addWidget(self.ketoneL2,3,5)
+        self.grid.addWidget(self.ketoneL1,3,6)
+        self.grid.addWidget(self.ketoneL0,3,7)
+        self.grid.addWidget(self.sugarL3,4,0)
+        self.grid.addWidget(self.sugarL2,4,1)
+        self.grid.addWidget(self.sugarL1,4,2)
+        self.grid.addWidget(self.sugarL0,4,3)
+        self.grid.addWidget(self.esterL3,4,4)
+        self.grid.addWidget(self.esterL2,4,5)
+        self.grid.addWidget(self.esterL1,4,6)
+        self.grid.addWidget(self.esterL0,4,7)
+
+        self.grid.addWidget(self.suppoerterL1,5,0)
+        self.grid.addWidget(self.guardL1,5,1)
+        self.grid.addWidget(self.sniperL1,5,2)
+        self.grid.addWidget(self.casterL1,5,3)
+        self.grid.addWidget(self.specialistL1,5,4)
+        self.grid.addWidget(self.vanguardL1,5,5)
+        self.grid.addWidget(self.medicL1,5,6)
+        self.grid.addWidget(self.defenderL1,5,7)
+        self.grid.addWidget(self.suppoerterL0,6,0)
+        self.grid.addWidget(self.guardL0,6,1)
+        self.grid.addWidget(self.sniperL0,6,2)
+        self.grid.addWidget(self.casterL0,6,3)
+        self.grid.addWidget(self.specialistL0,6,4)
+        self.grid.addWidget(self.vanguardL0,6,5)
+        self.grid.addWidget(self.medicL0,6,6)
+        self.grid.addWidget(self.defenderL0,6,7)
+
+        self.setLayout(self.grid)
+        self.resize(1400, 517)
+
+        self.setWindowTitle('指定素材')
+
+    def setBooty(self):
+        bootyName = self.sender().text()
+        self.scheduleEdit.bootyName = bootyName
+        #print(self.scheduleEdit.bootyName)
+        self.close()
+
+    def myShow(self):
+        if self.scheduleEdit.isBootyMode:
+            self.center()
+            self.show()
+
+    def center(self):
+        #显示到屏幕中心
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
 
 if __name__ == '__main__':
