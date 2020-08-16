@@ -341,6 +341,9 @@ class PublicCall:
                     elif '资深干员' in tempTagList and '高级资深干员' in tempTagList:
                         tempTagList.remove('资深干员')
                         break
+                    elif '支援' in tempTagList and '支援机械' in tempTagList:
+                        tempTagList.remove('支援')
+                        break
                 #print(tempTagList)
                 self.regAns = self.getAns(tempTagList)
             else:
@@ -354,6 +357,9 @@ class PublicCall:
                 elif '资深干员' in tempTagList and '高级资深干员' in tempTagList:
                     tempTagList.remove('资深干员')
                     break
+                elif '支援' in tempTagList and '支援机械' in tempTagList:
+                    tempTagList.remove('支援')
+                    break
                 #print(tempTagList)
             self.regAns = self.getAns(tempTagList)
         return self.regAns
@@ -361,5 +367,4 @@ class PublicCall:
 
 if __name__ == "__main__":
     test = PublicCall(None, r'E:\workSpace\CodeRelease\arknightHelper\arkHelper')
-    for each in test.tag:
-        print(test.trans(each))
+    print(test.run())
