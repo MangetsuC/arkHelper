@@ -330,7 +330,20 @@ class PublicCall:
     def run(self):
         self.adb.screenShot(pngName='PCScreenshot')
         src = imread(self.screenShot)
-        if self.srcBefore != None:
+        self.srcBefore = {'pic':src,'obj':'tags'}
+        while True:
+            tempTagList = self.getTag(src)
+            if tempTagList == [] or len(tempTagList) == 5:
+                break
+            elif '资深干员' in tempTagList and '高级资深干员' in tempTagList:
+                tempTagList.remove('资深干员')
+                break
+            elif '支援' in tempTagList and '支援机械' in tempTagList:
+                tempTagList.remove('支援')
+                break
+            sleep(0.5)
+        self.regAns = self.getAns(tempTagList)
+        '''if self.srcBefore != None:
             isSame = pictureFind.matchImg(src,self.srcBefore,confidencevalue=0.99)
             if isSame == None:
                 self.srcBefore = {'pic':src,'obj':'tags'}
@@ -361,7 +374,7 @@ class PublicCall:
                     tempTagList.remove('支援')
                     break
                 #print(tempTagList)
-            self.regAns = self.getAns(tempTagList)
+            self.regAns = self.getAns(tempTagList)'''
         return self.regAns
 
 
