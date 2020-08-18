@@ -1,6 +1,6 @@
 from os import getcwd, listdir
 from sys import path
-from  cv2 import imread
+from  cv2 import imread, resize, imshow, waitKey
 
 path.append(getcwd())
 from foo.pictureR import pictureFind
@@ -62,20 +62,41 @@ class Booty:
                         '医疗双芯片':pictureFind.picRead(self.bootyPicPath + '/医疗双芯片.png'),
                         '重装双芯片':pictureFind.picRead(self.bootyPicPath + '/重装双芯片.png')}
         self.one = pictureFind.picRead(self.cwd + '/res/booty/num/1.png')
+        self.two = pictureFind.picRead(self.cwd + '/res/booty/num/2.png')
 
     def bootyCheck(self, bootyName, screenshot):
         scs = imread(screenshot)
-        bootyInfo = pictureFind.matchImg(scs, self.bootyList[bootyName])
+        scs = resize(scs, (1920, 1080))
+        scs = scs[770:1080, 710:1920]
+        #imshow('test', scs)
+        #waitKey(0)
+        bootyInfo = pictureFind.matchImg(scs, self.bootyList[bootyName], confidencevalue=0.5)
         if bootyInfo == None:
             return 0
         else:
             rdPos = bootyInfo['rectangle'][3]
-            bootyNumPic = scs[rdPos[1] : rdPos[1] + 60, rdPos[0] - 20 : rdPos[0] + 35]
-            if pictureFind.matchImg(bootyNumPic, self.one):
+            corpX1 = rdPos[0] - 30
+            corpX2 = rdPos[0] + 10
+            corpY1 = rdPos[1] + 5
+            corpY2 = rdPos[1] + 50
+            if corpX1 < 0 or corpX2 > 1210 or corpY1 < 0 or corpY2 > 310:
+                return 0
+            bootyNumPic = scs[corpY1:corpY2, corpX1:corpX2]
+            
+            #imshow('test', bootyNumPic)
+            #waitKey(0)
+            if pictureFind.matchImg(bootyNumPic, self.one) != None:
                 return 1
-            else:
+            elif pictureFind.matchImg(bootyNumPic, self.two) != None:
                 return 2
+            else:
+                return 0
 
 if __name__ == '__main__':
     BootyTest = Booty('E:/workSpace/CodeRelease/arknightHelper/arkHelper')
-    BootyTest.bootyCheck('装置', 'E:/workSpace/CodeRelease/arknightHelper/source/bootytest.png')
+    listB = listdir('E:/workSpace/CodeRelease/arknightHelper/arkHelper/res/booty\pics')
+    c = BootyTest.bootyCheck('全新装置', 'E:/workSpace/CodeRelease/arknightHelper/source/arktemp.png')
+    print(c)
+    for each in listB:
+        a = BootyTest.bootyCheck(each.split('.')[0], 'E:/workSpace/CodeRelease/arknightHelper/source/arktemp.png')
+        print(each + ':' + str(a))

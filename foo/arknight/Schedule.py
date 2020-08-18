@@ -241,6 +241,7 @@ class BattleSchedule:
                                             break
                                         sleep(1)
                                     bootyTotalCount += self.BootyDetect.bootyCheck(bootyName, self.screenShot)
+                                    print(f'{bootyName} 应获得：{times} 实获得：{bootyTotalCount}')
                                     
                         elif countStep == 2:
                             if eachObj['obj'] == 'startApart.png':
