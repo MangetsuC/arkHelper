@@ -4,6 +4,7 @@ from json import dumps, loads
 from os import getcwd, path
 from threading import Thread
 from webbrowser import open as openUrl
+from urllib import request
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor, QIcon, QMouseEvent, QScreen
@@ -17,7 +18,7 @@ from foo.arknight.credit import Credit
 from foo.arknight.Schedule import BattleSchedule
 from foo.arknight.task import Task
 from foo.ui.console import Console
-from foo.ui.launch import Launch
+from foo.ui.launch import Launch, BlackBoard
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
 
@@ -25,6 +26,7 @@ from foo.ui.UIschedule import JsonEdit
 class App(QWidget):
     def __init__(self):
         super().__init__()
+        self.ver = '2.3.9'
         self.initFile()
         self.initVar()
         self.initUI()
@@ -34,7 +36,10 @@ class App(QWidget):
         self.isRun = False
         self.center()
         self.show()
-        
+        '''if self.config.getboolean('notice', 'enable'):
+            self.checkUpdate()
+            self.showMessage()
+        '''
     def initFile(self):
         self.cwd = getcwd().replace('\\', '/')
         
@@ -103,6 +108,13 @@ class App(QWidget):
             isNeedWrite = True
         if not self.config.has_option('stone', 'maxnum'):
             self.config.set('stone','maxnum','0')
+            isNeedWrite = True
+
+        if not self.config.has_section('notice'):
+            self.config.add_section('notice')
+            isNeedWrite = True
+        if not self.config.has_option('notice', 'enable'):
+            self.config.set('notice','enable','True')
             isNeedWrite = True
 
         if isNeedWrite:
@@ -212,8 +224,11 @@ class App(QWidget):
         self.actMaxNumber.triggered.connect(self.changeMaxNum)
 
         self.actConsole = QAction('控制台', parent=self.settingMenu)
-        self.checkUpdate = QAction('检查更新', parent=self.settingMenu)
-        self.index = QAction('访问主页', parent=self.settingMenu)
+        self.actCheckUpdate = QAction('检查更新', parent=self.settingMenu)
+        self.actIndex = QAction('访问主页', parent=self.settingMenu)
+        
+        #self.actVersion1 = QAction('版本：', parent=self.settingMenu)
+        self.actVersion2 = QAction(f'v{self.ver}', parent=self.settingMenu)
 
 
         self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrYeshen, self.actSlrLeidian, self.actSlrCustom]
@@ -235,11 +250,14 @@ class App(QWidget):
         self.settingMenu.addAction(self.actConsole) #控制台
         self.actConsole.triggered.connect(self.console.showOrHide)
 
-        self.settingMenu.addAction(self.checkUpdate) #蓝奏云地址
-        self.checkUpdate.triggered.connect(self.openUpdate)
+        self.settingMenu.addAction(self.actCheckUpdate) #蓝奏云地址
+        self.actCheckUpdate.triggered.connect(self.openUpdate)
 
-        self.settingMenu.addAction(self.index) #主页
-        self.index.triggered.connect(self.openIndex)
+        self.settingMenu.addAction(self.actIndex) #主页
+        self.actIndex.triggered.connect(self.openIndex)
+
+        #self.settingMenu.addAction(self.actVersion1)
+        self.settingMenu.addAction(self.actVersion2) #版本号显示
 
         self.btnSet.setMenu(self.settingMenu) #关联按钮与菜单
         self.btnSet.setStyleSheet('''QPushButton:menu-indicator{image:none;width:0px;}''')
@@ -427,6 +445,7 @@ class App(QWidget):
         self.credit = Credit(self.adb, self.cwd)
         self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall) #公开招募
         self.schJsonEditer = JsonEdit(self.ico)
+        self.board = BlackBoard()
 
     def initSlrSel(self):
         '初始化模拟器选择'
@@ -617,6 +636,36 @@ class App(QWidget):
     def openIndex(self):
         openUrl('https://github.com/MangetsuC/arkHelper')
 
+    def checkUpdate(self):
+        try:
+            self.content = request.urlopen('http://shakuras.3vkj.net/').read().decode('utf-8')
+        except request.URLError as eReason:
+            print(eReason.reason)
+            self.content = 'failed to get content'
+        else:
+            if '[version]' in self.content:
+                newVersion = self.content.split('[version]')[1].split('.')
+                tempSelfVersion = self.ver.split('.')
+                for eachVerNum in range(3):
+                    if newVersion[eachVerNum] > tempSelfVersion[eachVerNum]:
+                        self.lNotice.setText('*有新版本*')
+
+    def showMessage(self):
+        if self.content != 'failed to get content':
+            msgVer = self.content.split('[msgVer]')[1]
+            if (not self.config.has_option('notice', 'msgver')) or self.config.get('notice', 'msgver') < msgVer:
+                if not self.config.has_section('notice'):
+                    self.config.add_section('notice')
+                self.changeDefault('msgver', msgVer, sec = 'notice')
+                msg = self.content.split('[text]')[1]
+                self.board.showNotice(msg)
+                #弹出公告
+
+    def checkNotice(self):
+        if self.config.getboolean('notice', 'enable'):
+            self.checkUpdate()
+            self.showMessage()
+
     def start(self):
         self.doctorFlag = self.battle.connect()
         if self.scheduleFlag:
@@ -659,4 +708,5 @@ if __name__ == '__main__':
     app.processEvents()
     ex = App()
     exLaunch.finish(ex)
+    ex.checkNotice()
     sys.exit(app.exec_())
