@@ -26,7 +26,7 @@ from foo.ui.UIschedule import JsonEdit
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.3.9'
+        self.ver = '2.4.1'
         self.initFile()
         self.initVar()
         self.initUI()
@@ -36,10 +36,7 @@ class App(QWidget):
         self.isRun = False
         self.center()
         self.show()
-        '''if self.config.getboolean('notice', 'enable'):
-            self.checkUpdate()
-            self.showMessage()
-        '''
+
     def initFile(self):
         self.cwd = getcwd().replace('\\', '/')
         
@@ -647,13 +644,13 @@ class App(QWidget):
                 newVersion = self.content.split('[version]')[1].split('.')
                 tempSelfVersion = self.ver.split('.')
                 for eachVerNum in range(3):
-                    if newVersion[eachVerNum] > tempSelfVersion[eachVerNum]:
+                    if int(newVersion[eachVerNum]) > int(tempSelfVersion[eachVerNum]):
                         self.lNotice.setText('*有新版本*')
 
     def showMessage(self):
         if self.content != 'failed to get content':
             msgVer = self.content.split('[msgVer]')[1]
-            if (not self.config.has_option('notice', 'msgver')) or self.config.get('notice', 'msgver') < msgVer:
+            if (not self.config.has_option('notice', 'msgver')) or self.config.getint('notice', 'msgver') < int(msgVer):
                 if not self.config.has_section('notice'):
                     self.config.add_section('notice')
                 self.changeDefault('msgver', msgVer, sec = 'notice')
