@@ -140,7 +140,7 @@ __pycache__/
 #adb:
 bin/adb/*.png
 foo/adb/getSource.py
-foo/pictureR/picMatchTest.py
+foo/test/
 
 #arknightsHelper
 schedule.json

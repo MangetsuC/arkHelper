@@ -75,28 +75,35 @@ class Booty:
             return 0
         else:
             rdPos = bootyInfo['rectangle'][3]
-            corpX1 = rdPos[0] - 30
-            corpX2 = rdPos[0] + 10
-            corpY1 = rdPos[1] + 5
-            corpY2 = rdPos[1] + 50
+            if '双芯片' in bootyName:
+                corpX1 = rdPos[0] - 20
+                corpX2 = rdPos[0] + 25
+                corpY1 = rdPos[1] + 15
+                corpY2 = rdPos[1] + 60
+            elif '芯片' in bootyName:
+                corpX1 = rdPos[0] - 15
+                corpX2 = rdPos[0] + 25
+                corpY1 = rdPos[1] + 15
+                corpY2 = rdPos[1] + 60
+            else:
+                corpX1 = rdPos[0] - 30
+                corpX2 = rdPos[0] + 10
+                corpY1 = rdPos[1] + 5
+                corpY2 = rdPos[1] + 50
             if corpX1 < 0 or corpX2 > 1210 or corpY1 < 0 or corpY2 > 310:
                 return 0
             bootyNumPic = scs[corpY1:corpY2, corpX1:corpX2]
             
             #imshow('test', bootyNumPic)
             #waitKey(0)
-            if pictureFind.matchImg(bootyNumPic, self.one) != None:
+
+            oneCheck = pictureFind.matchImg(bootyNumPic, self.one)
+            #print(oneCheck)
+            twoCheck = pictureFind.matchImg(bootyNumPic, self.two)
+            #print(twoCheck)
+            if oneCheck != None:
                 return 1
-            elif pictureFind.matchImg(bootyNumPic, self.two) != None:
+            elif twoCheck != None:
                 return 2
             else:
                 return 0
-
-if __name__ == '__main__':
-    BootyTest = Booty('E:/workSpace/CodeRelease/arknightHelper/arkHelper')
-    listB = listdir('E:/workSpace/CodeRelease/arknightHelper/arkHelper/res/booty\pics')
-    c = BootyTest.bootyCheck('全新装置', 'E:/workSpace/CodeRelease/arknightHelper/source/arktemp.png')
-    print(c)
-    for each in listB:
-        a = BootyTest.bootyCheck(each.split('.')[0], 'E:/workSpace/CodeRelease/arknightHelper/source/arktemp.png')
-        print(each + ':' + str(a))

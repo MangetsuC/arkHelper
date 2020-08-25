@@ -11,7 +11,7 @@ class Credit:
         self.adb = adb
         self.cwd = cwd
         self.switch = False
-        self.icon = pictureFind.picRead(self.cwd + "/res/ico.ico")
+        self.icon = self.cwd + "/res/ico.ico"
         self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
         self.mainpage = pictureFind.picRead(self.cwd + "/res/panel/other/mainpage.png")
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'

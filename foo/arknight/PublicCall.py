@@ -87,7 +87,7 @@ class PublicCall:
         '支援机械':[[10,'Castle-3'],[10,'Lancet-2'],[10,'THRM-EX']]}
 
         self.adb = adb
-        self.srcBefore = None
+        #self.srcBefore = None
         self.regAns = None
         #self.battle = battle
         self.cwd = cwd
@@ -328,10 +328,10 @@ class PublicCall:
         return (ans, tagOnScreenList)
 
     def run(self):
-        self.adb.screenShot(pngName='PCScreenshot')
-        src = imread(self.screenShot)
-        self.srcBefore = {'pic':src,'obj':'tags'}
+        #self.srcBefore = {'pic':src,'obj':'tags'}
         while True:
+            self.adb.screenShot(pngName='PCScreenshot')
+            src = imread(self.screenShot)
             tempTagList = self.getTag(src)
             if tempTagList == [] or len(tempTagList) == 5:
                 break
@@ -342,6 +342,7 @@ class PublicCall:
                 tempTagList.remove('支援')
                 break
             sleep(0.5)
+
         self.regAns = self.getAns(tempTagList)
         '''if self.srcBefore != None:
             isSame = pictureFind.matchImg(src,self.srcBefore,confidencevalue=0.99)
