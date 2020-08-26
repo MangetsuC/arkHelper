@@ -16,7 +16,7 @@ class BlackBoard(QWidget):
         self.setStyleSheet('''BlackBoard{background:#272626}
                                 QPushButton{border:0px;background:#272626;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:12pt;}
                                 QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
-                                QPushButton:pressed{background:#606162;font:9pt;}
+                                QPushButton:pressed{background:#606162;font:11pt;}
                                 QTextBrowser{background-color:#292A2A;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:14pt;
                                 border-width:0px;border-style:outset;}
                                 ''')
