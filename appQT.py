@@ -26,7 +26,7 @@ from foo.ui.UIschedule import JsonEdit
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.4.2'
+        self.ver = '2.4.3'
         self.initFile()
         self.initVar()
         self.initUI()
@@ -663,6 +663,11 @@ class App(QWidget):
             self.checkUpdate()
             self.showMessage()
 
+    def afterInit(self):
+        thAfterInit = Thread(target=self.checkNotice)
+        thAfterInit.setDaemon(False)
+        thAfterInit.start()
+    
     def start(self):
         self.doctorFlag = self.battle.connect()
         if self.scheduleFlag:
@@ -705,5 +710,5 @@ if __name__ == '__main__':
     app.processEvents()
     ex = App()
     exLaunch.finish(ex)
-    ex.checkNotice()
+    ex.afterInit()
     sys.exit(app.exec_())
