@@ -715,21 +715,6 @@ class App(QWidget):
             self.thRun.start()
         else:
             self.stop()  
-       
-
-
-class RunBoardThread(QThread):
-    updateText = pyqtSignal(str)
-
-    def __init__(self, newText):
-        super().__init__()
-        self.text = newText
-    
-    def run(self):
-        for i in range(100):
-            self.updateText.emit(str(i))
-        print('in thread')
-
 
 if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
