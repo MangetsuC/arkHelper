@@ -6,11 +6,11 @@ from threading import Thread
 from webbrowser import open as openUrl
 from urllib import request
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal, QThread
 from PyQt5.QtGui import QCursor, QIcon, QMouseEvent, QScreen
 from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QDesktopWidget,
                              QGridLayout, QInputDialog, QLabel, QMenu,
-                             QPushButton, QWidget)
+                             QPushButton, QWidget, QMessageBox)
 
 from foo.adb.adbCtrl import Adb
 from foo.arknight.Battle import BattleLoop
@@ -266,6 +266,11 @@ class App(QWidget):
         self.btnClose = QPushButton('退出',self) #退出按钮
         self.btnClose.setFixedSize(75, 85)
         self.btnClose.clicked.connect(self.exit)
+
+        self.btnShowBoard = QPushButton('显示公告',self)
+        self.btnShowBoard.setFixedSize(75, 40)
+        self.btnShowBoard.clicked.connect(self.showMessage)
+        self.btnShowBoard.hide()
         
         self.lNotice = QLabel('按此处可拖动窗口')
 
@@ -284,6 +289,7 @@ class App(QWidget):
         self.grid.addWidget(self.btnMin, 1, 3, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnClose, 1, 4, 2, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnSchJson, 2, 2, 1, 2, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnShowBoard, 3, 1, 1, 1, alignment=Qt.AlignRight)
         self.grid.addWidget(self.lNotice, 3, 3, 1, 2, alignment=Qt.AlignRight)
 
         self.setLayout(self.grid)
@@ -647,25 +653,32 @@ class App(QWidget):
                     if int(newVersion[eachVerNum]) > int(tempSelfVersion[eachVerNum]):
                         self.lNotice.setText('*有新版本*')
 
-    def showMessage(self):
+    def checkMessage(self):
         if self.content != 'failed to get content':
             msgVer = self.content.split('[msgVer]')[1]
             if (not self.config.has_option('notice', 'msgver')) or self.config.getint('notice', 'msgver') < int(msgVer):
-                if not self.config.has_section('notice'):
-                    self.config.add_section('notice')
-                self.changeDefault('msgver', msgVer, sec = 'notice')
-                msg = self.content.split('[text]')[1]
-                self.board.showNotice(msg)
-                #弹出公告
+                self.btnShowBoard.show()
 
-    def checkNotice(self):
+    
+    def showMessage(self):
+        msgVer = self.content.split('[msgVer]')[1]
+        if not self.config.has_section('notice'):
+            self.config.add_section('notice')
+        self.changeDefault('msgver', msgVer, sec = 'notice')
+        #self.changeDefault('msgver', '1', sec = 'notice')
+        msg = self.content.split('[text]')[1]
+        self.board.updateText(msg)
+        self.board.show()
+        #弹出公告
+
+    def checkAll(self):
         if self.config.getboolean('notice', 'enable'):
             self.checkUpdate()
-            self.showMessage()
+            self.checkMessage()
 
     def afterInit(self):
-        thAfterInit = Thread(target=self.checkNotice)
-        thAfterInit.setDaemon(False)
+        thAfterInit = Thread(target=self.checkAll)
+        thAfterInit.setDaemon(True)
         thAfterInit.start()
     
     def start(self):
@@ -703,6 +716,21 @@ class App(QWidget):
         else:
             self.stop()  
        
+
+
+class RunBoardThread(QThread):
+    updateText = pyqtSignal(str)
+
+    def __init__(self, newText):
+        super().__init__()
+        self.text = newText
+    
+    def run(self):
+        for i in range(100):
+            self.updateText.emit(str(i))
+        print('in thread')
+
+
 if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)

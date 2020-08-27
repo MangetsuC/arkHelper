@@ -1,8 +1,12 @@
 import sys
 from PyQt5.QtWidgets import QSplashScreen, QLabel, QWidget, QPushButton, QGridLayout, QTextBrowser, QApplication
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from os import getcwd
+from threading import Thread
+from urllib import request
+from configparser import ConfigParser
+from  time import sleep
 
 class Launch(QSplashScreen):
     def __init__(self):
@@ -31,7 +35,6 @@ class BlackBoard(QWidget):
         self.btnKnow.clicked.connect(self.close)
         self.boardNotice = QTextBrowser(self)
         self.boardNotice.setMinimumSize(600,400)
-        self.boardNotice.setText('这会没有公告')
 
         self.grid = QGridLayout()
         self.grid.addWidget(self.boardNotice,0,0,1,4)
@@ -39,11 +42,25 @@ class BlackBoard(QWidget):
 
         self.setLayout(self.grid)
         self.grid.setVerticalSpacing(5)
-        
-    def showNotice(self,text):
-        self.boardNotice.setText(text)
-        self.show()
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.mousePos = event.globalPos() - self.pos() #获取鼠标相对窗口的位置
+            self.moveFlag = True
+            event.accept()
+            
+    def mouseMoveEvent(self, QMouseEvent):
+        if Qt.LeftButton and self.moveFlag:  
+            self.move(QMouseEvent.globalPos() - self.mousePos) #更改窗口位置
+            QMouseEvent.accept()
+            
+    def mouseReleaseEvent(self, QMouseEvent):
+        #停止窗口移动
+        self.moveFlag = False
+    
+    def updateText(self, newText):
+        self.boardNotice.setText(newText)
+        #self.show()
 
 if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
