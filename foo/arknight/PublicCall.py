@@ -97,68 +97,6 @@ class PublicCall:
         self.lock = Lock()
         self.tagOnScreenList = []
         #self.monitorFlag = False
-        self.test = ['快速复活', '输出', '治疗', '近卫', '特种']
-
-    def trans(self, name):
-        ans = None
-        if name == 'bkfa.png':
-            ans = '爆发'
-        elif name == 'fhhu.png':
-            ans = '防护'
-        elif name == 'fuvu.png':
-            ans = '辅助'
-        elif name == 'fzyshvfu.png':
-            ans = '费用回复'
-        elif name == 'gkjiziuf.png':
-            ans = '高级资深干员'
-        elif name == 'jmsu.png':
-            ans = '减速'
-        elif name == 'jnvj.png':
-            ans = '近战位'
-        elif name == 'jnwz.png':
-            ans = '近卫'
-        elif name == 'juji.png':
-            ans = '狙击'
-        elif name == 'ksih.png':
-            ans = '控场'
-        elif name == 'kysufuho.png':
-            ans = '快速复活'
-        elif name == 'qpgs.png':
-            ans = '群攻'
-        elif name == 'tevs.png':
-            ans = '特种'
-        elif name == 'ugcp.png':
-            ans = '生存'
-        elif name == 'uuiu.png':
-            ans = '输出'
-        elif name == 'uuui.png':
-            ans = '术士'
-        elif name == 'vilc.png':
-            ans = '治疗'
-        elif name == 'viyr.png':
-            ans = '支援'
-        elif name == 'viyrjixx.png':
-            ans = '支援机械'
-        elif name == 'vkhr.png':
-            ans = '召唤'
-        elif name == 'vsvd.png':
-            ans = '重装'
-        elif name == 'wzyi.png':
-            ans = '位移'
-        elif name == 'xmfg.png':
-            ans = '先锋'
-        elif name == 'xnub.png':
-            ans = '新手'
-        elif name == 'xtro.png':
-            ans = '削弱'
-        elif name == 'yilc.png':
-            ans = '医疗'
-        elif name == 'yrig.png':
-            ans = '远程位'
-        elif name == 'ziuf.png':
-            ans = '资深干员'
-
-        return ans
     
     def getTag(self, src):
         #tempT = perf_counter()
@@ -183,7 +121,40 @@ class PublicCall:
 
         #print('识别'+str(perf_counter() - tempT))
         #print(self.tagOnScreenList)
-        return self.tagOnScreenList
+        tZS = None
+        tZY = None
+        tGZ = None
+        tJX = None
+        if not(self.tagOnScreenList == [] or len(self.tagOnScreenList) == 5):
+            for each in range(len(self.tagOnScreenList)):
+                if '资深干员' == self.tagOnScreenList[each][0]:
+                    tZS = self.tagOnScreenList[each]
+                if '高级资深干员' == self.tagOnScreenList[each][0]:
+                    tGZ = self.tagOnScreenList[each]
+                if '支援' == self.tagOnScreenList[each][0]:
+                    tZY = self.tagOnScreenList[each]
+                if '支援机械' == self.tagOnScreenList[each][0]:
+                    tJX = self.tagOnScreenList[each]
+            if tZS != None and tGZ != None:
+                if abs(tZS[1][0] - tGZ[1][0]) < 50 and abs(tZS[1][1] - tGZ[1][1]) < 5:
+                    self.tagOnScreenList.remove(tZS)
+            if tZY != None and tJX != None:
+                if abs(tZY[1][0] - tJX[1][0]) < 50 and abs(tZY[1][1] - tJX[1][1]) < 5:
+                    self.tagOnScreenList.remove(tZY)
+        if len(self.tagOnScreenList) == 5:
+            self.tagOnScreenList.sort(key = lambda x:x[1][1])
+            tagOnScreenBefore3 = self.tagOnScreenList[0:3]
+            tagOnScreenlast2 = self.tagOnScreenList[3:5]
+            tagOnScreenBefore3.sort(key = lambda x:x[1][0])
+            tagOnScreenlast2.sort(key = lambda x:x[1][0])
+            tagsInTurn = []
+            for eachTag in tagOnScreenBefore3:
+                tagsInTurn.append(eachTag[0])
+            for eachTag in tagOnScreenlast2:
+                tagsInTurn.append(eachTag[0])
+            return tagsInTurn
+        else:
+            return []
 
     def matchTag(self, src, objList):
         for each in objList:
@@ -194,7 +165,7 @@ class PublicCall:
             if tInfo != None:
                 self.lock.acquire()
                 #self.tagOnScreenList.append(self.trans(tInfo['obj']))
-                self.tagOnScreenList.append(tInfo['obj'][:-4])
+                self.tagOnScreenList.append((tInfo['obj'][:-4], tInfo['result']))
                 self.lock.release()
 
     
@@ -203,7 +174,7 @@ class PublicCall:
         if tagOnScreenList == []:
             #print('匹配'+str(perf_counter() - tempT))
             return False
-        tagOnScreenList.sort()
+        #tagOnScreenList.sort()
         if '高级资深干员' in tagOnScreenList:
             applyTagDict = self.highTagDict
         else:
@@ -344,41 +315,10 @@ class PublicCall:
             sleep(0.5)
 
         self.regAns = self.getAns(tempTagList)
-        '''if self.srcBefore != None:
-            isSame = pictureFind.matchImg(src,self.srcBefore,confidencevalue=0.99)
-            if isSame == None:
-                self.srcBefore = {'pic':src,'obj':'tags'}
-                while True:
-                    tempTagList = self.getTag(src)
-                    if tempTagList == [] or len(tempTagList) == 5:
-                        break
-                    elif '资深干员' in tempTagList and '高级资深干员' in tempTagList:
-                        tempTagList.remove('资深干员')
-                        break
-                    elif '支援' in tempTagList and '支援机械' in tempTagList:
-                        tempTagList.remove('支援')
-                        break
-                #print(tempTagList)
-                self.regAns = self.getAns(tempTagList)
-            else:
-                sleep(0.5)
-        else:
-            self.srcBefore = {'pic':src,'obj':'tags'}
-            while True:
-                tempTagList = self.getTag(src)
-                if tempTagList == [] or len(tempTagList) == 5:
-                    break
-                elif '资深干员' in tempTagList and '高级资深干员' in tempTagList:
-                    tempTagList.remove('资深干员')
-                    break
-                elif '支援' in tempTagList and '支援机械' in tempTagList:
-                    tempTagList.remove('支援')
-                    break
-                #print(tempTagList)
-            self.regAns = self.getAns(tempTagList)'''
         return self.regAns
 
 
 if __name__ == "__main__":
     test = PublicCall(None, r'E:\workSpace\CodeRelease\arknightHelper\arkHelper')
-    print(test.run())
+    src = imread('E:/workSpace/CodeRelease/arknightHelper/source/tag/test.png')
+    print(test.getTag(src))
