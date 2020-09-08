@@ -25,7 +25,19 @@ class JsonEdit(QWidget):
                                 QComboBox:selected{background-color:#606162;}
                                 QComboBox:QAbstractItemView::item{font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
                                 QComboBox:QAbstractItemView::item:selected{background-color:#606162;}
-                                QInputDialog{background-color:#272626;}''')
+                                QInputDialog{background-color:#272626;}
+                                QScrollBar:vertical{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:2px;padding-bottom:2px;}
+                                QScrollBar:handle:vertical{width:8px;background:rgba(0,0,0,25%);border-radius:4px;min-height:20;}
+                                QScrollBar:handle:vertical:hover{width:8px;background:rgba(0,0,0,50%);border-radius:4px;min-height:20;}
+                                QScrollBar:add-line:vertical{height:0px;width:0px;subcontrol-position:bottom;}
+                                QScrollBar:sub-line:vertical{height:0px;width:0px;subcontrol-position:top;}
+                                QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{background:rgba(0,0,0,10%);border-radius:4px;}
+                                QScrollBar:horizontal{height:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}
+                                QScrollBar:handle:horizontal{width:8px;background:rgba(0,0,0,25%);border-radius:4px;min-height:20;}
+                                QScrollBar:handle:horizontal:hover{width:8px;background:rgba(0,0,0,50%);border-radius:4px;min-height:20;}
+                                QScrollBar:add-line:horizontal{height:0px;width:0px;subcontrol-position:bottom;}
+                                QScrollBar:sub-line:horizontal{height:0px;width:0px;subcontrol-position:top;}
+                                QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{background:rgba(0,0,0,10%);border-radius:4px;}''')
 
         self.setWindowIcon(QIcon(ico))
         self.isshow = False
