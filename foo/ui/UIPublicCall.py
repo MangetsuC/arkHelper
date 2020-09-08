@@ -6,7 +6,7 @@ from time import sleep, perf_counter
 path.append(getcwd())
 from foo.arknight.PublicCall import PublicCall
 
-from PyQt5.QtWidgets import QDialog, QGridLayout, QTextBrowser, QPushButton, QLabel, QWidget, QScrollArea
+from PyQt5.QtWidgets import QDialog, QGridLayout, QPushButton, QLabel, QWidget, QScrollArea
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QTimer
 
@@ -85,7 +85,6 @@ class UIPublicCall(QDialog):
         #self.setFixedWidth(430)
         
         self.setStyleSheet('''UIPublicCall{background-color:#272626;}
-        QTextBrowser{background-color:#4d4d4d;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:14pt;}
         QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}
                                 QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
                                 QPushButton:pressed{background:#606162;font:9pt;}
