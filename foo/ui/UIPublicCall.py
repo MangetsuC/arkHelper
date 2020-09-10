@@ -1,6 +1,7 @@
 from os import getcwd
 from sys import path
 from threading import Thread, Lock
+from multiprocessing import Process
 from time import sleep, perf_counter
 
 path.append(getcwd())
@@ -15,7 +16,7 @@ class UIPublicCall(QDialog):
         super().__init__(parent=parent, flags=flags)
         self.initVar(adb, battle, cwd, btnCheck)
         self.initUI()
-        self.myTimer()
+        #self.myTimer()
         
     def initVar(self, adb, battle, cwd, btnCheck):
         self.cwd = cwd
@@ -23,6 +24,9 @@ class UIPublicCall(QDialog):
         self.btnCheck = btnCheck
         
         self.publicCall = PublicCall(adb, self.cwd)
+
+        self.isThTagExit = False
+        self.isTimerExit = False
         
         self.tags = []
         self.text = '正在连接'
@@ -92,17 +96,17 @@ class UIPublicCall(QDialog):
         QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}
         QScrollArea{background-color:#4d4d4d;}
         QScrollBar:vertical{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:2px;padding-bottom:2px;}
-        QScrollBar:handle:vertical{width:8px;background:rgba(0,0,0,25%);border-radius:4px;min-height:20;}
-        QScrollBar:handle:vertical:hover{width:8px;background:rgba(0,0,0,50%);border-radius:4px;min-height:20;}
+        QScrollBar:handle:vertical{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}
+        QScrollBar:handle:vertical:hover{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}
         QScrollBar:add-line:vertical{height:0px;width:0px;subcontrol-position:bottom;}
         QScrollBar:sub-line:vertical{height:0px;width:0px;subcontrol-position:top;}
-        QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{background:rgba(0,0,0,10%);border-radius:4px;}
+        QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{background:rgba(0,0,0,10%);border-radius:0px;}
         QScrollBar:horizontal{height:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}
-        QScrollBar:handle:horizontal{width:8px;background:rgba(0,0,0,25%);border-radius:4px;min-height:20;}
-        QScrollBar:handle:horizontal:hover{width:8px;background:rgba(0,0,0,50%);border-radius:4px;min-height:20;}
+        QScrollBar:handle:horizontal{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}
+        QScrollBar:handle:horizontal:hover{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}
         QScrollBar:add-line:horizontal{height:0px;width:0px;subcontrol-position:bottom;}
         QScrollBar:sub-line:horizontal{height:0px;width:0px;subcontrol-position:top;}
-        QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{background:rgba(0,0,0,10%);border-radius:4px;}''')
+        QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{background:rgba(0,0,0,10%);border-radius:0px;}''')
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
     
@@ -199,43 +203,35 @@ class UIPublicCall(QDialog):
 
 
     def myTimer(self):
+        self.isTimerExit = True
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateBrowser)
         self.timer.start(10)
         
 
     def updateUI(self):
+        self.isThTagExit = True
         self.thSetText = Thread(target=self.getTextBrowser)
         self.thSetText.setDaemon(True)
         self.thSetText.start()
 
     def turnOn(self):
-        self.monitorFlag = True
+        self.myTimer()
+        self.totalFlag = True
         self.updateUI()
         self.show()
 
     def turnOff(self):
-        self.monitorFlag = False
+        self.btnCheck.setChecked(False)
+        if self.isTimerExit:
+            self.timer.stop()
         self.totalFlag = False
         self.battle.stop()
         #self.timer.stop()
         self.hide()
-        self.thSetText.join()
+        if self.isThTagExit:
+            self.thSetText.join()
 
     def closeEvent(self, event):
-        if not self.isExit:
-            event.ignore()
-            self.btnCheck.setChecked(False)
-            self.turnOff()
-        else:
-            if self.monitorFlag:
-                self.totalFlag = False
-                self.battle.stop()
-                self.thSetText.join()
-            event.accept()
-
-    def exit(self):
-        self.isExit = True
-        self.totalFlag = False
-        self.timer.stop()
-        self.close()
+        self.turnOff()
+        event.accept()

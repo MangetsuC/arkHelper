@@ -625,7 +625,7 @@ class App(QWidget):
         self.hide()
         self.stop()
         self.console.exit()
-        self.publicCall.exit()
+        self.publicCall.close()
         self.adb.killAdb()
         self.close()
 

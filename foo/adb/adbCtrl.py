@@ -65,7 +65,17 @@ class Adb:
         self.screenY = 810
 
     def startAdb(self):
-        self.cmd.run('adb start-server')
+        adbstr = self.cmd.run('adb start-server')
+        print(adbstr)
+        if 'daemon started successfully' in adbstr:
+            print('start adb successfully')
+            return True
+        elif adbstr == '':
+            print('already strat adb')
+            return True
+        else:
+            print('start adb failed')
+            return False
     
     def changeConfig(self, config):
         if config == None:
@@ -76,6 +86,7 @@ class Adb:
 
 
     def connect(self):
+        self.cmd.run('adb start-server')
         self.cmdText = self.cmd.run('adb connect {0}'.format(self.ip))
         print(self.cmdText)
         if ('connected to' in self.cmdText) and ('nable' not in self.cmdText):
