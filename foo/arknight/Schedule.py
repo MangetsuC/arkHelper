@@ -215,6 +215,7 @@ class BattleSchedule:
                         self.switchB = False
                         return True #返回True用来跳过此关
 
+            isInBattle = False
             #sleep(1)
             for eachObj in self.listBattleImg:
                 if self.switch and self.switchB:
@@ -226,6 +227,11 @@ class BattleSchedule:
                     picInfo = pictureFind.matchImg(self.screenShot, eachObj, confidence)
                     #print(eachObj+ '：', picInfo)
                     if picInfo != None:
+                        if eachObj['obj'] == "startBpart.png":
+                            isInBattle = True
+                        else:
+                            isInBattle = False
+
                         picPos = picInfo['result']
                         if countStep == 0:
                             if eachObj['obj'] == 'startBpart.png':
@@ -314,7 +320,9 @@ class BattleSchedule:
                         else:
                             self.adb.click(picPos[0], picPos[1], isSleep = True)
                         break
-    
+            if isInBattle:
+                sleep(1)
+                
     def readJson(self):
         with open(self.json,'r', encoding='UTF-8') as s:
             data = s.read()

@@ -59,6 +59,7 @@ class BattleLoop:
 
 
     def run(self, switchI):
+        isInBattle = False
         restStone = self.stoneMaxNum
         isFirstTurn = True
         self.switch = switchI
@@ -105,6 +106,10 @@ class BattleLoop:
                         picInfo = pictureFind.matchImg(self.screenShot, eachObj, confidence)
                         #print(eachObj+ '：', picInfo)
                         if picInfo != None:
+                            if eachObj['obj'] == "startBpart.png":
+                                isInBattle = True
+                            else:
+                                isInBattle = False
                             picPos = picInfo['result']
                             if eachObj['obj'] == "cancel.png":
                                 if self.autoRecMed or self.autoRecStone:
@@ -158,7 +163,8 @@ class BattleLoop:
                                         toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
 
                             break
-                #sleep(1)
+                if isInBattle:
+                    sleep(1)
     def stop(self):
         self.connectSwitch = False
         self.switch = False

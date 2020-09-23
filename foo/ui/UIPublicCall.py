@@ -1,9 +1,7 @@
 from os import getcwd
 from sys import path
 from threading import Thread, Lock
-from multiprocessing import Process
 from time import sleep, perf_counter
-
 path.append(getcwd())
 from foo.arknight.PublicCall import PublicCall
 
@@ -208,12 +206,12 @@ class UIPublicCall(QDialog):
         self.timer.timeout.connect(self.updateBrowser)
         self.timer.start(10)
         
-
     def updateUI(self):
         self.isThTagExit = True
         self.thSetText = Thread(target=self.getTextBrowser)
         self.thSetText.setDaemon(True)
         self.thSetText.start()
+
 
     def turnOn(self):
         self.myTimer()

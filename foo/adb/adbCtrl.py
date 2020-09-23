@@ -1,11 +1,10 @@
-from os import path, remove
+from os import path, remove, getcwd
 from time import sleep, perf_counter
 from subprocess import Popen, PIPE
 from re import split as resplit
+#from PIL import Image, ImageFile
 
-from PIL import Image, ImageFile
-
-ImageFile.LOAD_TRUNCATED_IMAGES = True
+#ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def delImg(dir):
     if path.exists(dir):
@@ -25,7 +24,7 @@ class Cmd():
         self.path 
 
     def run(self, code, waitTime = 60):
-        self.p = Popen(code, shell = True, stdout = PIPE, stderr = PIPE, bufsize = 1, cwd = self.path)
+        self.p = Popen(code, shell = True, stdout = PIPE, stderr = PIPE, bufsize = -1, cwd = self.path)
         strout = self.p.communicate()[0].decode('gbk').replace('\r\n', '\n')
         strerr = self.p.communicate()[1].decode('gbk').replace('\r\n', '\n')
         if len(strerr) > 0:
@@ -133,9 +132,9 @@ class Adb:
         pic1.write(bys)
         pic1.close()
 
-        tempImg = Image.open(self.adbPath + '/' + pngName +'.png')
+        '''tempImg = Image.open(self.adbPath + '/' + pngName +'.png')
         out = tempImg.resize((1440,810),Image.ANTIALIAS)
-        out.save(self.adbPath + '/' + pngName +'.png', 'png')
+        out.save(self.adbPath + '/' + pngName +'.png', 'png')'''
         return True
 
     def click(self, x, y, isSleep = True):

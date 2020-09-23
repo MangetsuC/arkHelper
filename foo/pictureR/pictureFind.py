@@ -1,10 +1,68 @@
-from aircv import imread, find_template
-from PIL import Image
-from PIL.ImageOps import invert
-from os import remove, path, getcwd, listdir
+#from aircv import find_template
+from os import getcwd, listdir, path, remove
 from re import split as resplit
-from cv2 import imdecode,fillConvexPoly,imshow,waitKey,copyTo
-from numpy import fromfile,array,zeros
+
+from cv2 import (COLOR_BGR2GRAY, TM_CCOEFF_NORMED, Canny, copyTo, cvtColor,
+                 fillConvexPoly, imdecode, imshow, matchTemplate, minMaxLoc, resize)
+from cv2 import split as cvsplit
+from cv2 import waitKey
+from numpy import array, fromfile, zeros
+
+
+def imreadCH(filename):
+    return imdecode(fromfile(filename,dtype="uint8"),-1)
+
+def find_template(im_source, im_search, threshold=0.5, rgb=False, bgremove=False):
+    '''
+    Locate image position with cv2.templateFind
+
+    Use pixel match to find pictures.
+
+    Args:
+        im_source(string): 图像、素材
+        im_search(string): 需要查找的图片
+        threshold: 阈值，当相识度小于该阈值的时候，就忽略掉
+
+    Returns:
+        A tuple of found [(point, score), ...]
+
+    Raises:
+        IOError: when file read error
+    '''
+    #本函数来自于 https://github.com/NetEaseGame/aircv ，做了一定修改
+
+    method = TM_CCOEFF_NORMED
+
+    if rgb:
+        s_bgr = cvsplit(im_search) # Blue Green Red
+        i_bgr = cvsplit(im_source)
+        weight = (0.3, 0.3, 0.4)
+        resbgr = [0, 0, 0]
+        for i in range(3): # bgr
+            resbgr[i] = matchTemplate(i_bgr[i], s_bgr[i], method)
+        res = resbgr[0]*weight[0] + resbgr[1]*weight[1] + resbgr[2]*weight[2]
+    else:
+        s_gray = cvtColor(im_search, COLOR_BGR2GRAY)
+        i_gray = cvtColor(im_source, COLOR_BGR2GRAY)
+        # 边界提取(来实现背景去除的功能)
+        if bgremove:
+            s_gray = Canny(s_gray, 100, 200)
+            i_gray = Canny(i_gray, 100, 200)
+
+        res = matchTemplate(i_gray, s_gray, method)
+    w, h = im_search.shape[1], im_search.shape[0]
+
+    min_val, max_val, min_loc, max_loc = minMaxLoc(res)
+    top_left = max_loc
+    if max_val < threshold:
+        return None
+    # calculator middle point
+    middle_point = (top_left[0]+w/2, top_left[1]+h/2)
+    result = dict(
+        result=middle_point,
+        rectangle=(top_left, (top_left[0], top_left[1] + h), (top_left[0] + w, top_left[1]), (top_left[0] + w, top_left[1] + h)),
+        confidence=max_val)
+    return result
 
 def picRead(pics):
     temp = []
@@ -12,12 +70,12 @@ def picRead(pics):
     if isinstance(pics,list):
         for eachPic in pics:
             tempDict = dict()
-            tempDict['pic'] = imdecode(fromfile(eachPic,dtype="uint8"),-1)
+            tempDict['pic'] = imreadCH(eachPic)
             tempDict['obj'] = resplit(r'[\\ /]', eachPic)[-1]
             temp.append(tempDict)
         return temp
     else:
-        tempDict['pic'] = imdecode(fromfile(pics,dtype="uint8"),-1)
+        tempDict['pic'] = imreadCH(pics)
         tempDict['obj'] = resplit(r'[\\ /]', pics)[-1]
         return tempDict
 
@@ -25,18 +83,20 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8):  #imgsrc=原始图像，imgobj=
     '用于查找原始图片中的单一目标图片，如果原始图片中可找到多个目标图片，则随机返回一个匹配的结果，返回值为一个字典'
     try:
         if isinstance(imgsrc,str):
-            imsrc = imread(imgsrc)
+            imsrc = imreadCH(imgsrc)
         else:
             imsrc = imgsrc
     except RuntimeError:
         return None
     #imobj = imread(imgobj)
     if isinstance(imgobj,str):
-        imobj = imdecode(fromfile(imgobj,dtype="uint8"),-1)
+        imobj = imreadCH(imgobj)
     else:
         imobj = imgobj['pic']    #现在此情况传入的一定是字典
+    imsrc = resize(imsrc, (1440, 810))
 
     match_result = find_template(imsrc,imobj,confidencevalue)
+    #match_result = None
     if match_result != None:
         if isinstance(imgobj,str):
             match_result['obj'] = resplit(r'[\\ /]', imgobj)[-1]
@@ -52,16 +112,18 @@ def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, maxReturn=-1, colorSpace 
     maxReturn = int(maxReturn)
     if isinstance(imgsrc,str):
         try:
-            imsrc = imread(imgsrc)
+            imsrc = imreadCH(imgsrc)
         except RuntimeError:
             return None
     else:
         imsrc = imgsrc
-    imobj = imread(imgobj)
+    imsrc = resize(imsrc, (1440, 810))
+    imobj = imreadCH(imgobj)
     matchRect = []
     matchPositionXY = []
     while True:
         match_result = find_template(imsrc,imobj,confidencevalue) 
+        #match_result = None
         if match_result != None and maxReturn != 0:
             matchPositionXY.append(list(match_result['result']))
             maxReturn -= 1
@@ -80,7 +142,8 @@ def levelOcr(imgsrc):
     confidence = 0.88 #调试时使用相似度
 
     mask = zeros((810,1440),dtype = "uint8")
-    nowLevel = imread(imgsrc)
+    nowLevel = imreadCH(imgsrc)
+    nowLevel = resize(nowLevel, (1440, 810))
     operationList = matchMultiImg(nowLevel, cwd + "/res/fontLibrary/other/OPERATION.png", colorSpace=0)
     if operationList[2] != None:
         for eachRect in operationList[2]:

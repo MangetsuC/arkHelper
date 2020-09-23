@@ -302,7 +302,7 @@ class PublicCall:
         #self.srcBefore = {'pic':src,'obj':'tags'}
         while True:
             self.adb.screenShot(pngName='PCScreenshot')
-            src = imread(self.screenShot)
+            src = pictureFind.imreadCH(self.screenShot)
             tempTagList = self.getTag(src)
             if tempTagList == [] or len(tempTagList) == 5:
                 break
