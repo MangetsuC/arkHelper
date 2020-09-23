@@ -1,4 +1,4 @@
-aircv==1.4.6
 win10toast==0.9
-Pillow==7.1.2
-PyQt5==5.15.0
+opencv_python==4.4.0.42
+numpy==1.19.2
+PyQt5==5.15.1

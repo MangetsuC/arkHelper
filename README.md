@@ -25,9 +25,9 @@ One Easy-Use Arknight Helper	一款明日方舟护肝小助手
 
 | 库         | 版本  |
 | ---------- | ----- |
-| aircv      | 1.4.6 |
+| opencv_python | 4.4.0.42 |
 | win10toast | 0.9   |
-| Pillow     | 7.1.2|
+| numpy | 1.19.2 |
 |PyQt5|5.15.0|
 
 > 你也可以在仓库里找到requirements.txt，并使用pip install -r requirements.txt来部署环境。
@@ -126,3 +126,4 @@ One Easy-Use Arknight Helper	一款明日方舟护肝小助手
 已经实现了，而且还挺好用，期待大家提出优化建议
 目前的计划是为计划作战增加一个统计面板
 以及下一步的基建部分的实现（更难了）
+在日日日日日日日后，考虑一下把小助手迁移到c++上，大概会提升点运行效率
