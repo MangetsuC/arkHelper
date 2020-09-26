@@ -97,9 +97,9 @@ class Booty:
             #imshow('test', bootyNumPic)
             #waitKey(0)
 
-            oneCheck = pictureFind.matchImg(bootyNumPic, self.one)
+            oneCheck = pictureFind.matchImg(bootyNumPic, self.one, targetSize=(0,0))
             #print(oneCheck)
-            twoCheck = pictureFind.matchImg(bootyNumPic, self.two)
+            twoCheck = pictureFind.matchImg(bootyNumPic, self.two, targetSize=(0,0))
             #print(twoCheck)
             if oneCheck != None:
                 return 1

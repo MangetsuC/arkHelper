@@ -26,7 +26,7 @@ from foo.ui.UIschedule import JsonEdit
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.4.4'
+        self.ver = '2.4.5'
         self.initFile()
         self.initVar()
         self.initUI()
