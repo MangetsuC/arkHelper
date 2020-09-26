@@ -79,7 +79,7 @@ def picRead(pics):
         tempDict['obj'] = resplit(r'[\\ /]', pics)[-1]
         return tempDict
 
-def matchImg(imgsrc,imgobj,confidencevalue=0.8):  #imgsrc=原始图像，imgobj=待查找的图片
+def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc=原始图像，imgobj=待查找的图片
     '用于查找原始图片中的单一目标图片，如果原始图片中可找到多个目标图片，则随机返回一个匹配的结果，返回值为一个字典'
     try:
         if isinstance(imgsrc,str):
@@ -93,7 +93,8 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8):  #imgsrc=原始图像，imgobj=
         imobj = imreadCH(imgobj)
     else:
         imobj = imgobj['pic']    #现在此情况传入的一定是字典
-    imsrc = resize(imsrc, (1440, 810))
+    if targetSize != (0,0):
+        imsrc = resize(imsrc, targetSize)
 
     match_result = find_template(imsrc,imobj,confidencevalue)
     #match_result = None

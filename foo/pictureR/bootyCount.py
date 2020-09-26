@@ -70,7 +70,7 @@ class Booty:
         scs = scs[770:1080, 710:1920]
         #imshow('test', scs)
         #waitKey(0)
-        bootyInfo = pictureFind.matchImg(scs, self.bootyList[bootyName], confidencevalue=0.5)
+        bootyInfo = pictureFind.matchImg(scs, self.bootyList[bootyName], confidencevalue=0.5, targetSize=(0,0))
         if bootyInfo == None:
             return 0
         else:
