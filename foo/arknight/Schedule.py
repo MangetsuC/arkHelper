@@ -221,23 +221,39 @@ class BattleSchedule:
             '''if isFirstTurn:
                 isFirstTurn = False'''
             picStartA = pictureFind.matchImg(self.screenShot, self.startA, confidencevalue= 0.9)
-            if picStartA != None:
+            if picStartA != None and self.switch and self.switchB:
                 print('> auto mode check <')
                 picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                if picAutoOn == None:
+                if picAutoOn == None and self.switch and self.switchB:
                     picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
-                    if picAutoOff != None:
+                    if picAutoOff != None and self.switch and self.switchB:
                         posAutoOff = picAutoOff['result']
                         self.adb.click(posAutoOff[0], posAutoOff[1])
 
-                isSSSuccess = self.adb.screenShot()
-                if not isSSSuccess:
-                    print('unable to get screenshot')
-                    self.switchB = False
-                    return False
+                isDelayExit = False #加载延迟是否出现，即检查到开始行动A但实际上是正在进入关卡前的状态
+                for i in range(5):
+                    if self.switch and self.switchB:
+                        break
+                    isSSSuccess = self.adb.screenShot()
+                    if not isSSSuccess:
+                        print('unable to get screenshot')
+                        self.switchB = False
+                        return False
+                    for eachObj in self.listBattleImg:
+                        if self.switch and self.switchB:
+                            break
+                        picInfo = pictureFind.matchImg(self.screenShot, eachObj, 0.8)
+                        if picInfo != None:
+                            if eachObj['obj'] != "startApart.png":
+                                isDelayExit  = True
+                                break
 
-                picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                if picAutoOn == None:
+                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                    if picAutoOn != None or isDelayExit:
+                        if isDelayExit:
+                            print("start delay exit")
+                        break
+                else:
                     print('auto mode still off')
                     self.switchB = False
                     return True #返回True用来跳过此关
