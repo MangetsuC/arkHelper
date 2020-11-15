@@ -61,7 +61,7 @@ class BattleLoop:
     def run(self, switchI):
         isInBattle = False
         restStone = self.stoneMaxNum
-        isFirstTurn = True
+        #isFirstTurn = True
         self.switch = switchI
 
         if self.switch:
@@ -70,30 +70,30 @@ class BattleLoop:
             while self.switch:
                 self.adb.screenShot()
                 #判断代理指挥是否勾选
-                if isFirstTurn:
-                    isFirstTurn = False
-                    picStartA = pictureFind.matchImg(self.screenShot, self.startA, confidencevalue= 0.9)
-                    if picStartA != None:
-                        print('> auto mode check <')
-                        picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                        if picAutoOn == None:
-                            picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
-                            if picAutoOff != None:
-                                posAutoOff = picAutoOff['result']
-                                self.adb.click(posAutoOff[0], posAutoOff[1])
+                '''if isFirstTurn:
+                    isFirstTurn = False'''
+                picStartA = pictureFind.matchImg(self.screenShot, self.startA, confidencevalue= 0.9)
+                if picStartA != None:
+                    print('> auto mode check <')
+                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                    if picAutoOn == None:
+                        picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
+                        if picAutoOff != None:
+                            posAutoOff = picAutoOff['result']
+                            self.adb.click(posAutoOff[0], posAutoOff[1])
 
-                        isSSSuccess = self.adb.screenShot()
-                        if not isSSSuccess:
-                            toast.broadcastMsg("ArkHelper", "获取屏幕信息失败，请重启模拟器", self.ico)
-                            print('unable to get screenshot')
-                            self.switch = False
-                            break
-                        picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                        if picAutoOn == None:
-                            toast.broadcastMsg("ArkHelper", "无法勾选代理指挥", self.ico)
-                            print('auto mode still off')
-                            self.switch = False
-                            break
+                    isSSSuccess = self.adb.screenShot()
+                    if not isSSSuccess:
+                        toast.broadcastMsg("ArkHelper", "获取屏幕信息失败，请重启模拟器", self.ico)
+                        print('unable to get screenshot')
+                        self.switch = False
+                        break
+                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                    if picAutoOn == None:
+                        toast.broadcastMsg("ArkHelper", "无法勾选代理指挥", self.ico)
+                        print('auto mode still off')
+                        self.switch = False
+                        break
 
                 #sleep(1)
                 for eachObj in self.listImg:

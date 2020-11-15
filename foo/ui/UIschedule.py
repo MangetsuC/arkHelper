@@ -49,14 +49,14 @@ class JsonEdit(QWidget):
 
         self.json = getcwd() + '/schedule.json'
         self.scheduleAdd = {'part':'MAIN', 'chap':'', 'objLevel':'', 'times':''}
-        self.transEX = {'ex1':'切尔诺伯格','ex2':'龙门外环','ex3':'龙门市区'}
+        self.transEX = {'ex1':'切尔诺伯格','ex2':'龙门外环','ex3':'龙门市区','ex4':'当期委托'}
 
         self.partList = ['主线','物资筹备','芯片搜索','剿灭作战']
         self.partListJson = ['MAIN','RS','PR','EX']
-        self.mainChapList = ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章']
+        self.mainChapList = ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章']
         self.rsChapList = ['战术演习','粉碎防御','空中威胁','货物运送','资源保障']
         self.prChapList = ['医疗重装','术士狙击','辅助先锋','特种近卫']
-        self.exChapList = ['切尔诺伯格','龙门外环','龙门市区']
+        self.exChapList = ['切尔诺伯格','龙门外环','龙门市区','当期委托']
         self.chapList = [self.mainChapList,self.rsChapList,self.prChapList,self.exChapList]
 
         self.selIndex = None
@@ -247,7 +247,10 @@ class JsonEdit(QWidget):
             self.scheduleAdd['chap'] = str(int(indexI))
             levelList.append(f'{int(indexI)}')
             if int(indexI) != 0 and int(indexI) != 1:
-                levelList.append(f'S{int(indexI)}')
+                if int(indexI) != 8:
+                    levelList.append(f'S{int(indexI)}')
+                elif int(indexI) == 8:
+                    levelList.extend([f'R{int(indexI)}', f'M{int(indexI)}', f'JT{int(indexI)}'])
 
         elif selChap == '战术演习':
             self.scheduleAdd['chap'] = 'LS'
@@ -287,11 +290,17 @@ class JsonEdit(QWidget):
 
         else:
             if selChap == '切尔诺伯格':
-                self.scheduleAdd['chap'] = 'ex1'
+                self.scheduleAdd['chap'] = 'externalE1'
+                self.scheduleAdd['objLevel'] = 'ex1'
             elif selChap == '龙门外环':
-                self.scheduleAdd['chap'] = 'ex2'
+                self.scheduleAdd['chap'] = 'externalE2'
+                self.scheduleAdd['objLevel'] = 'ex2'
             elif selChap == '龙门市区':
-                self.scheduleAdd['chap'] = 'ex3'
+                self.scheduleAdd['chap'] = 'externalE2'
+                self.scheduleAdd['objLevel'] = 'ex3'
+            elif selChap == '当期委托':
+                self.scheduleAdd['chap'] = 'tempE'
+                self.scheduleAdd['objLevel'] = 'ex4'
 
             self.level2Edit.clear()
             self.level2Edit.setReadOnly(True)
@@ -300,12 +309,11 @@ class JsonEdit(QWidget):
     
     def addLine(self):
         tempLevel = self.level2Edit.text()
-        self.scheduleAdd['objLevel'] = ''
+        if 'EX' != self.scheduleAdd['part']:
+            self.scheduleAdd['objLevel'] = ''
         tempTimes = self.timeEdit.text()
         self.scheduleAdd['times'] = ''
-        if 'ex' in self.scheduleAdd['chap']:
-            self.scheduleAdd['objLevel'] = self.scheduleAdd['chap']
-        elif tempLevel != '':
+        if tempLevel != '':
             part1 = self.level1Cb.currentText()
             if part1 == 'LS':
                 part1 = 'S'
@@ -409,6 +417,12 @@ class BootyChoice(QWidget):
         self.gelL1.clicked.connect(self.setBooty)
         self.gelL0 = QPushButton(icon=QIcon(self.resPath + '凝胶.png'), text='凝胶')
         self.gelL0.clicked.connect(self.setBooty)
+        self.circuitL2 = QPushButton(icon=QIcon(self.resPath + '晶体电路.png'), text='晶体电路')
+        self.circuitL2.clicked.connect(self.setBooty)
+        self.circuitL1 = QPushButton(icon=QIcon(self.resPath + '晶体电子单元.png'), text='晶体电子单元')
+        self.circuitL1.clicked.connect(self.setBooty)
+        self.circuitL0 = QPushButton(icon=QIcon(self.resPath + '晶体元件.png'), text='晶体元件')
+        self.circuitL0.clicked.connect(self.setBooty)
         self.pStoneL1 = QPushButton(icon=QIcon(self.resPath + '五水研磨石.png'), text='五水研磨石')
         self.pStoneL1.clicked.connect(self.setBooty)
         self.pStoneL0 = QPushButton(icon=QIcon(self.resPath + '研磨石.png'), text='研磨石')
@@ -462,35 +476,35 @@ class BootyChoice(QWidget):
         self.esterL0 = QPushButton(icon=QIcon(self.resPath + '酯原料.png'), text='酯原料')
         self.esterL0.clicked.connect(self.setBooty)
 
-        self.suppoerterL1 = QPushButton(icon=QIcon(self.resPath + '辅助双芯片.png'), text='辅助双芯片')
+        self.suppoerterL1 = QPushButton(icon=QIcon(self.resPath + '辅助芯片组.png'), text='辅助芯片组')
         self.suppoerterL1.clicked.connect(self.setBooty)
         self.suppoerterL0 = QPushButton(icon=QIcon(self.resPath + '辅助芯片.png'), text='辅助芯片')
         self.suppoerterL0.clicked.connect(self.setBooty)
-        self.guardL1 = QPushButton(icon=QIcon(self.resPath + '近卫双芯片.png'), text='近卫双芯片')
+        self.guardL1 = QPushButton(icon=QIcon(self.resPath + '近卫芯片组.png'), text='近卫芯片组')
         self.guardL1.clicked.connect(self.setBooty)
         self.guardL0 = QPushButton(icon=QIcon(self.resPath + '近卫芯片.png'), text='近卫芯片')
         self.guardL0.clicked.connect(self.setBooty)
-        self.sniperL1 = QPushButton(icon=QIcon(self.resPath + '狙击双芯片.png'), text='狙击双芯片')
+        self.sniperL1 = QPushButton(icon=QIcon(self.resPath + '狙击芯片组.png'), text='狙击芯片组')
         self.sniperL1.clicked.connect(self.setBooty)
         self.sniperL0 = QPushButton(icon=QIcon(self.resPath + '狙击芯片.png'), text='狙击芯片')
         self.sniperL0.clicked.connect(self.setBooty)
-        self.casterL1 = QPushButton(icon=QIcon(self.resPath + '术师双芯片.png'), text='术师双芯片')
+        self.casterL1 = QPushButton(icon=QIcon(self.resPath + '术师芯片组.png'), text='术师芯片组')
         self.casterL1.clicked.connect(self.setBooty)
         self.casterL0 = QPushButton(icon=QIcon(self.resPath + '术师芯片.png'), text='术师芯片')
         self.casterL0.clicked.connect(self.setBooty)
-        self.specialistL1 = QPushButton(icon=QIcon(self.resPath + '特种双芯片.png'), text='特种双芯片')
+        self.specialistL1 = QPushButton(icon=QIcon(self.resPath + '特种芯片组.png'), text='特种芯片组')
         self.specialistL1.clicked.connect(self.setBooty)
         self.specialistL0 = QPushButton(icon=QIcon(self.resPath + '特种芯片.png'), text='特种芯片')
         self.specialistL0.clicked.connect(self.setBooty)
-        self.vanguardL1 = QPushButton(icon=QIcon(self.resPath + '先锋双芯片.png'), text='先锋双芯片')
+        self.vanguardL1 = QPushButton(icon=QIcon(self.resPath + '先锋芯片组.png'), text='先锋芯片组')
         self.vanguardL1.clicked.connect(self.setBooty)
         self.vanguardL0 = QPushButton(icon=QIcon(self.resPath + '先锋芯片.png'), text='先锋芯片')
         self.vanguardL0.clicked.connect(self.setBooty)
-        self.medicL1 = QPushButton(icon=QIcon(self.resPath + '医疗双芯片.png'), text='医疗双芯片')
+        self.medicL1 = QPushButton(icon=QIcon(self.resPath + '医疗芯片组.png'), text='医疗芯片组')
         self.medicL1.clicked.connect(self.setBooty)
         self.medicL0 = QPushButton(icon=QIcon(self.resPath + '医疗芯片.png'), text='医疗芯片')
         self.medicL0.clicked.connect(self.setBooty)
-        self.defenderL1 = QPushButton(icon=QIcon(self.resPath + '重装双芯片.png'), text='重装双芯片')
+        self.defenderL1 = QPushButton(icon=QIcon(self.resPath + '重装芯片组.png'), text='重装芯片组')
         self.defenderL1.clicked.connect(self.setBooty)
         self.defenderL0 = QPushButton(icon=QIcon(self.resPath + '重装芯片.png'), text='重装芯片')
         self.defenderL0.clicked.connect(self.setBooty)
@@ -507,6 +521,9 @@ class BootyChoice(QWidget):
         self.grid.addWidget(self.alloyL0,1,1)
         self.grid.addWidget(self.gelL1,1,2)
         self.grid.addWidget(self.gelL0,1,3)
+        self.grid.addWidget(self.circuitL2,1,4)
+        self.grid.addWidget(self.circuitL1,1,5)
+        self.grid.addWidget(self.circuitL0,1,6)
         self.grid.addWidget(self.pStoneL1,0,6)
         self.grid.addWidget(self.pStoneL0,0,7)
         self.grid.addWidget(self.deviceL3,2,0)

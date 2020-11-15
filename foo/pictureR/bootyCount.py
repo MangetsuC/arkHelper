@@ -45,6 +45,9 @@ class Booty:
                         '源岩':pictureFind.picRead(self.bootyPicPath + '/源岩.png'),
                         '酯原料':pictureFind.picRead(self.bootyPicPath + '/酯原料.png'),
                         '装置':pictureFind.picRead(self.bootyPicPath + '/装置.png'),
+                        '晶体元件':pictureFind.picRead(self.bootyPicPath + '/晶体元件.png'),
+                        '晶体电子单元':pictureFind.picRead(self.bootyPicPath + '/晶体电子单元.png'),
+                        '晶体电路':pictureFind.picRead(self.bootyPicPath + '/晶体电路.png'),
                         '辅助芯片':pictureFind.picRead(self.bootyPicPath + '/辅助芯片.png'),
                         '近卫芯片':pictureFind.picRead(self.bootyPicPath + '/近卫芯片.png'),
                         '狙击芯片':pictureFind.picRead(self.bootyPicPath + '/狙击芯片.png'),
@@ -53,14 +56,14 @@ class Booty:
                         '先锋芯片':pictureFind.picRead(self.bootyPicPath + '/先锋芯片.png'),
                         '医疗芯片':pictureFind.picRead(self.bootyPicPath + '/医疗芯片.png'),
                         '重装芯片':pictureFind.picRead(self.bootyPicPath + '/重装芯片.png'),
-                        '辅助双芯片':pictureFind.picRead(self.bootyPicPath + '/辅助双芯片.png'),
-                        '近卫双芯片':pictureFind.picRead(self.bootyPicPath + '/近卫双芯片.png'),
-                        '狙击双芯片':pictureFind.picRead(self.bootyPicPath + '/狙击双芯片.png'),
-                        '术师双芯片':pictureFind.picRead(self.bootyPicPath + '/术师双芯片.png'),
-                        '特种双芯片':pictureFind.picRead(self.bootyPicPath + '/特种双芯片.png'),
-                        '先锋双芯片':pictureFind.picRead(self.bootyPicPath + '/先锋双芯片.png'),
-                        '医疗双芯片':pictureFind.picRead(self.bootyPicPath + '/医疗双芯片.png'),
-                        '重装双芯片':pictureFind.picRead(self.bootyPicPath + '/重装双芯片.png')}
+                        '辅助芯片组':pictureFind.picRead(self.bootyPicPath + '/辅助芯片组.png'),
+                        '近卫芯片组':pictureFind.picRead(self.bootyPicPath + '/近卫芯片组.png'),
+                        '狙击芯片组':pictureFind.picRead(self.bootyPicPath + '/狙击芯片组.png'),
+                        '术师芯片组':pictureFind.picRead(self.bootyPicPath + '/术师芯片组.png'),
+                        '特种芯片组':pictureFind.picRead(self.bootyPicPath + '/特种芯片组.png'),
+                        '先锋芯片组':pictureFind.picRead(self.bootyPicPath + '/先锋芯片组.png'),
+                        '医疗芯片组':pictureFind.picRead(self.bootyPicPath + '/医疗芯片组.png'),
+                        '重装芯片组':pictureFind.picRead(self.bootyPicPath + '/重装芯片组.png')}
         self.one = pictureFind.picRead(self.cwd + '/res/booty/num/1.png')
         self.two = pictureFind.picRead(self.cwd + '/res/booty/num/2.png')
 
@@ -75,7 +78,7 @@ class Booty:
             return 0
         else:
             rdPos = bootyInfo['rectangle'][3]
-            if '双芯片' in bootyName:
+            if '芯片组' in bootyName:
                 corpX1 = rdPos[0] - 20
                 corpX2 = rdPos[0] + 25
                 corpY1 = rdPos[1] + 15

@@ -38,7 +38,7 @@ class BattleSchedule:
         self.recStone = pictureFind.picRead(self.cwd + "/res/panel/recovery/stone.png")
         self.confirm = pictureFind.picRead(self.cwd + "/res/panel/recovery/confirm.png")
 
-        self.exPos = {'ex1':(220,280),'ex2':(845,580),'ex3':(1230,340)}
+        #self.exPos = {'ex1':(220,280),'ex2':(845,580),'ex3':(1230,340)}
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.act = self.cwd + "/res/panel/other/act.png"
         self.battle = self.cwd + "/res/panel/other/battle.png"
@@ -54,12 +54,17 @@ class BattleSchedule:
                 'C':self.cwd + "/res/panel/level/II/C.png", 'D':self.cwd + "/res/panel/level/II/D.png",\
                 'AP':self.cwd + "/res/panel/level/II/AP.png", 'CA':self.cwd + "/res/panel/level/II/CA.png",\
                 'CE':self.cwd + "/res/panel/level/II/CE.png", 'SK':self.cwd + "/res/panel/level/II/SK.png",\
-                'LS':self.cwd + "/res/panel/level/II/LS.png", 'ex1':self.cwd + "/res/panel/level/II/e01.png",\
-                'ex2':self.cwd + "/res/panel/level/II/e02.png", 'ex3':self.cwd + "/res/panel/level/II/e03.png",\
+                'LS':self.cwd + "/res/panel/level/II/LS.png", \
+                'externalE1':self.cwd + "/res/panel/level/II/enternalE01.png",'externalE2':self.cwd + "/res/panel/level/II/enternalE02.png",\
+                'tempE':self.cwd + "/res/panel/level/II/tempE.png",\
                 '0':self.cwd + "/res/panel/level/II/ep0.png", '1':self.cwd + "/res/panel/level/II/ep1.png",\
                 '2':self.cwd + "/res/panel/level/II/ep2.png", '3':self.cwd + "/res/panel/level/II/ep3.png",\
                 '4':self.cwd + "/res/panel/level/II/ep4.png", '5':self.cwd + "/res/panel/level/II/ep5.png",\
-                '6':self.cwd + "/res/panel/level/II/ep6.png", '7':self.cwd + "/res/panel/level/II/ep7.png"}
+                '6':self.cwd + "/res/panel/level/II/ep6.png", '7':self.cwd + "/res/panel/level/II/ep7.png",\
+                '8':self.cwd + "/res/panel/level/II/ep8.png"}
+        self.exIV = {'ex1':self.cwd + "/res/panel/level/III/e01.png",'ex2':self.cwd + "/res/panel/level/III/e02.png", 'ex3':self.cwd + "/res/panel/level/III/e03.png",\
+                    'ex4':self.cwd + "/res/panel/level/III/e04.png"}
+        self.exSymbol = self.cwd + "/res/panel/other/exSymbol.png"
 
     def goLevel(self, level):
         part = level['part']
@@ -116,45 +121,67 @@ class BattleSchedule:
             print('Fail to get screenshot')
             return False
 
-        self.adb.speedToLeft()
         sleep(1)
         #三级菜单的选择
         if part == 'EX':
             #剿灭
             for i in range(5):
                 self.adb.screenShot()
+                '''picLevelOn = pictureFind.matchImg(self.screenShot,self.startA) #2020.11.15 不知道为什么要判断有没有选中的关
+                if picLevelOn != None:
+                    return True'''
+                picEx = pictureFind.matchImg(self.screenShot, self.exSymbol)
+                if picEx != None:
+                    break
+            else:
+                return False
+            for i in range(5):
+                self.adb.screenShot()
+                picExChap = pictureFind.matchImg(self.screenShot, self.III[chap])
+                if picExChap != None:
+                    self.adb.click(picExChap['result'][0], picExChap['result'][1])
+                    break
+                else:
+                    self.adb.onePageRight()
+            else:
+                return False
+            for i in range(5):
+                self.adb.screenShot()
                 picLevelOn = pictureFind.matchImg(self.screenShot,self.startA)
                 if picLevelOn != None:
                     return True
-                picEx = pictureFind.matchImg(self.screenShot, self.III['ex1'])
-                if picEx != None:
-                    self.adb.click(self.exPos[chap][0],self.exPos[chap][1])
-            return False
+                picExObj = pictureFind.matchImg(self.screenShot, self.exIV[objLevel])
+                if picExObj != None:
+                    self.adb.click(picExObj['result'][0], picExObj['result'][1])
+            else:
+                return False
+            
         else:
             #主线MIAN，物资RS，芯片PR
+            self.adb.speedToLeft()
             if not self.chooseChap(chap):
                 return False
 
         #关卡选择
-        self.adb.speedToLeft()
-        for i in range(25):
-            if not self.switch:
-                break
-            self.adb.screenShot()
-            levelOnScreen = pictureFind.levelOcr(self.screenShot)
-            if levelOnScreen != None:
-                if objLevel in levelOnScreen:
-                    self.adb.click(levelOnScreen[objLevel][0],levelOnScreen[objLevel][1])
-                    picLevelOn = pictureFind.matchImg(self.screenShot,self.startA)
-                    if picLevelOn != None:
-                        return True
+            self.adb.speedToLeft()
+            for i in range(25):
+                if not self.switch:
+                    break
+                self.adb.screenShot()
+                levelOnScreen = pictureFind.levelOcr(self.screenShot)
+                if levelOnScreen != None:
+                    if objLevel in levelOnScreen:
+                        self.adb.click(levelOnScreen[objLevel][0],levelOnScreen[objLevel][1])
+                        picLevelOn = pictureFind.matchImg(self.screenShot,self.startA)
+                        if picLevelOn != None:
+                            return True
+                    else:
+                        self.adb.onePageRight()
                 else:
-                    self.adb.onePageRight()
+                    print(f'skip {objLevel}')
+                    return False
             else:
-                print(f'skip {objLevel}')
                 return False
-        else:
-            return False
 
 
     def chooseChap(self,chap):
@@ -182,7 +209,7 @@ class BattleSchedule:
             bootyMode = False
             times = int(times)
 
-        isFirstTurn = True
+        #isFirstTurn = True
         countStep = 0
         totalCount = 0
         bootyTotalCount = 0
@@ -191,29 +218,29 @@ class BattleSchedule:
             
             self.adb.screenShot()
             #判断代理指挥是否勾选
-            if isFirstTurn:
-                isFirstTurn = False
-                picStartA = pictureFind.matchImg(self.screenShot, self.startA, confidencevalue= 0.9)
-                if picStartA != None:
-                    print('> auto mode check <')
-                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                    if picAutoOn == None:
-                        picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
-                        if picAutoOff != None:
-                            posAutoOff = picAutoOff['result']
-                            self.adb.click(posAutoOff[0], posAutoOff[1])
+            '''if isFirstTurn:
+                isFirstTurn = False'''
+            picStartA = pictureFind.matchImg(self.screenShot, self.startA, confidencevalue= 0.9)
+            if picStartA != None:
+                print('> auto mode check <')
+                picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                if picAutoOn == None:
+                    picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
+                    if picAutoOff != None:
+                        posAutoOff = picAutoOff['result']
+                        self.adb.click(posAutoOff[0], posAutoOff[1])
 
-                    isSSSuccess = self.adb.screenShot()
-                    if not isSSSuccess:
-                        print('unable to get screenshot')
-                        self.switchB = False
-                        return False
+                isSSSuccess = self.adb.screenShot()
+                if not isSSSuccess:
+                    print('unable to get screenshot')
+                    self.switchB = False
+                    return False
 
-                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                    if picAutoOn == None:
-                        print('auto mode still off')
-                        self.switchB = False
-                        return True #返回True用来跳过此关
+                picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                if picAutoOn == None:
+                    print('auto mode still off')
+                    self.switchB = False
+                    return True #返回True用来跳过此关
 
             isInBattle = False
             #sleep(1)

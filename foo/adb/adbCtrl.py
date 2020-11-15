@@ -1,6 +1,6 @@
 from os import path, remove, getcwd
 from time import sleep, perf_counter
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, call
 from re import split as resplit
 #from PIL import Image, ImageFile
 
@@ -25,13 +25,17 @@ class Cmd():
 
     def run(self, code, waitTime = 60):
         self.p = Popen(code, shell = True, stdout = PIPE, stderr = PIPE, bufsize = -1, cwd = self.path)
-        strout = self.p.communicate()[0].decode('gbk').replace('\r\n', '\n')
-        strerr = self.p.communicate()[1].decode('gbk').replace('\r\n', '\n')
+        cmdReturn = self.p.communicate()
+        strout = cmdReturn[0].decode('gbk').replace('\r\n', '\n')
+        strerr = cmdReturn[1].decode('gbk').replace('\r\n', '\n')
         if len(strerr) > 0:
             print(strerr)
-        self.p.wait(timeout = waitTime)
+        #self.p.wait(timeout = waitTime)
         return strout
         
+    def blockRun(self, code):
+        return call(code, cwd = self.path ,timeout = 60)
+
     def getTaskList(self, taskName):
         task = self.run('tasklist')
         taskList = task.split('\n')
@@ -107,7 +111,7 @@ class Adb:
             return False
 
     def killAdb(self):
-        self.cmd.run('adb kill-server')
+        #self.cmd.run('adb kill-server')
         adbPidList = self.cmd.getTaskList('adb.exe')
         if adbPidList != []:
             for eachAdbPid in adbPidList:
@@ -155,6 +159,8 @@ class Adb:
         pass
 
     def speedToLeft(self):
+        self.swipe(0,405,1440,405,100)
+        sleep(1)
         self.swipe(0,405,1440,405,100)
         sleep(1)
 
