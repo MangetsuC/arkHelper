@@ -84,7 +84,7 @@ class BattleLoop:
 
                     isDelayExit = False #加载延迟是否出现，即检查到开始行动A但实际上是正在进入关卡前的状态
                     for i in range(5):
-                        if self.switch:
+                        if not self.switch:
                             break
                         isSSSuccess = self.adb.screenShot()
                         if not isSSSuccess:

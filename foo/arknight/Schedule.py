@@ -232,7 +232,7 @@ class BattleSchedule:
 
                 isDelayExit = False #加载延迟是否出现，即检查到开始行动A但实际上是正在进入关卡前的状态
                 for i in range(5):
-                    if self.switch and self.switchB:
+                    if not (self.switch and self.switchB):
                         break
                     isSSSuccess = self.adb.screenShot()
                     if not isSSSuccess:
@@ -240,7 +240,7 @@ class BattleSchedule:
                         self.switchB = False
                         return False
                     for eachObj in self.listBattleImg:
-                        if self.switch and self.switchB:
+                        if not (self.switch and self.switchB):
                             break
                         picInfo = pictureFind.matchImg(self.screenShot, eachObj, 0.8)
                         if picInfo != None:
@@ -363,6 +363,8 @@ class BattleSchedule:
                         else:
                             self.adb.click(picPos[0], picPos[1], isSleep = True)
                         break
+                else:
+                    break
             if isInBattle:
                 sleep(1)
                 
