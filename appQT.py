@@ -691,7 +691,7 @@ class App(QWidget):
             self.task.run(self.doctorFlag)
         if self.doctorFlag and self.creditFlag:
             self.credit.run(self.doctorFlag)
-        if self.shutdownFlag:
+        if self.shutdownFlag and self.doctorFlag:
             self.adb.cmd.shutdown(time=120)
             self.exit()
         else:
