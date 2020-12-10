@@ -10,18 +10,18 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QTimer
 
 class UIPublicCall(QDialog):
-    def __init__(self, adb, battle, cwd, btnCheck, parent=None, flags=Qt.WindowFlags(1)):
+    def __init__(self, adb, battle, cwd, btnCheck, normal, high, parent=None, flags=Qt.WindowFlags(1)):
         super().__init__(parent=parent, flags=flags)
-        self.initVar(adb, battle, cwd, btnCheck)
+        self.initVar(adb, battle, cwd, btnCheck, normal, high)
         self.initUI()
         #self.myTimer()
         
-    def initVar(self, adb, battle, cwd, btnCheck):
+    def initVar(self, adb, battle, cwd, btnCheck, normal, high):
         self.cwd = cwd
         self.battle = battle
         self.btnCheck = btnCheck
         
-        self.publicCall = PublicCall(adb, self.cwd)
+        self.publicCall = PublicCall(adb, self.cwd, normal, high)
 
         self.isThTagExit = False
         self.isTimerExit = False

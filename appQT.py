@@ -446,7 +446,10 @@ class App(QWidget):
         self.schedule = BattleSchedule(self.adb, self.cwd, self.ico) #处于测试
         self.task = Task(self.adb, self.cwd, self.ico)
         self.credit = Credit(self.adb, self.cwd)
-        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall) #公开招募
+        with open(self.cwd + '/data.json', 'r') as f:
+            temp = f.read()
+        tempData = loads(temp)['data']
+        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, tempData[0]['normal'], tempData[0]['high']) #公开招募
         self.schJsonEditer = JsonEdit(self.ico)
         self.board = BlackBoard()
 
