@@ -1,17 +1,23 @@
 from os import getcwd, listdir
 from sys import path
 from time import perf_counter,sleep
-from aircv import imread
 from threading import Thread, Lock
+from json import loads
+from cv2 import fillConvexPoly, imshow, waitKey
+from numpy import array
 
 path.append(getcwd())
 from foo.pictureR import pictureFind
 
 class PublicCall:
-    def __init__(self, adb, cwd, normal, high):
-        self.tagDict = normal
+    def __init__(self, adb, cwd, normal = None, high = None):
+        if normal == None and high == None:
+            self.updateTag()
+        else:
+            self.tagDict = normal
+            self.highTagDict = high
 
-        self.highTagDict = high
+        self.isTagNeedUpdate = False
 
         self.adb = adb
         #self.srcBefore = None
@@ -20,10 +26,14 @@ class PublicCall:
         self.cwd = cwd
         self.screenShot = self.cwd + '/bin/adb/PCScreenshot.png'
         self.tag = pictureFind.picRead([self.cwd + '/res/publicCall/' + i for i in listdir(self.cwd + '/res/publicCall')])
+        self.tag.sort(key = lambda x:len(x['obj']), reverse = True)
         self.mark = pictureFind.picRead(self.cwd + '/res/panel/other/publicMark.png')
         self.lock = Lock()
         self.tagOnScreenList = []
         #self.monitorFlag = False
+    
+    def updateTag(self):
+        self.isTagNeedUpdate = True
     
     def getTag(self, src):
         #tempT = perf_counter()
@@ -33,6 +43,7 @@ class PublicCall:
         #tInfo = pictureFind.matchImg(imSrc, self.mark, 0.8)
         #if tInfo == None:
         #    return []
+        '''
         th0 = Thread(target=self.matchTag, args=(imSrc, self.tag[0:4]))
         th1 = Thread(target=self.matchTag, args=(imSrc, self.tag[4:8]))
         th2 = Thread(target=self.matchTag, args=(imSrc, self.tag[8:12]))
@@ -45,11 +56,12 @@ class PublicCall:
             eachth.start()
         for eachth in thList:
             eachth.join()
-
+        '''
         self.matchTag(imSrc, self.tag)
 
         #print('识别'+str(perf_counter() - tempT))
         #print(self.tagOnScreenList)
+        '''
         tZS = None #意为tags资深 下面同理
         tZY = None
         tGZ = None
@@ -70,6 +82,7 @@ class PublicCall:
             if tZY != None and tJX != None:
                 if abs(tZY[1][0] - tJX[1][0]) < 50 and abs(tZY[1][1] - tJX[1][1]) < 5:
                     self.tagOnScreenList.remove(tZY)
+        '''
         if len(self.tagOnScreenList) == 5:
             self.tagOnScreenList.sort(key = lambda x:x[1][1])
             tagOnScreenBefore3 = self.tagOnScreenList[0:3]
@@ -92,10 +105,19 @@ class PublicCall:
             #tInfo = pictureFind.matchImg(src, self.cwd + '/res/publicCall/' + each)
             tInfo = pictureFind.matchImg(src, each)
             if tInfo != None:
-                self.lock.acquire()
+                #self.lock.acquire()
                 #self.tagOnScreenList.append(self.trans(tInfo['obj']))
                 self.tagOnScreenList.append((tInfo['obj'][:-4], tInfo['result']))
-                self.lock.release()
+                tInfo['rectangle'] = list(tInfo['rectangle'])
+                for i in range(4):
+                    tInfo['rectangle'][i] = list(tInfo['rectangle'][i])
+                    tInfo['rectangle'][i][0] = int(tInfo['rectangle'][i][0]/1440*src.shape[1] + 0.5)
+                    tInfo['rectangle'][i][1] = int(tInfo['rectangle'][i][1]/810*src.shape[0] + 0.5)
+                rect = array([tInfo['rectangle'][0],tInfo['rectangle'][1],tInfo['rectangle'][3],tInfo['rectangle'][2]])
+                fillConvexPoly(src,rect,0)
+                #imshow('img', src)
+                #waitKey(0)
+                #self.lock.release()
 
     
     def getAns(self, tagOnScreenList):
@@ -104,6 +126,13 @@ class PublicCall:
             #print('匹配'+str(perf_counter() - tempT))
             return False
         #tagOnScreenList.sort()
+        if self.isTagNeedUpdate:
+            with open(self.cwd + '/data.json', 'r') as f:
+                temp = f.read()
+            temp = loads(temp)['data']
+            self.tagDict = temp[0]['normal']
+            self.highTagDict = temp[0]['high']
+            self.isTagNeedUpdate = False
         applyTagDict = self.tagDict.copy()
         if '高级资深干员' in tagOnScreenList:
             for eachTag in self.highTagDict.keys():
@@ -249,5 +278,5 @@ class PublicCall:
 
 if __name__ == "__main__":
     test = PublicCall(None, r'E:\workSpace\CodeRelease\arknightHelper\arkHelper')
-    src = imread('E:/workSpace/CodeRelease/arknightHelper/source/tag/test.png')
+    src = pictureFind.imreadCH('E:/workSpace/CodeRelease/arknightHelper/source/tag/test2.png')
     print(test.getTag(src))

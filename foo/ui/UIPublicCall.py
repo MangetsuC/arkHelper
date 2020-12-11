@@ -16,6 +16,9 @@ class UIPublicCall(QDialog):
         self.initUI()
         #self.myTimer()
         
+    def updateTag(self):
+        self.publicCall.updateTag()
+
     def initVar(self, adb, battle, cwd, btnCheck, normal, high):
         self.cwd = cwd
         self.battle = battle

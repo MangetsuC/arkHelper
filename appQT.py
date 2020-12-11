@@ -26,7 +26,7 @@ from foo.ui.UIschedule import JsonEdit
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.4.5'
+        self.ver = '2.4.6'
         self.initFile()
         self.initVar()
         self.initUI()
@@ -321,6 +321,8 @@ class App(QWidget):
         self.selectedPNG = self.cwd + '/res/gui/selected.png'
         self.unSelPNG = self.cwd + '/res/gui/unSelected.png'
 
+        self.__data = None
+
         self.console = Console(self.cwd) #接管输出与报错
 
         self.btnMainClicked = False
@@ -448,8 +450,8 @@ class App(QWidget):
         self.credit = Credit(self.adb, self.cwd)
         with open(self.cwd + '/data.json', 'r') as f:
             temp = f.read()
-        tempData = loads(temp)['data']
-        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, tempData[0]['normal'], tempData[0]['high']) #公开招募
+        self.__data = loads(temp)
+        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, self.__data['data'][0]['normal'], self.__data['data'][0]['high']) #公开招募
         self.schJsonEditer = JsonEdit(self.ico)
         self.board = BlackBoard()
 
@@ -662,7 +664,17 @@ class App(QWidget):
             if (not self.config.has_option('notice', 'msgver')) or self.config.getint('notice', 'msgver') < int(msgVer):
                 self.btnShowBoard.show()
 
-    
+    def checkPublicCallData(self):
+        if self.content != 'failed to get content':
+            if '[normal]' in self.content and '[high]' in self.content:
+                tempNormal = self.content.split('[normal]')[1]
+                tempHigh = self.content.split('[high]')[1]
+                tempData = loads("{\"data\":[{\"normal\":" + tempNormal + ",\"high\":" + tempHigh + "}]}")
+                if tempData != self.__data:
+                    with open(self.cwd + '/data.json', 'w') as f:
+                        f.write(dumps(tempData, ensure_ascii=False))
+                    self.publicCall.updateTag()
+                
     def showMessage(self):
         msgVer = self.content.split('[msgVer]')[1]
         if not self.config.has_section('notice'):
@@ -678,6 +690,7 @@ class App(QWidget):
         if self.config.getboolean('notice', 'enable'):
             self.checkUpdate()
             self.checkMessage()
+            self.checkPublicCallData()
 
     def afterInit(self):
         thAfterInit = Thread(target=self.checkAll)
