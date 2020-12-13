@@ -81,8 +81,9 @@ class BattleLoop:
                         if picAutoOff != None and self.switch:
                             posAutoOff = picAutoOff['result']
                             self.adb.click(posAutoOff[0], posAutoOff[1])
+                            continue
 
-                    isDelayExit = False #加载延迟是否出现，即检查到开始行动A但实际上是正在进入关卡前的状态
+                    '''isDelayExit = False #加载延迟是否出现，即检查到开始行动A但实际上是正在进入关卡前的状态
                     for i in range(5):
                         if not self.switch:
                             break
@@ -102,7 +103,7 @@ class BattleLoop:
                         if picAutoOn != None or isDelayExit:
                             if isDelayExit:
                                 print("start delay exit")
-                            break
+                            break'''
 
                 #sleep(1)
                 for eachObj in self.listImg:
@@ -115,10 +116,14 @@ class BattleLoop:
                         picInfo = pictureFind.matchImg(self.screenShot, eachObj, confidence)
                         #print(eachObj+ '：', picInfo)
                         if picInfo != None:
+                            if picInfo['result'][1] < 270:
+                                continue
+
                             if eachObj['obj'] == "startBpart.png":
                                 isInBattle = True
                             else:
                                 isInBattle = False
+
                             picPos = picInfo['result']
                             if eachObj['obj'] == "cancel.png":
                                 if self.autoRecMed or self.autoRecStone:

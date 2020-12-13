@@ -144,6 +144,7 @@ class Adb:
     def click(self, x, y, isSleep = True):
         x = (x / 1440) * self.screenX
         y = (int(y) / 810) * self.screenY
+        print(f'x:{x:.2f} y:{y:.2f}')
         self.cmd.run('adb -s {device} shell input tap {0} {1}'\
             .format(x, y, device = self.ip))
         if isSleep:

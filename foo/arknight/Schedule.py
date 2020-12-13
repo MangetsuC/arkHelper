@@ -229,8 +229,9 @@ class BattleSchedule:
                     if picAutoOff != None and self.switch and self.switchB:
                         posAutoOff = picAutoOff['result']
                         self.adb.click(posAutoOff[0], posAutoOff[1])
+                        continue
 
-                isDelayExit = False #加载延迟是否出现，即检查到开始行动A但实际上是正在进入关卡前的状态
+                '''isDelayExit = False #加载延迟是否出现，即检查到开始行动A但实际上是正在进入关卡前的状态 #这段代码我不是很清楚我当时为什么会写，现在看来毫无用处，但先留在注释里
                 for i in range(5):
                     if not (self.switch and self.switchB):
                         break
@@ -256,7 +257,7 @@ class BattleSchedule:
                 else:
                     print('auto mode still off')
                     self.switchB = False
-                    return True #返回True用来跳过此关
+                    return True #返回True用来跳过此关'''
 
             isInBattle = False
             #sleep(1)
@@ -270,10 +271,14 @@ class BattleSchedule:
                     picInfo = pictureFind.matchImg(self.screenShot, eachObj, confidence)
                     #print(eachObj+ '：', picInfo)
                     if picInfo != None:
+                        if picInfo['result'][1] < 270:
+                            continue
+
                         if eachObj['obj'] == "startBpart.png":
                             isInBattle = True
                         else:
                             isInBattle = False
+                        
 
                         picPos = picInfo['result']
                         if countStep == 0:
