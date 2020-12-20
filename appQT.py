@@ -705,9 +705,20 @@ class App(QWidget):
             if '[version]' in self.content:
                 newVersion = self.content.split('[version]')[1].split('.')
                 tempSelfVersion = self.ver.split('.')
-                for eachVerNum in range(3):
-                    if int(newVersion[eachVerNum]) > int(tempSelfVersion[eachVerNum]):
-                        self.lNotice.setText('*有新版本*')
+                ver0 = int(newVersion[0]) == int(tempSelfVersion[0])
+                ver1 = int(newVersion[1]) == int(tempSelfVersion[1])
+                ver2 = int(newVersion[2]) == int(tempSelfVersion[2])
+                if ver0:
+                    if ver1:
+                        if not ver2:
+                            if int(newVersion[2]) > int(tempSelfVersion[2]):
+                                self.lNotice.setText('*有新版本*')
+                    else:
+                        if int(newVersion[1]) > int(tempSelfVersion[1]):
+                                self.lNotice.setText('*有新版本*')
+                else:
+                    if int(newVersion[0]) > int(tempSelfVersion[0]):
+                                self.lNotice.setText('*有新版本*')
 
     def checkMessage(self):
         if self.content != 'failed to get content':
