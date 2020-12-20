@@ -4,25 +4,29 @@ from threading import Thread, Lock
 from time import sleep, perf_counter
 path.append(getcwd())
 from foo.arknight.PublicCall import PublicCall
+from foo.pictureR import pictureFind
 
 from PyQt5.QtWidgets import QDialog, QGridLayout, QPushButton, QLabel, QWidget, QScrollArea
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QTimer
 
 class UIPublicCall(QDialog):
-    def __init__(self, adb, battle, cwd, btnCheck, normal, high, parent=None, flags=Qt.WindowFlags(1)):
+    def __init__(self, adb, battle, cwd, btnCheck, listGoTo, normal, high, parent=None, flags=Qt.WindowFlags(1)):
         super().__init__(parent=parent, flags=flags)
         self.initVar(adb, battle, cwd, btnCheck, normal, high)
+        self.initAuto(listGoTo)
         self.initUI()
         #self.myTimer()
         
     def updateTag(self):
         self.publicCall.updateTag()
-
+    
     def initVar(self, adb, battle, cwd, btnCheck, normal, high):
         self.cwd = cwd
+        self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.battle = battle
         self.btnCheck = btnCheck
+        self.adb = adb
         
         self.publicCall = PublicCall(adb, self.cwd, normal, high)
 
@@ -38,6 +42,27 @@ class UIPublicCall(QDialog):
         self.totalFlag = True
         self.lock  = Lock()
         self.isExit = False
+
+        self.autoSwitch = False #自动公招
+    
+    def initAuto(self, listGoTo):
+        self.pcFinish = pictureFind.picRead(self.cwd + '/res/panel/publicCall/finish.png')
+        self.pcInMark = pictureFind.picRead(self.cwd + '/res/panel/publicCall/inPcMark.png')
+        self.pc9 = pictureFind.picRead(self.cwd + '/res/panel/publicCall/pc9.png')
+        self.pcCancel = pictureFind.picRead(self.cwd + '/res/panel/publicCall/pcCancel.png')
+        self.pcConfirm = pictureFind.picRead(self.cwd + '/res/panel/publicCall/pcConfirm.png')
+        self.pcMark = pictureFind.picRead(self.cwd + '/res/panel/publicCall/pcMark.png')
+        self.pcNew = pictureFind.picRead(self.cwd + '/res/panel/publicCall/pcNew.png')
+        self.pcAddTime = pictureFind.picRead(self.cwd + '/res/panel/publicCall/addTime.png')
+        self.pcEnter = pictureFind.picRead(self.cwd + '/res/panel/publicCall/enter.png')
+
+        self.listGoTo = listGoTo
+        self.mainpage = self.listGoTo[0]
+        self.home = self.listGoTo[1]
+        self.mainpageMark = self.listGoTo[2]
+
+        self.employFlag = True
+        self.searchFlag = True
     
     def initUI(self):
         self.setWindowTitle('公开招募计算器')
@@ -236,3 +261,132 @@ class UIPublicCall(QDialog):
     def closeEvent(self, event):
         self.turnOff()
         event.accept()
+
+    def goToMainpage(self):
+        listGoToTemp = self.listGoTo.copy()
+        tryCount = 0
+        while self.autoSwitch:
+            self.adb.screenShot()
+            for eachStep in listGoToTemp:
+                bInfo = pictureFind.matchImg(self.screenShot, eachStep)
+                if bInfo != None:
+                    listGoToTemp.remove(eachStep)
+                    break
+            else:
+                listGoToTemp = self.listGoTo.copy()
+                tryCount += 1
+                if tryCount > 10:
+                    return False
+
+            if bInfo != None:
+                if bInfo['obj'] == 'act.png': #self.mainpageMark
+                    return True
+                else:
+                    self.adb.click(bInfo['result'][0], bInfo['result'][1])
+    
+    def chooseTag(self):
+        tagState = self.publicCall.chooseTag()
+        while tagState == 100:
+            tagState = self.publicCall.chooseTag()
+        if tagState == 6:
+            for i in range(5):
+                self.adb.screenShot()
+                picInfo = pictureFind.matchImg(self.screenShot, self.pcCancel)
+                if picInfo != None:
+                    picInfo = picInfo['result']
+                    self.adb.click(picInfo[0], picInfo[1])
+                    break
+        else:
+            for i in range(5):
+                self.adb.screenShot()
+                addBtn = pictureFind.matchMultiImg(self.screenShot, self.pcAddTime)[0]
+                if addBtn != None:
+                    addBtn.sort(key=lambda x:x[0])
+                    addBtn = addBtn[0]
+                    break
+            else:
+                return False
+            picInfo = pictureFind.matchImg(self.screenShot, self.pc9, confidencevalue=0.9)
+            while picInfo == None:
+                for i in range(9):
+                    if not self.autoSwitch:
+                        return False
+                    self.adb.click(addBtn[0], addBtn[1])
+                self.adb.screenShot()
+                picInfo = pictureFind.matchImg(self.screenShot, self.pc9, confidencevalue=0.9)
+            for i in range(5):
+                #confirmBtn = pictureFind.matchImg(self.screenShot, self.pcCancel)
+                confirmBtn = pictureFind.matchImg(self.screenShot, self.pcConfirm)
+                if confirmBtn != None:
+                    confirmBtn = confirmBtn['result']
+                    self.adb.click(confirmBtn[0], confirmBtn[1])
+                    return True
+            return False
+
+    def enterPC(self):
+        for i in range(5):
+            if not self.autoSwitch:
+                return False
+            self.adb.screenShot()
+            picInfo = pictureFind.matchImg(self.screenShot, self.pcEnter)
+            if picInfo != None:
+                self.adb.click(picInfo['result'][0], picInfo['result'][1])
+                while pictureFind.matchImg(self.screenShot, self.pcMark) == None:
+                    sleep(1)
+                    self.adb.screenShot()
+                return True
+                pass
+        else:
+            return False
+    
+    def employ(self):
+        for i in range(2):
+            picInfo = pictureFind.matchMultiImg(self.screenShot, self.pcFinish)[0]
+            if picInfo != None:
+                if not self.autoSwitch:
+                    break
+                for eachPos in picInfo:
+                    self.adb.click(eachPos[0], eachPos[1])
+                    self.adb.screenShot()
+                    while pictureFind.matchImg(self.screenShot, self.pcMark) == None:
+                        for i in range(5):
+                            self.adb.click(1400, 40)
+                        sleep(1)
+                        self.adb.screenShot()
+            else:
+                break
+        return True
+
+    def search(self):
+        picInfo = pictureFind.matchMultiImg(self.screenShot, self.pcNew)[0]
+        if picInfo != None:
+            for eachPos in picInfo:
+                for i in range(3):
+                    if not self.autoSwitch:
+                        return False
+                    self.adb.click(eachPos[0], eachPos[1])
+                    sleep(0.5)
+                    self.adb.screenShot()
+                    inMarkInfo = pictureFind.matchImg(self.screenShot, self.pcInMark)
+                    if inMarkInfo != None:
+                        self.chooseTag()
+                        break
+
+    
+    def autoPCRun(self, switch):
+        self.autoSwitch = switch
+        #self.adb.connect()
+        self.goToMainpage()
+        if self.enterPC():
+            if self.employFlag:
+                self.employ()
+            if self.searchFlag:
+                self.search()
+        self.goToMainpage()
+
+    def autoPCStop(self):
+        self.autoSwitch = False
+
+    def tagTest(self):
+        tempTh = Thread(target=self.autoPCRun)
+        tempTh.start()

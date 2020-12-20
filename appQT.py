@@ -21,14 +21,16 @@ from foo.ui.console import Console
 from foo.ui.launch import Launch, BlackBoard
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
+from foo.pictureR import pictureFind
 
 
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.4.6'
+        self.ver = '2.5.0'
         self.initFile()
         self.initVar()
+        self.initNormalPicRes()
         self.initUI()
         self.initClass()
         self.initRightClickMeun()
@@ -70,6 +72,9 @@ class App(QWidget):
             isNeedWrite = True
         if not self.config.has_option('function', 'schedule'):
             self.config.set('function','schedule','False')
+            isNeedWrite = True
+        if not self.config.has_option('function', 'autoPC'):
+            self.config.set('function','autoPC','False')
             isNeedWrite = True
         if not self.config.has_option('function', 'task'):
             self.config.set('function','task','True')
@@ -134,12 +139,11 @@ class App(QWidget):
                     j.write(newJson)
                 #计划json初始化结束
     
-    
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
         #self.setFixedSize(522,196)
-        self.resize(522,196)
+        self.resize(597,196)
         
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
@@ -170,6 +174,23 @@ class App(QWidget):
         self.tbSchedule.setCheckable(True)
         self.tbSchedule.setFixedSize(75, 40)
         self.tbSchedule.clicked[bool].connect(self.functionSel)
+
+        self.tbAutoPC = QPushButton('自动公招', self) #自动公招可选按钮
+        self.tbAutoPC.setCheckable(True)
+        self.tbAutoPC.setFixedSize(75, 40)
+        self.tbAutoPC.clicked[bool].connect(self.functionSel)
+
+        self.tbAutoSearch = QPushButton('自动招募', self) #自动公招可选按钮 招募部分
+        self.tbAutoSearch.setCheckable(True)
+        self.tbAutoSearch.setFixedSize(75, 40)
+        self.tbAutoSearch.clicked[bool].connect(self.functionSel)
+        self.tbAutoSearch.setChecked(True)
+
+        self.tbAutoEmploy = QPushButton('自动聘用', self) #自动公招可选按钮 聘用部分
+        self.tbAutoEmploy.setCheckable(True)
+        self.tbAutoEmploy.setFixedSize(75, 40)
+        self.tbAutoEmploy.clicked[bool].connect(self.functionSel)
+        self.tbAutoEmploy.setChecked(True)
 
         self.btnSchJson = QPushButton('路线规划', self) #更改计划json
         self.btnSchJson.setFixedSize(155, 40)
@@ -267,7 +288,7 @@ class App(QWidget):
         self.btnClose.setFixedSize(75, 85)
         self.btnClose.clicked.connect(self.exit)
 
-        self.btnShowBoard = QPushButton('显示公告',self)
+        self.btnShowBoard = QPushButton('有新公告！',self)
         self.btnShowBoard.setFixedSize(75, 40)
         self.btnShowBoard.clicked.connect(self.showMessage)
         self.btnShowBoard.hide()
@@ -282,15 +303,18 @@ class App(QWidget):
         self.grid.addWidget(self.btnMonitorPublicCall, 3, 0, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbSchedule, 0, 4, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbAutoPC, 0, 5, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnSet, 2, 2, 1,1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbCredit, 0, 3, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbShutdown, 1, 1, 1, 2)
-        self.grid.addWidget(self.btnMin, 1, 3, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnClose, 1, 4, 2, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnSchJson, 2, 2, 1, 2, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbShutdown, 1, 2, 1, 2)
+        self.grid.addWidget(self.btnMin, 1, 4, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnClose, 1, 5, 2, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbAutoSearch, 1, 1, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbAutoEmploy, 2, 1, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnSchJson, 2, 3, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnShowBoard, 3, 1, 1, 1, alignment=Qt.AlignRight)
-        self.grid.addWidget(self.lNotice, 3, 3, 1, 2, alignment=Qt.AlignRight)
+        self.grid.addWidget(self.lNotice, 3, 4, 1, 2, alignment=Qt.AlignRight)
 
         self.setLayout(self.grid)
 
@@ -303,6 +327,9 @@ class App(QWidget):
         #计划战斗按钮
         self.tbSchedule.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tbSchedule.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        #自动公招按钮
+        self.tbAutoPC.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tbAutoPC.customContextMenuRequested.connect(self.functionDefaultSetMeun)
         #任务按钮
         self.tbTask.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tbTask.customContextMenuRequested.connect(self.functionDefaultSetMeun)
@@ -332,7 +359,15 @@ class App(QWidget):
         self.taskFlag = None
         self.creditFlag = None
         self.shutdownFlag = None
+        self.autoPCFlag = None
         self.doctorFlag = False
+
+    def initNormalPicRes(self):
+        self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
+        self.mainpage = pictureFind.picRead(self.cwd + "/res/panel/other/mainpage.png")
+        self.mainpageMark = pictureFind.picRead(self.cwd + "/res/panel/other/act.png")
+
+        self.listGoTo = [self.mainpage, self.home, self.mainpageMark]
 
     def changeRecStateMedLoop(self):
         if self.autoMediFlag:
@@ -428,6 +463,8 @@ class App(QWidget):
         self.tbBattle.setChecked(self.battleFlag) #战斗选项
         self.scheduleFlag = self.config.getboolean('function', 'schedule')
         self.tbSchedule.setChecked(self.scheduleFlag)
+        self.autoPCFlag = self.config.getboolean('function', 'autoPC')
+        self.tbAutoPC.setChecked(self.autoPCFlag)
         self.taskFlag = self.config.getboolean('function', 'task')
         self.tbTask.setChecked(self.taskFlag) #任务选项
         self.creditFlag = self.config.getboolean('function', 'credit')
@@ -446,12 +483,12 @@ class App(QWidget):
         self.adb = Adb(self.cwd + '/bin/adb', self.config)
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
         self.schedule = BattleSchedule(self.adb, self.cwd, self.ico) #处于测试
-        self.task = Task(self.adb, self.cwd, self.ico)
-        self.credit = Credit(self.adb, self.cwd)
+        self.task = Task(self.adb, self.cwd, self.ico, self.listGoTo)
+        self.credit = Credit(self.adb, self.cwd, self.listGoTo)
         with open(self.cwd + '/data.json', 'r') as f:
             temp = f.read()
         self.__data = loads(temp)
-        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, self.__data['data'][0]['normal'], self.__data['data'][0]['high']) #公开招募
+        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, self.listGoTo, self.__data['data'][0]['normal'], self.__data['data'][0]['high']) #公开招募
         self.schJsonEditer = JsonEdit(self.ico)
         self.board = BlackBoard()
 
@@ -511,6 +548,11 @@ class App(QWidget):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
+        elif self.source.text() == '自动公招':
+            if self.config.getboolean('function', 'autoPC'):
+                text = '设为默认关闭'
+            else:
+                text = '设为默认开启'
         elif self.source.text() == '任务交付':
             if self.config.getboolean('function', 'task'):
                 text = '设为默认关闭'
@@ -546,6 +588,9 @@ class App(QWidget):
         elif self.source.text() == '计划战斗':
             key = 'schedule'
             value = not self.config.getboolean('function', 'schedule')
+        elif self.source.text() == '自动公招':
+            key = 'autoPC'
+            value = not self.config.getboolean('function', 'autoPC')
         elif self.source.text() == '任务交付':
             key = 'task'
             value = not self.config.getboolean('function', 'task')
@@ -567,12 +612,18 @@ class App(QWidget):
             self.battleFlag = isChecked
         elif source.text() == '计划战斗':
             self.scheduleFlag = isChecked
+        elif source.text() == '自动公招':
+            self.autoPCFlag = isChecked
         elif source.text() == '任务交付':
             self.taskFlag = isChecked
         elif source.text() == '获取信用':
             self.creditFlag = isChecked
         elif source.text() == '完成后关机':
             self.shutdownFlag = isChecked
+        elif source.text() == '自动招募':
+            self.publicCall.searchFlag = isChecked
+        elif source.text() == '自动聘用':
+            self.publicCall.employFlag = isChecked
 
     def openSchEdit(self):
         self.schJsonEditer.editerShow()
@@ -699,10 +750,12 @@ class App(QWidget):
     
     def start(self):
         self.doctorFlag = self.battle.connect()
-        if self.scheduleFlag:
+        if self.doctorFlag and self.scheduleFlag:
             self.schedule.run(self.doctorFlag)
         if self.doctorFlag and self.battleFlag:
             self.battle.run(self.doctorFlag)
+        if self.doctorFlag and self.autoPCFlag:
+            self.publicCall.autoPCRun(self.doctorFlag)
         if self.doctorFlag and self.taskFlag:
             self.task.run(self.doctorFlag)
         if self.doctorFlag and self.creditFlag:
@@ -715,6 +768,7 @@ class App(QWidget):
 
     def stop(self):
         self.doctorFlag = False
+        self.publicCall.autoPCStop()
         self.schedule.stop()
         self.battle.stop()
         self.task.stop()

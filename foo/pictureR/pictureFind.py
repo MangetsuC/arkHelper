@@ -119,7 +119,10 @@ def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, maxReturn=-1, colorSpace 
     else:
         imsrc = imgsrc
     imsrc = resize(imsrc, (1440, 810))
-    imobj = imreadCH(imgobj)
+    if isinstance(imgobj,str):
+        imobj = imreadCH(imgobj)
+    else:
+        imobj = imgobj['pic']    #现在此情况传入的一定是字典
     matchRect = []
     matchPositionXY = []
     while True:

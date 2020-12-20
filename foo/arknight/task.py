@@ -7,13 +7,13 @@ from foo.pictureR import pictureFind
 from foo.win import toast
 
 class Task:
-    def __init__(self, adb, cwd, ico):
+    def __init__(self, adb, cwd, ico, listGoTo):
         self.adb = adb
         self.cwd = cwd
         self.switch = False
         self.icon = ico
-        self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
-        self.mainpage = pictureFind.picRead(self.cwd + "/res/panel/other/mainpage.png")
+        #self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
+        #self.mainpage = pictureFind.picRead(self.cwd + "/res/panel/other/mainpage.png")
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.task = pictureFind.picRead(self.cwd + "/res/panel/other/task.png")
         self.taskNo = pictureFind.picRead(self.cwd + "/res/panel/other/taskNo.png")
@@ -23,10 +23,13 @@ class Task:
         self.actSel = pictureFind.picRead(self.cwd + "/res/panel/other/actSelect.png")
         self.weekUnSel = pictureFind.picRead(self.cwd + "/res/panel/other/weeklyTaskUnSelect.png")
         self.weekSel = pictureFind.picRead(self.cwd + "/res/panel/other/weeklyTaskSelect.png")
-        self.mainpageMark = pictureFind.picRead(self.cwd + "/res/panel/other/act.png")
+        #self.mainpageMark = pictureFind.picRead(self.cwd + "/res/panel/other/act.png")
         self.waitForNew = pictureFind.picRead(self.cwd + "/res/panel/other/waitForNew.png")
 
-        self.listGoTo = [self.mainpage, self.home, self.mainpageMark]
+        self.listGoTo = listGoTo
+        self.mainpage = self.listGoTo[0]
+        self.home = self.listGoTo[1]
+        self.mainpageMark = self.listGoTo[2]
 
     def goToMainpage(self):
         listGoToTemp = self.listGoTo.copy()
