@@ -32,6 +32,8 @@ class PublicCall:
         self.lock = Lock()
         self.tagOnScreenList = []
         self.refresh = pictureFind.picRead(self.cwd + '/res/panel/publicCall/refresh.png')
+        self.confirm = pictureFind.picRead(self.cwd + '/res/panel/other/confirm.png')
+        self.pcInMark = pictureFind.picRead(self.cwd + '/res/panel/publicCall/inPcMark.png')
         #self.monitorFlag = False
     
     def updateTag(self):
@@ -333,8 +335,16 @@ class PublicCall:
             #刷新tag
             refreshPic = pictureFind.matchImg(src, self.refresh)
             if refreshPic != None:
-                self.adb.click(refreshPic['result'][0], refreshPic['result'][1])
-                return 100
+                for i in range(3):
+                    self.adb.click(refreshPic['result'][0], refreshPic['result'][1])
+                    self.adb.screenShot(pngName='autoPC')
+                    confirmPic = pictureFind.matchImg(self.cwd + '/bin/adb/autoPC.png', self.refresh)
+                    if confirmPic != None:
+                        while pictureFind.matchImg(self.cwd + '/bin/adb/autoPC.png', self.pcInMark) == None:
+                            self.adb.click(confirmPic['result'][0], confirmPic['result'][1])
+                            sleep(1)
+                            self.adb.screenShot(pngName='autoPC')
+                        return 100
         return 0
 
 
