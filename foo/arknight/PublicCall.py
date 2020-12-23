@@ -40,53 +40,12 @@ class PublicCall:
         self.isTagNeedUpdate = True
     
     def getTag(self, src, isAutoMode = False):
-        #tempT = perf_counter()
         self.tagOnScreenList = []
         imSrc = src
         trytime = 0
-        #tInfo = pictureFind.matchImg(imSrc, self.mark, 0.8)
-        #if tInfo == None:
-        #    return []
-        '''
-        th0 = Thread(target=self.matchTag, args=(imSrc, self.tag[0:4]))
-        th1 = Thread(target=self.matchTag, args=(imSrc, self.tag[4:8]))
-        th2 = Thread(target=self.matchTag, args=(imSrc, self.tag[8:12]))
-        th3 = Thread(target=self.matchTag, args=(imSrc, self.tag[12:16]))
-        th4 = Thread(target=self.matchTag, args=(imSrc, self.tag[16:20]))
-        th5 = Thread(target=self.matchTag, args=(imSrc, self.tag[20:24]))
-        th6 = Thread(target=self.matchTag, args=(imSrc, self.tag[24:28]))
-        thList = [th0, th1, th2, th3, th4, th5, th6]
-        for eachth in thList:
-            eachth.start()
-        for eachth in thList:
-            eachth.join()
-        '''
+
         self.matchTag(imSrc, self.tag)
 
-        #print('识别'+str(perf_counter() - tempT))
-        #print(self.tagOnScreenList)
-        '''
-        tZS = None #意为tags资深 下面同理
-        tZY = None
-        tGZ = None
-        tJX = None
-        if not(self.tagOnScreenList == [] or len(self.tagOnScreenList) == 5):
-            for each in range(len(self.tagOnScreenList)):
-                if '资深干员' == self.tagOnScreenList[each][0]:
-                    tZS = self.tagOnScreenList[each]
-                if '高级资深干员' == self.tagOnScreenList[each][0]:
-                    tGZ = self.tagOnScreenList[each]
-                if '支援' == self.tagOnScreenList[each][0]:
-                    tZY = self.tagOnScreenList[each]
-                if '支援机械' == self.tagOnScreenList[each][0]:
-                    tJX = self.tagOnScreenList[each]
-            if tZS != None and tGZ != None:
-                if abs(tZS[1][0] - tGZ[1][0]) < 50 and abs(tZS[1][1] - tGZ[1][1]) < 5:
-                    self.tagOnScreenList.remove(tZS)
-            if tZY != None and tJX != None:
-                if abs(tZY[1][0] - tJX[1][0]) < 50 and abs(tZY[1][1] - tJX[1][1]) < 5:
-                    self.tagOnScreenList.remove(tZY)
-        '''
         if isAutoMode:
             if len(self.tagOnScreenList) == 5:
                 return self.tagOnScreenList
@@ -346,9 +305,3 @@ class PublicCall:
                             self.adb.screenShot(pngName='autoPC')
                         return 100
         return 0
-
-
-if __name__ == "__main__":
-    test = PublicCall(None, r'E:\workSpace\CodeRelease\arknightHelper\arkHelper')
-    src = pictureFind.imreadCH('E:/workSpace/CodeRelease/arknightHelper/source/tag/test2.png')
-    print(test.getTag(src))
