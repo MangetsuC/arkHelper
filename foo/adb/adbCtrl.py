@@ -125,7 +125,7 @@ class Adb:
             else:
                 sleep(1)
             
-        self.cmd.run('adb -s {device} exec-out screencap -p > {0}/{1}.png'\
+        self.cmd.run('adb -s {device} exec-out screencap -p > \"{0}/{1}.png\"'\
             .format(self.adbPath, pngName, device = self.ip))
 
         pic0 = open(self.adbPath + '/' + pngName +'.png', 'br')
