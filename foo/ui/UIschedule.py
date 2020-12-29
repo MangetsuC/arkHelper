@@ -7,7 +7,7 @@ from json import loads,dumps
 
 
 class JsonEdit(QWidget):
-    def __init__(self, ico, parent = None, flags = Qt.WindowCloseButtonHint):
+    def __init__(self, dataPath, ico, parent = None, flags = Qt.WindowCloseButtonHint):
         super().__init__(parent, flags)
 
         self.setStyleSheet('''JsonEdit{background:#272626}QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
@@ -47,7 +47,7 @@ class JsonEdit(QWidget):
 
         self.selPanel = BootyChoice(self, ico)
 
-        self.json = getcwd() + '/schedule.json'
+        self.json = dataPath + '/schedule.json'
         self.scheduleAdd = {'part':'MAIN', 'chap':'', 'objLevel':'', 'times':''}
         self.transEX = {'ex1':'切尔诺伯格','ex2':'龙门外环','ex3':'龙门市区','ex4':'当期委托'}
 

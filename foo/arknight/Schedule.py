@@ -11,11 +11,11 @@ from foo.pictureR import bootyCount
 from foo.win import toast
 
 class BattleSchedule:
-    def __init__(self, adb, cwd, ico):
+    def __init__(self, adb, cwd, dataPath, ico):
         self.cwd = cwd
         self.adb = adb
         self.ico = ico
-        self.json = self.cwd + '/schedule.json'
+        self.json = dataPath + '/schedule.json'
         self.levelSchedule = self.readJson()
         self.switch = False
         self.switchB = False

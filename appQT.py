@@ -499,14 +499,14 @@ class App(QWidget):
     def initClass(self):
         self.adb = Adb(self.cwd + '/bin/adb', self.config)
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
-        self.schedule = BattleSchedule(self.adb, self.cwd, self.ico) #处于测试
+        self.schedule = BattleSchedule(self.adb, self.cwd, self.userDataPath, self.ico) #处于测试
         self.task = Task(self.adb, self.cwd, self.ico, self.listGoTo)
         self.credit = Credit(self.adb, self.cwd, self.listGoTo)
         with open(self.cwd + '/data.json', 'r') as f:
             temp = f.read()
         self.__data = loads(temp)
         self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, self.listGoTo, self.__data['data'][0]['normal'], self.__data['data'][0]['high']) #公开招募
-        self.schJsonEditer = JsonEdit(self.ico)
+        self.schJsonEditer = JsonEdit(self.userDataPath, self.ico)
         self.board = BlackBoard()
 
     def initSlrSel(self):
