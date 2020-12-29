@@ -1,7 +1,7 @@
 import sys
 from configparser import ConfigParser
 from json import dumps, loads
-from os import getcwd, path
+from os import getcwd, path, getlogin, mkdir
 from threading import Thread
 from webbrowser import open as openUrl
 from urllib import request
@@ -27,7 +27,7 @@ from foo.pictureR import pictureFind
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.5.0'
+        self.ver = '2.5.1'
         self.initFile()
         self.initVar()
         self.initNormalPicRes()
@@ -41,12 +41,17 @@ class App(QWidget):
 
     def initFile(self):
         self.cwd = getcwd().replace('\\', '/')
+        self.userDataPath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper'
+        if path.exists(self.cwd + '/config.ini'):
+            self.userDataPath = self.cwd #便于调试时不改变实际使用的配置
+        elif not path.exists(self.userDataPath):
+            mkdir(self.userDataPath)
         
-        if not path.exists(self.cwd + '/config.ini'):
-            with open(self.cwd + '/config.ini', 'w') as c:
+        if not path.exists(self.userDataPath + '/config.ini'):
+            with open(self.userDataPath + '/config.ini', 'w') as c:
                 c.write('')
 
-        self.configPath = self.cwd + '/config.ini'  #读
+        self.configPath = self.userDataPath + '/config.ini'  #读
         self.config = ConfigParser()
         self.config.read(filenames=self.configPath, encoding="UTF-8")
 
@@ -124,18 +129,18 @@ class App(QWidget):
             self.config.write(configInI)
             configInI.close()  #配置文件初始化结束
 
-        if not path.exists(self.cwd + '/schedule.json'):
-            with open(self.cwd + '/schedule.json', 'w', encoding = 'UTF-8') as j:
+        if not path.exists(self.userDataPath + '/schedule.json'):
+            with open(self.userDataPath + '/schedule.json', 'w', encoding = 'UTF-8') as j:
                 j.write('{\n\t\"main\": [\n\t\t{\n\t\t\t\"allplan\": \"未选择\",\n\t\t\t\"sel\": []\n\t\t},\n\t\t{\n\t\t\t\"未选择\": []\n\t\t}\n\t]\n}')
         else:
-            with open(self.cwd + '/schedule.json', 'r', encoding = 'UTF-8') as j:
+            with open(self.userDataPath + '/schedule.json', 'r', encoding = 'UTF-8') as j:
                 tempText = j.read()
             if 'allplan' not in tempText:
                 oldJson = loads(tempText)
                 newJson = dict()
                 newJson['main'] = [{'allplan':'未选择','sel':oldJson['levels']},{'未选择':[]}]
                 newJson = dumps(newJson, sort_keys=True, indent=4, separators=(',', ': '), ensure_ascii=False)
-                with open(self.cwd + '/schedule.json', 'w', encoding = 'UTF-8') as j:
+                with open(self.userDataPath + '/schedule.json', 'w', encoding = 'UTF-8') as j:
                     j.write(newJson)
                 #计划json初始化结束
     
