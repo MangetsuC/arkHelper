@@ -148,7 +148,7 @@ class App(QWidget):
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
         #self.setFixedSize(522,196)
-        self.resize(597,196)
+        self.resize(522,196)
         
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
@@ -185,6 +185,14 @@ class App(QWidget):
         self.tbAutoPC.setFixedSize(75, 40)
         self.tbAutoPC.clicked[bool].connect(self.functionSel)
 
+        self.actAutoSearch = QAction('自动招募')
+        self.actAutoSearch.triggered.connect(self.setAutoPCFunc)
+        self.actAutoSearch.setIcon(QIcon(self.selectedPNG))
+        self.actAutoEmploy = QAction('自动聘用')
+        self.actAutoEmploy.triggered.connect(self.setAutoPCFunc)
+        self.actAutoEmploy.setIcon(QIcon(self.selectedPNG))
+
+        '''
         self.tbAutoSearch = QPushButton('自动招募', self) #自动公招可选按钮 招募部分
         self.tbAutoSearch.setCheckable(True)
         self.tbAutoSearch.setFixedSize(75, 40)
@@ -200,6 +208,10 @@ class App(QWidget):
         self.btnSchJson = QPushButton('路线规划', self) #更改计划json
         self.btnSchJson.setFixedSize(155, 40)
         self.btnSchJson.clicked.connect(self.openSchEdit)
+        '''
+
+        self.actSchJson = QAction('路线规划')
+        self.actSchJson.triggered.connect(self.openSchEdit)
 
         self.tbTask = QPushButton('任务交付', self) #任务交付可选按钮
         self.tbTask.setCheckable(True)
@@ -247,7 +259,7 @@ class App(QWidget):
         self.actMaxNumber.triggered.connect(self.changeMaxNum)
 
         self.actConsole = QAction('控制台', parent=self.settingMenu)
-        self.actCheckUpdate = QAction('检查更新', parent=self.settingMenu)
+        self.actCheckUpdate = QAction('前往下载', parent=self.settingMenu)
         self.actIndex = QAction('访问主页', parent=self.settingMenu)
         
         #self.actVersion1 = QAction('版本：', parent=self.settingMenu)
@@ -286,7 +298,7 @@ class App(QWidget):
         self.btnSet.setStyleSheet('''QPushButton:menu-indicator{image:none;width:0px;}''')
 
         self.btnMin = QPushButton('最小化',self) #最小化按钮
-        self.btnMin.setFixedSize(75, 40)
+        self.btnMin.setFixedSize(155, 40)
         self.btnMin.clicked.connect(self.minimize)
 
         self.btnClose = QPushButton('退出',self) #退出按钮
@@ -308,18 +320,18 @@ class App(QWidget):
         self.grid.addWidget(self.btnMonitorPublicCall, 3, 0, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbSchedule, 0, 4, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbAutoPC, 0, 5, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbAutoPC, 1, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnSet, 2, 2, 1,1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbCredit, 0, 3, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbShutdown, 1, 2, 1, 2)
-        self.grid.addWidget(self.btnMin, 1, 4, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnClose, 1, 5, 2, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbAutoSearch, 1, 1, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbAutoEmploy, 2, 1, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnSchJson, 2, 3, 1, 2, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnMin, 2, 2, 1, 2, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnClose, 1, 4, 2, 1, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.tbAutoSearch, 1, 1, 1, 1, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.tbAutoEmploy, 2, 1, 1, 1, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.btnSchJson, 2, 3, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnShowBoard, 3, 1, 1, 1, alignment=Qt.AlignRight)
-        self.grid.addWidget(self.lNotice, 3, 4, 1, 2, alignment=Qt.AlignRight)
+        self.grid.addWidget(self.lNotice, 3, 3, 1, 2, alignment=Qt.AlignRight)
 
         self.setLayout(self.grid)
 
@@ -328,25 +340,25 @@ class App(QWidget):
     def initRightClickMeun(self):
         #战斗按钮
         self.tbBattle.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tbBattle.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        self.tbBattle.customContextMenuRequested.connect(self.functionSetMeun)
         #计划战斗按钮
         self.tbSchedule.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tbSchedule.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        self.tbSchedule.customContextMenuRequested.connect(self.functionSetMeun)
         #自动公招按钮
         self.tbAutoPC.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tbAutoPC.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        self.tbAutoPC.customContextMenuRequested.connect(self.functionSetMeun)
         #任务按钮
         self.tbTask.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tbTask.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        self.tbTask.customContextMenuRequested.connect(self.functionSetMeun)
         #信用按钮
         self.tbCredit.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tbCredit.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        self.tbCredit.customContextMenuRequested.connect(self.functionSetMeun)
         #自动关机按钮
         self.tbShutdown.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tbShutdown.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        self.tbShutdown.customContextMenuRequested.connect(self.functionSetMeun)
         #公开招募按钮
         self.btnMonitorPublicCall.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.btnMonitorPublicCall.customContextMenuRequested.connect(self.functionDefaultSetMeun)
+        self.btnMonitorPublicCall.customContextMenuRequested.connect(self.functionSetMeun)
 
     def initVar(self):
         self.ico = self.cwd + '/res/ico.ico'
@@ -541,8 +553,12 @@ class App(QWidget):
         #停止窗口移动
         self.moveFlag = False
     
-    def functionDefaultSetMeun(self):
+    def functionSetMeun(self):
         self.source = self.sender()
+        rightClickMeun = QMenu()
+        rightClickMeun.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;background-color:#222724; margin:3px;}
+                                        QMenu:item {padding:8px 32px;}
+                                        QMenu:item:selected { background-color: #3f4140;}''')
         if self.source.text() == '战斗':
             if self.config.getboolean('function', 'battle'):
                 text = '设为默认关闭'
@@ -553,11 +569,19 @@ class App(QWidget):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
+            rightClickMeun.addAction(self.actSchJson)
         elif self.source.text() == '自动公招':
             if self.config.getboolean('function', 'autoPC'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
+            #自动招募和自动聘用
+            rightClickMeun.addAction(self.actAutoSearch)
+            rightClickMeun.addAction(self.actAutoEmploy)
+            rightClickMeun.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;background-color:#222724; margin:3px;}
+                                        QMenu:item {padding:8px 32px;}
+                                        QMenu:item:selected { background-color: #3f4140;}
+                                        QMenu:icon{padding: 8px 20px;}''')
         elif self.source.text() == '任务交付':
             if self.config.getboolean('function', 'task'):
                 text = '设为默认关闭'
@@ -578,13 +602,9 @@ class App(QWidget):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
-        self.contextMenu = QMenu()
-        self.actionSetDeafult = self.contextMenu.addAction(text)
+        self.actionSetDeafult = rightClickMeun.addAction(text)
         self.actionSetDeafult.triggered.connect(self.setDefault)
-        self.contextMenu.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;background-color:#222724; margin:3px;}
-                                        QMenu:item {padding:6px 15px;}
-                                        QMenu:item:selected { background-color: #3f4140;}''')
-        self.contextMenu.exec_(QCursor.pos())
+        rightClickMeun.exec_(QCursor.pos())
     
     def setDefault(self):
         if self.source.text() == '战斗':
@@ -630,6 +650,21 @@ class App(QWidget):
         elif source.text() == '自动聘用':
             self.publicCall.employFlag = isChecked
 
+    def setAutoPCFunc(self):
+        source = self.sender()
+        if source.text() == '自动招募':
+            self.publicCall.searchFlag = not self.publicCall.searchFlag
+            if self.publicCall.searchFlag:
+                source.setIcon(QIcon(self.selectedPNG))
+            else:
+                source.setIcon(QIcon(''))
+        elif source.text() == '自动聘用':
+            self.publicCall.employFlag = not self.publicCall.employFlag
+            if self.publicCall.employFlag:
+                source.setIcon(QIcon(self.selectedPNG))
+            else:
+                source.setIcon(QIcon(''))
+    
     def openSchEdit(self):
         self.schJsonEditer.editerShow()
     

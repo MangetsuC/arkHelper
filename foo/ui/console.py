@@ -39,7 +39,7 @@ class Console(QDialog):
         self.isShow = not self.isShow
         if self.isShow:
             self.show()
-            self.move(0,0)
+            #self.move(0,0)
         else:
             self.hide()
 
