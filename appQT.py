@@ -149,7 +149,9 @@ class App(QWidget):
         self.setWindowTitle('明日方舟小助手')
         #self.setFixedSize(522,196)
         self.resize(522,196)
-        
+
+        self.line = QAction()
+        self.line.setSeparator(True)
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
         self.setStyleSheet('''App{background:#272626}QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:9pt;}
@@ -191,24 +193,6 @@ class App(QWidget):
         self.actAutoEmploy = QAction('自动聘用')
         self.actAutoEmploy.triggered.connect(self.setAutoPCFunc)
         self.actAutoEmploy.setIcon(QIcon(self.selectedPNG))
-
-        '''
-        self.tbAutoSearch = QPushButton('自动招募', self) #自动公招可选按钮 招募部分
-        self.tbAutoSearch.setCheckable(True)
-        self.tbAutoSearch.setFixedSize(75, 40)
-        self.tbAutoSearch.clicked[bool].connect(self.functionSel)
-        self.tbAutoSearch.setChecked(True)
-
-        self.tbAutoEmploy = QPushButton('自动聘用', self) #自动公招可选按钮 聘用部分
-        self.tbAutoEmploy.setCheckable(True)
-        self.tbAutoEmploy.setFixedSize(75, 40)
-        self.tbAutoEmploy.clicked[bool].connect(self.functionSel)
-        self.tbAutoEmploy.setChecked(True)
-
-        self.btnSchJson = QPushButton('路线规划', self) #更改计划json
-        self.btnSchJson.setFixedSize(155, 40)
-        self.btnSchJson.clicked.connect(self.openSchEdit)
-        '''
 
         self.actSchJson = QAction('路线规划')
         self.actSchJson.triggered.connect(self.openSchEdit)
@@ -558,7 +542,9 @@ class App(QWidget):
         rightClickMeun = QMenu()
         rightClickMeun.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;background-color:#222724; margin:3px;}
                                         QMenu:item {padding:8px 32px;}
-                                        QMenu:item:selected { background-color: #3f4140;}''')
+                                        QMenu:item:selected { background-color: #3f4140;}
+                                        QMenu:icon{padding: 8px 20px;}
+                                        QMenu:separator{background-color: #7C7C7C; height:1px; margin-left:6px; margin-right:6px;}''')
         if self.source.text() == '战斗':
             if self.config.getboolean('function', 'battle'):
                 text = '设为默认关闭'
@@ -570,6 +556,7 @@ class App(QWidget):
             else:
                 text = '设为默认开启'
             rightClickMeun.addAction(self.actSchJson)
+            rightClickMeun.addAction(self.line)
         elif self.source.text() == '自动公招':
             if self.config.getboolean('function', 'autoPC'):
                 text = '设为默认关闭'
@@ -578,10 +565,7 @@ class App(QWidget):
             #自动招募和自动聘用
             rightClickMeun.addAction(self.actAutoSearch)
             rightClickMeun.addAction(self.actAutoEmploy)
-            rightClickMeun.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;background-color:#222724; margin:3px;}
-                                        QMenu:item {padding:8px 32px;}
-                                        QMenu:item:selected { background-color: #3f4140;}
-                                        QMenu:icon{padding: 8px 20px;}''')
+            rightClickMeun.addAction(self.line)
         elif self.source.text() == '任务交付':
             if self.config.getboolean('function', 'task'):
                 text = '设为默认关闭'
