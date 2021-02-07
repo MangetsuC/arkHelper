@@ -27,7 +27,11 @@ from foo.pictureR import pictureFind
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.5.1'
+        self.ver = '2.5.2'
+
+        self.cwd = getcwd().replace('\\', '/')
+        self.console = Console(self.cwd) #接管输出与报错
+
         self.initFile()
         self.initVar()
         self.initNormalPicRes()
@@ -40,12 +44,15 @@ class App(QWidget):
         self.show()
 
     def initFile(self):
-        self.cwd = getcwd().replace('\\', '/')
         self.userDataPath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper'
         if path.exists(self.cwd + '/config.ini'):
             self.userDataPath = self.cwd #便于调试时不改变实际使用的配置
         elif not path.exists(self.userDataPath):
-            mkdir(self.userDataPath)
+            try:
+                mkdir(self.userDataPath)
+            except Exception as creatDirErr:
+                print(creatDirErr)
+                self.userDataPath = self.cwd
         
         if not path.exists(self.userDataPath + '/config.ini'):
             with open(self.userDataPath + '/config.ini', 'w') as c:
@@ -80,6 +87,9 @@ class App(QWidget):
             isNeedWrite = True
         if not self.config.has_option('function', 'autoPC'):
             self.config.set('function','autoPC','False')
+            isNeedWrite = True
+        if not self.config.has_option('function', 'autoPC_skip1Star'):
+            self.config.set('function','autoPC_skip1Star','True')
             isNeedWrite = True
         if not self.config.has_option('function', 'task'):
             self.config.set('function','task','True')
@@ -193,6 +203,10 @@ class App(QWidget):
         self.actAutoEmploy = QAction('自动聘用')
         self.actAutoEmploy.triggered.connect(self.setAutoPCFunc)
         self.actAutoEmploy.setIcon(QIcon(self.selectedPNG))
+        self.actSkipStar1 = QAction('保留1星')
+        self.actSkipStar1.triggered.connect(self.setAutoPCFunc)
+        if self.config.getboolean('function','autoPC_skip1Star'):
+            self.actSkipStar1.setIcon(QIcon(self.selectedPNG))
 
         self.actSchJson = QAction('路线规划')
         self.actSchJson.triggered.connect(self.openSchEdit)
@@ -250,7 +264,7 @@ class App(QWidget):
         self.actVersion2 = QAction(f'v{self.ver}', parent=self.settingMenu)
 
 
-        self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrYeshen, self.actSlrLeidian, self.actSlrCustom]
+        self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrCustom] #self.actSlrYeshen, self.actSlrLeidian,
         #添加菜单选项
         self.settingMenu.addMenu(self.actSimulator) #模拟器二级菜单
         for eachSlr in self.slrList:
@@ -350,8 +364,6 @@ class App(QWidget):
         self.unSelPNG = self.cwd + '/res/gui/unSelected.png'
 
         self.__data = None
-
-        self.console = Console(self.cwd) #接管输出与报错
 
         self.btnMainClicked = False
 
@@ -466,6 +478,7 @@ class App(QWidget):
         self.tbSchedule.setChecked(self.scheduleFlag)
         self.autoPCFlag = self.config.getboolean('function', 'autoPC')
         self.tbAutoPC.setChecked(self.autoPCFlag)
+        self.publicCall.setStar1(1, self.config.getboolean('function', 'autoPC_skip1Star')) #自动公招保留一星设定
         self.taskFlag = self.config.getboolean('function', 'task')
         self.tbTask.setChecked(self.taskFlag) #任务选项
         self.creditFlag = self.config.getboolean('function', 'credit')
@@ -544,7 +557,7 @@ class App(QWidget):
                                         QMenu:item {padding:8px 32px;}
                                         QMenu:item:selected { background-color: #3f4140;}
                                         QMenu:icon{padding: 8px 20px;}
-                                        QMenu:separator{background-color: #7C7C7C; height:1px; margin-left:6px; margin-right:6px;}''')
+                                        QMenu:separator{background-color: #7C7C7C; height:1px; margin-left:2px; margin-right:2px;}''')
         if self.source.text() == '战斗':
             if self.config.getboolean('function', 'battle'):
                 text = '设为默认关闭'
@@ -565,6 +578,7 @@ class App(QWidget):
             #自动招募和自动聘用
             rightClickMeun.addAction(self.actAutoSearch)
             rightClickMeun.addAction(self.actAutoEmploy)
+            rightClickMeun.addAction(self.actSkipStar1)
             rightClickMeun.addAction(self.line)
         elif self.source.text() == '任务交付':
             if self.config.getboolean('function', 'task'):
@@ -648,6 +662,14 @@ class App(QWidget):
                 source.setIcon(QIcon(self.selectedPNG))
             else:
                 source.setIcon(QIcon(''))
+        elif source.text() == '保留1星':
+            self.publicCall.setStar1(1, not self.publicCall.setStar1(0))
+            if self.publicCall.setStar1(0):
+                source.setIcon(QIcon(self.selectedPNG))
+                self.changeDefault('autopc_skip1star', True)
+            else:
+                source.setIcon(QIcon(''))
+                self.changeDefault('autopc_skip1star', False)
     
     def openSchEdit(self):
         self.schJsonEditer.editerShow()

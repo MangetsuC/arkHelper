@@ -55,15 +55,13 @@ class BattleSchedule:
                 'AP':self.cwd + "/res/panel/level/II/AP.png", 'CA':self.cwd + "/res/panel/level/II/CA.png",\
                 'CE':self.cwd + "/res/panel/level/II/CE.png", 'SK':self.cwd + "/res/panel/level/II/SK.png",\
                 'LS':self.cwd + "/res/panel/level/II/LS.png", \
-                'externalE1':self.cwd + "/res/panel/level/II/enternalE01.png",'externalE2':self.cwd + "/res/panel/level/II/enternalE02.png",\
-                'tempE':self.cwd + "/res/panel/level/II/tempE.png",\
                 '0':self.cwd + "/res/panel/level/II/ep0.png", '1':self.cwd + "/res/panel/level/II/ep1.png",\
                 '2':self.cwd + "/res/panel/level/II/ep2.png", '3':self.cwd + "/res/panel/level/II/ep3.png",\
                 '4':self.cwd + "/res/panel/level/II/ep4.png", '5':self.cwd + "/res/panel/level/II/ep5.png",\
                 '6':self.cwd + "/res/panel/level/II/ep6.png", '7':self.cwd + "/res/panel/level/II/ep7.png",\
                 '8':self.cwd + "/res/panel/level/II/ep8.png"}
         self.exIV = {'ex1':self.cwd + "/res/panel/level/III/e01.png",'ex2':self.cwd + "/res/panel/level/III/e02.png", 'ex3':self.cwd + "/res/panel/level/III/e03.png",\
-                    'ex4':self.cwd + "/res/panel/level/III/e04.png"}
+                    'ex4':self.cwd + "/res/panel/level/III/e04.png", 'exSwitch':self.cwd + "/res/panel/level/III/exSwitch.png"}
         self.exSymbol = self.cwd + "/res/panel/other/exSymbol.png"
 
     def goLevel(self, level):
@@ -136,13 +134,14 @@ class BattleSchedule:
             else:
                 return False
             for i in range(5):
+                self.adb.click(720, 405) #存在不小心点开剿灭关卡无法切换关卡的可能性
+                sleep(1)
                 self.adb.screenShot()
-                picExChap = pictureFind.matchImg(self.screenShot, self.III[chap])
+                picExChap = pictureFind.matchImg(self.screenShot, self.exIV["exSwitch"])
                 if picExChap != None:
                     self.adb.click(picExChap['result'][0], picExChap['result'][1])
+                    sleep(0.5)
                     break
-                else:
-                    self.adb.onePageRight()
             else:
                 return False
             for i in range(5):
@@ -152,7 +151,10 @@ class BattleSchedule:
                     return True
                 picExObj = pictureFind.matchImg(self.screenShot, self.exIV[objLevel])
                 if picExObj != None:
-                    self.adb.click(picExObj['result'][0], picExObj['result'][1])
+                    if objLevel == 'ex4':
+                        self.adb.click(picExObj['result'][0], picExObj['result'][1] + 80)
+                    else:
+                        self.adb.click(picExObj['result'][0], picExObj['result'][1])
             else:
                 return False
             

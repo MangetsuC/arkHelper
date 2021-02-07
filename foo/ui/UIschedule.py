@@ -290,16 +290,16 @@ class JsonEdit(QWidget):
 
         else:
             if selChap == '切尔诺伯格':
-                self.scheduleAdd['chap'] = 'externalE1'
+                self.scheduleAdd['chap'] = 'external'
                 self.scheduleAdd['objLevel'] = 'ex1'
             elif selChap == '龙门外环':
-                self.scheduleAdd['chap'] = 'externalE2'
+                self.scheduleAdd['chap'] = 'external'
                 self.scheduleAdd['objLevel'] = 'ex2'
             elif selChap == '龙门市区':
-                self.scheduleAdd['chap'] = 'externalE2'
+                self.scheduleAdd['chap'] = 'external'
                 self.scheduleAdd['objLevel'] = 'ex3'
             elif selChap == '当期委托':
-                self.scheduleAdd['chap'] = 'tempE'
+                self.scheduleAdd['chap'] = 'external'
                 self.scheduleAdd['objLevel'] = 'ex4'
 
             self.level2Edit.clear()

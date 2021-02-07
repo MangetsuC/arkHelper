@@ -136,6 +136,9 @@ class UIPublicCall(QDialog):
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
     
+    def setStar1(self, func, state = True):
+        return self.publicCall.setStar1(func, state)
+    
     def showAllChange(self, ischecked):
         self.isShowAll = ischecked
     
@@ -288,7 +291,7 @@ class UIPublicCall(QDialog):
         tagState = self.publicCall.chooseTag()
         while tagState == 100:
             tagState = self.publicCall.chooseTag()
-        if tagState == 6:
+        if tagState == 6 or tagState == 1:
             for i in range(5):
                 self.adb.screenShot()
                 picInfo = pictureFind.matchImg(self.screenShot, self.pcCancel)

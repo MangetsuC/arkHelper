@@ -21,21 +21,24 @@ class PublicCall:
         self.isTagNeedUpdate = False
 
         self.adb = adb
-        #self.srcBefore = None
         self.regAns = None
-        #self.battle = battle
         self.cwd = cwd
         self.screenShot = self.cwd + '/bin/adb/PCScreenshot.png'
         self.tag = pictureFind.picRead([self.cwd + '/res/publicCall/' + i for i in listdir(self.cwd + '/res/publicCall')])
         self.tag.sort(key = lambda x:len(x['obj']), reverse = True)
-        #self.mark = pictureFind.picRead(self.cwd + '/res/panel/other/publicMark.png')
-        self.lock = Lock()
         self.tagOnScreenList = []
         self.refresh = pictureFind.picRead(self.cwd + '/res/panel/publicCall/refresh.png')
         self.confirm = pictureFind.picRead(self.cwd + '/res/panel/other/confirm.png')
         self.pcInMark = pictureFind.picRead(self.cwd + '/res/panel/publicCall/inPcMark.png')
+
+        self.is1Need = False
         #self.monitorFlag = False
     
+    def setStar1(self, func, state = True):
+        if func:
+            self.is1Need = state
+        return self.is1Need
+
     def updateTag(self):
         self.isTagNeedUpdate = True
     
@@ -71,11 +74,8 @@ class PublicCall:
         for each in objList:
             if len(self.tagOnScreenList) == 5:
                 break
-            #tInfo = pictureFind.matchImg(src, self.cwd + '/res/publicCall/' + each)
             tInfo = pictureFind.matchImg(src, each)
             if tInfo != None:
-                #self.lock.acquire()
-                #self.tagOnScreenList.append(self.trans(tInfo['obj']))
                 self.tagOnScreenList.append((tInfo['obj'][:-4], tInfo['result']))
                 tInfo['rectangle'] = list(tInfo['rectangle'])
                 for i in range(4):
@@ -90,11 +90,8 @@ class PublicCall:
 
     
     def getAns(self, tagOnScreenList):
-        #tempT = perf_counter()
         if tagOnScreenList == []:
-            #print('匹配'+str(perf_counter() - tempT))
             return False
-        #tagOnScreenList.sort()
         if self.isTagNeedUpdate: #判断是否从网站下载了新公招表
             with open(self.cwd + '/data.json', 'r') as f:
                 temp = f.read()
@@ -245,32 +242,31 @@ class PublicCall:
         return self.regAns
 
     def chooseTag(self):
-        is1Need = False #一星干员
-        #self.adb.connect()
         self.adb.screenShot(pngName='autoPC')
         src = pictureFind.imreadCH(self.cwd + '/bin/adb/autoPC.png')
         tempTagList = self.getTag(src, isAutoMode=True)
+        if self.is1Need: #小车
+            for i in tempTagList:
+                if i[0] == '支援机械':
+                    return 1
         tagNameAndPos = dict(tempTagList)
         tagCombination = self.getAns(list(tagNameAndPos.keys()))[0]
         star4Combination = []
         star5Combination = []
         star6Combination = []
         for eachCombination in tagCombination.keys():
-            if is1Need:
-                pass
-            else:
-                tagCombination[eachCombination].sort(key=lambda x:x[0]%10)
-                minStar = tagCombination[eachCombination][0][0] #最低星数
-                tempNum = 0
-                while minStar == 10:
-                    tempNum += 1
-                    minStar = tagCombination[eachCombination][tempNum][0]
-                if minStar == 4:
-                    star4Combination.append(eachCombination)
-                elif minStar == 5:
-                    star5Combination.append(eachCombination)
-                elif minStar == 6:
-                    star6Combination.append(eachCombination)
+            tagCombination[eachCombination].sort(key=lambda x:x[0]%10)
+            minStar = tagCombination[eachCombination][0][0] #最低星数
+            tempNum = 0
+            while minStar == 10:
+                tempNum += 1
+                minStar = tagCombination[eachCombination][tempNum][0]
+            if minStar == 4:
+                star4Combination.append(eachCombination)
+            elif minStar == 5:
+                star5Combination.append(eachCombination)
+            elif minStar == 6:
+                star6Combination.append(eachCombination)
         if star6Combination != []:
             return 6
         if star5Combination != []:
