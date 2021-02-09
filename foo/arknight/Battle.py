@@ -108,7 +108,7 @@ class BattleLoop:
                 #sleep(1)
                 for eachObj in self.listImg:
                     if self.switch:
-                        if eachObj['obj'] == "end.png":
+                        if eachObj['obj'] == "end.png" or eachObj['obj'] == "levelup.png":
                             confidence = 0.8
                         else:
                             confidence = 0.9
