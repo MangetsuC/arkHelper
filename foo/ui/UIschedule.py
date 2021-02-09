@@ -245,7 +245,8 @@ class JsonEdit(QWidget):
         levelList = []
         if '章' in selChap:
             self.scheduleAdd['chap'] = str(int(indexI))
-            levelList.append(f'{int(indexI)}')
+            if int(indexI) != 8:
+                levelList.append(f'{int(indexI)}')
             if int(indexI) != 0 and int(indexI) != 1:
                 if int(indexI) != 8:
                     levelList.append(f'S{int(indexI)}')

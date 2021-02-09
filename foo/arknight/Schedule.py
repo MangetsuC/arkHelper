@@ -367,6 +367,12 @@ class BattleSchedule:
                                 self.switchB = False
                                 toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
                                 return False
+                        elif eachObj['obj'] == "stoneLack.png":
+                            self.adb.click(picPos[0], picPos[1], isSleep = True)
+                            self.switch = False
+                            self.switchB = False
+                            toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                            return False
                         else:
                             self.adb.click(picPos[0], picPos[1], isSleep = True)
                         break

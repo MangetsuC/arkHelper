@@ -167,6 +167,10 @@ class BattleLoop:
                                     self.adb.click(picPos[0], picPos[1], isSleep = True)
                                     self.switch = False
                                     toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                            elif eachObj['obj'] == "stoneLack.png":
+                                self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                self.switch = False
+                                toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
                             else:
                                 self.adb.click(picPos[0], picPos[1], isSleep = True)
                                 if eachObj['obj'] == 'startApartOF.png':
