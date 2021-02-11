@@ -1,10 +1,12 @@
 import sys
 from configparser import ConfigParser
 from json import dumps, loads
-from os import getcwd, path, getlogin, mkdir
+from os import getcwd, path, getlogin, mkdir, system
 from threading import Thread
 from webbrowser import open as openUrl
 from urllib import request
+from hashlib import md5
+import requests
 
 from PyQt5.QtCore import Qt, pyqtSignal, QThread
 from PyQt5.QtGui import QCursor, QIcon, QMouseEvent, QScreen
@@ -27,7 +29,7 @@ from foo.pictureR import pictureFind
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.5.2'
+        self.ver = '2.5.3'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
@@ -132,6 +134,9 @@ class App(QWidget):
             isNeedWrite = True
         if not self.config.has_option('notice', 'enable'):
             self.config.set('notice','enable','True')
+            isNeedWrite = True
+        if not self.config.has_option('notice', 'md5'):
+            self.config.set('notice','md5','0')
             isNeedWrite = True
 
         if isNeedWrite:
@@ -302,11 +307,21 @@ class App(QWidget):
         self.btnClose = QPushButton('退出',self) #退出按钮
         self.btnClose.setFixedSize(75, 85)
         self.btnClose.clicked.connect(self.exit)
-
+        
         self.btnShowBoard = QPushButton('有新公告！',self)
         self.btnShowBoard.setFixedSize(75, 40)
         self.btnShowBoard.clicked.connect(self.showMessage)
         self.btnShowBoard.hide()
+        
+        self.btnUpdateLeft = QPushButton('自动更新',self)
+        self.btnUpdateLeft.setFixedSize(75, 40)
+        self.btnUpdateLeft.clicked.connect(self.startUpdate)
+        self.btnUpdateLeft.hide()
+
+        self.btnUpdateRight = QPushButton('自动更新',self)
+        self.btnUpdateRight.setFixedSize(75, 40)
+        self.btnUpdateRight.clicked.connect(self.startUpdate)
+        self.btnUpdateRight.hide()
         
         self.lNotice = QLabel('按此处可拖动窗口')
 
@@ -325,10 +340,9 @@ class App(QWidget):
         self.grid.addWidget(self.tbShutdown, 1, 2, 1, 2)
         self.grid.addWidget(self.btnMin, 2, 2, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btnClose, 1, 4, 2, 1, alignment=Qt.AlignCenter)
-        #self.grid.addWidget(self.tbAutoSearch, 1, 1, 1, 1, alignment=Qt.AlignCenter)
-        #self.grid.addWidget(self.tbAutoEmploy, 2, 1, 1, 1, alignment=Qt.AlignCenter)
-        #self.grid.addWidget(self.btnSchJson, 2, 3, 1, 2, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnShowBoard, 3, 1, 1, 1, alignment=Qt.AlignRight)
+        self.grid.addWidget(self.btnShowBoard, 3, 1, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnUpdateLeft, 3, 1, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnUpdateRight, 3, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.lNotice, 3, 3, 1, 2, alignment=Qt.AlignRight)
 
         self.setLayout(self.grid)
@@ -362,9 +376,13 @@ class App(QWidget):
         self.ico = self.cwd + '/res/ico.ico'
         self.selectedPNG = self.cwd + '/res/gui/selected.png'
         self.unSelPNG = self.cwd + '/res/gui/unSelected.png'
+        
+        self.noticeMd5 = ''
+        self.__notice = ''
+        self.__updateData = None
 
         self.__data = None
-
+        
         self.btnMainClicked = False
 
         self.battleFlag = None
@@ -436,7 +454,6 @@ class App(QWidget):
 
     def initState(self):
         self.initSlrSel()
-        
         #额外理智恢复设置初始化
         self.autoMediFlag = self.config.getboolean('medicament', 'loop')
         if self.autoMediFlag:
@@ -729,7 +746,8 @@ class App(QWidget):
         self.console.exit()
         self.publicCall.close()
         self.adb.killAdb()
-        self.close()
+        #self.close()
+        sys.exit() #为了解决Error in atexit._run_exitfuncs:的问题，实际上我完全不知道这为什么出现
 
     def minimize(self):
         '最小化按钮'
@@ -740,64 +758,78 @@ class App(QWidget):
 
     def openIndex(self):
         openUrl('https://github.com/MangetsuC/arkHelper')
-
+    
     def checkUpdate(self):
-        try:
-            self.content = request.urlopen('http://shakuras.3vkj.net/').read().decode('utf-8')
-        except request.URLError as eReason:
-            print(eReason.reason)
-            self.content = 'failed to get content'
-        else:
-            if '[version]' in self.content:
-                newVersion = self.content.split('[version]')[1].split('.')
-                tempSelfVersion = self.ver.split('.')
-                ver0 = int(newVersion[0]) == int(tempSelfVersion[0])
-                ver1 = int(newVersion[1]) == int(tempSelfVersion[1])
-                ver2 = int(newVersion[2]) == int(tempSelfVersion[2])
-                if ver0:
-                    if ver1:
-                        if not ver2:
-                            if int(newVersion[2]) > int(tempSelfVersion[2]):
-                                self.lNotice.setText('*有新版本*')
-                    else:
-                        if int(newVersion[1]) > int(tempSelfVersion[1]):
-                                self.lNotice.setText('*有新版本*')
+        updateData = requests.get('http://www.mangetsuc.top/arkhelper/update.json')
+        if updateData.status_code == 200:
+            updateData.encoding = 'utf-8'
+            self.__updateData = loads(updateData.text)
+            newVersion = self.__updateData['version'].split('.')
+            tempSelfVersion = self.ver.split('.')
+            ver0 = int(newVersion[0]) == int(tempSelfVersion[0])
+            ver1 = int(newVersion[1]) == int(tempSelfVersion[1])
+            ver2 = int(newVersion[2]) == int(tempSelfVersion[2])
+            isNeedUpdate = False
+            if ver0:
+                if ver1:
+                    if not ver2:
+                        if int(newVersion[2]) > int(tempSelfVersion[2]):
+                            isNeedUpdate = True
                 else:
-                    if int(newVersion[0]) > int(tempSelfVersion[0]):
-                                self.lNotice.setText('*有新版本*')
+                    if int(newVersion[1]) > int(tempSelfVersion[1]):
+                        isNeedUpdate = True
+            else:
+                if int(newVersion[0]) > int(tempSelfVersion[0]):
+                    isNeedUpdate = True
+            if isNeedUpdate:
+                self.lNotice.setText('*有新版本*')
+                if self.btnShowBoard.isVisible():
+                    self.btnUpdateRight.show()
+                else:
+                    self.btnUpdateLeft.show()
 
     def checkMessage(self):
-        if self.content != 'failed to get content':
-            msgVer = self.content.split('[msgVer]')[1]
-            if (not self.config.has_option('notice', 'msgver')) or self.config.getint('notice', 'msgver') < int(msgVer):
+        noticeData = requests.get('http://www.mangetsuc.top/arkhelper/notice.html')
+        if noticeData.status_code == 200:
+            noticeData.encoding = 'utf-8'
+            noticeMd5 = md5()
+            noticeMd5.update(noticeData.text.encode("utf8"))
+            if noticeMd5.hexdigest() != self.config.get('notice', 'md5'):
+                self.noticeMd5 = noticeMd5.hexdigest()
+                self.__notice = noticeData.text
                 self.btnShowBoard.show()
 
     def checkPublicCallData(self):
-        if self.content != 'failed to get content':
-            if '[normal]' in self.content and '[high]' in self.content:
-                tempNormal = self.content.split('[normal]')[1]
-                tempHigh = self.content.split('[high]')[1]
-                tempData = loads("{\"data\":[{\"normal\":" + tempNormal + ",\"high\":" + tempHigh + "}]}")
-                if tempData != self.__data:
-                    with open(self.cwd + '/data.json', 'w') as f:
-                        f.write(dumps(tempData, ensure_ascii=False))
-                    self.publicCall.updateTag()
+        pcData = requests.get('http://www.mangetsuc.top/arkhelper/pcData.json')
+        if pcData.status_code == 200:
+            pcData.encoding = 'utf-8'
+            temp = loads(pcData.text)
+            tempData = dict()
+            tempData['data'] = temp
+            if tempData != self.__data:
+                with open(self.cwd + '/data.json', 'w') as f:
+                    f.write(dumps(tempData, ensure_ascii=False))
+                self.publicCall.updateTag()
                 
     def showMessage(self):
-        msgVer = self.content.split('[msgVer]')[1]
-        if not self.config.has_section('notice'):
-            self.config.add_section('notice')
-        self.changeDefault('msgver', msgVer, sec = 'notice')
-        #self.changeDefault('msgver', '1', sec = 'notice')
-        msg = self.content.split('[text]')[1]
-        self.board.updateText(msg)
+        self.changeDefault('md5', self.noticeMd5, sec = 'notice')
+        self.board.updateText(self.__notice)
         self.board.show()
         #弹出公告
 
+    def startUpdate(self):
+        if path.exists(self.cwd + '/update.exe'):
+            selfPidList = self.adb.cmd.getTaskList('arkhelper.exe')
+            system('{localPath}/update.exe {localPath} {onlinePath} {selfPid} {exceptionFile}'.format(
+                                                                                    localPath = self.cwd, 
+                                                                                    onlinePath = self.__updateData['onlinePath'] + '/v' +self.__updateData['version'], 
+                                                                                    selfPid = ','.join(selfPidList), 
+                                                                                    exceptionFile = self.__updateData['exception']))
+
     def checkAll(self):
         if self.config.getboolean('notice', 'enable'):
-            self.checkUpdate()
             self.checkMessage()
+            self.checkUpdate()
             self.checkPublicCallData()
 
     def afterInit(self):
