@@ -829,7 +829,7 @@ class App(QWidget):
     def startUpdate(self):
         if path.exists(self.cwd + '/update.exe'):
             selfPidList = self.adb.cmd.getTaskList('arkhelper.exe')
-            system('{localPath}/update.exe {localPath} {onlinePath} {selfPid} {exceptionFile}'.format(
+            system('\"{localPath}/update.exe\" \"{localPath}\" {onlinePath} {selfPid} {exceptionFile}'.format(
                                                                                     localPath = self.cwd, 
                                                                                     onlinePath = self.__updateData['onlinePath'] + '/v' +self.__updateData['version'], 
                                                                                     selfPid = ','.join(selfPidList), 
