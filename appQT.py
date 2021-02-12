@@ -1,35 +1,36 @@
 import sys
 from configparser import ConfigParser
-from json import dumps, loads
-from os import getcwd, path, getlogin, mkdir, system
-from threading import Thread
-from webbrowser import open as openUrl
-from urllib import request
 from hashlib import md5
-import requests
+from json import dumps, loads
+from os import getcwd, getlogin, mkdir, path, system
+from threading import Thread
+from urllib import request
+from webbrowser import open as openUrl
 
-from PyQt5.QtCore import Qt, pyqtSignal, QThread
+import requests
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QCursor, QIcon, QMouseEvent, QScreen
 from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QDesktopWidget,
                              QGridLayout, QInputDialog, QLabel, QMenu,
-                             QPushButton, QWidget, QMessageBox)
+                             QMessageBox, QPushButton, QWidget)
 
 from foo.adb.adbCtrl import Adb
 from foo.arknight.Battle import BattleLoop
 from foo.arknight.credit import Credit
 from foo.arknight.Schedule import BattleSchedule
 from foo.arknight.task import Task
+from foo.pictureR import pictureFind
 from foo.ui.console import Console
-from foo.ui.launch import Launch, BlackBoard
+from foo.ui.launch import BlackBoard, Launch
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
-from foo.pictureR import pictureFind
+from updateCheck import Md5Analyse
 
 
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.5.3'
+        self.ver = '2.5.4'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
@@ -787,6 +788,14 @@ class App(QWidget):
                     self.btnUpdateRight.show()
                 else:
                     self.btnUpdateLeft.show()
+            else:
+                tempMd5Checker = Md5Analyse(self.cwd, self.__updateData['onlinePath'] + '/v' + self.ver, self.__updateData['exception'])
+                if tempMd5Checker.compareMd5():
+                    self.lNotice.setText('*资源更新*')
+                    if self.btnShowBoard.isVisible():
+                        self.btnUpdateRight.show()
+                    else:
+                        self.btnUpdateLeft.show()
 
     def checkMessage(self):
         noticeData = requests.get('http://www.mangetsuc.top/arkhelper/notice.html')
