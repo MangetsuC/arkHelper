@@ -30,7 +30,7 @@ from updateCheck import Md5Analyse
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.5.4'
+        self.ver = '2.5.5'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
@@ -829,7 +829,7 @@ class App(QWidget):
     def startUpdate(self):
         if path.exists(self.cwd + '/update.exe'):
             selfPidList = self.adb.cmd.getTaskList('arkhelper.exe')
-            system('\"{localPath}/update.exe\" \"{localPath}\" {onlinePath} {selfPid} {exceptionFile}'.format(
+            system('update.exe \"{localPath}\" {onlinePath} {selfPid} {exceptionFile}'.format(
                                                                                     localPath = self.cwd, 
                                                                                     onlinePath = self.__updateData['onlinePath'] + '/v' +self.__updateData['version'], 
                                                                                     selfPid = ','.join(selfPidList), 
