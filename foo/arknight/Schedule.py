@@ -224,7 +224,6 @@ class BattleSchedule:
                 isFirstTurn = False'''
             picStartA = pictureFind.matchImg(self.screenShot, self.startA, confidencevalue= 0.9)
             if picStartA != None and self.switch and self.switchB:
-                print('> auto mode check <')
                 picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
                 if picAutoOn == None and self.switch and self.switchB:
                     picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)

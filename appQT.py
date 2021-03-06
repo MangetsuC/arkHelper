@@ -35,6 +35,17 @@ class App(QWidget):
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
 
+        #获取整块屏幕的尺寸
+        self.totalWidth = 0
+        self.totalHeight = 0
+        tempScreenList = []
+        for i in range(QDesktopWidget().screenCount()):
+            tempScreenList.append(QDesktopWidget().availableGeometry(i))
+        theBottomOne = sorted(tempScreenList, key = lambda screen:screen.y())[-1]
+        theRightOne = sorted(tempScreenList, key = lambda screen:screen.x())[-1]
+        self.totalWidth = theRightOne.x() + theRightOne.width()
+        self.totalHeight = theBottomOne.y() + theBottomOne.height()
+
         self.initFile()
         self.initVar()
         self.initNormalPicRes()
@@ -583,6 +594,14 @@ class App(QWidget):
     def mouseReleaseEvent(self, QMouseEvent):
         #停止窗口移动
         self.moveFlag = False
+        if (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) > self.totalHeight:
+            self.move(QMouseEvent.globalPos().x() - self.mousePos.x(), self.totalHeight - self.height())
+        elif (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) < self.height()/4:
+            self.move(QMouseEvent.globalPos().x() - self.mousePos.x(), 0)
+        elif (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) < self.width()/4:
+            self.move(0, QMouseEvent.globalPos().y() - self.mousePos.y())
+        elif (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) > self.totalWidth + self.width()/4:
+            self.move(self.totalWidth - self.width(), QMouseEvent.globalPos().y() - self.mousePos.y())
     
     def functionSetMeun(self):
         self.source = self.sender()
