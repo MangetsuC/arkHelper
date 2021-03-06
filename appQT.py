@@ -30,7 +30,7 @@ from updateCheck import Md5Analyse
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.ver = '2.5.5'
+        self.ver = '2.5.6'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
