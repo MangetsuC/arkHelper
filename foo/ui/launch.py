@@ -1,12 +1,16 @@
 import sys
 from PyQt5.QtWidgets import QSplashScreen, QLabel, QWidget, QPushButton, QGridLayout, QTextBrowser, QApplication
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
 from os import getcwd
 from threading import Thread
 from urllib import request
 from configparser import ConfigParser
 from  time import sleep
+import requests
+from json import loads, dumps
+from hashlib import md5
+from updateCheck import Md5Analyse
 
 class Launch(QSplashScreen):
     def __init__(self):
@@ -73,6 +77,81 @@ class BlackBoard(QWidget):
     def updateText(self, newText):
         self.boardNotice.setText(newText)
         #self.show()
+
+class AfterInit(QThread):
+    signal = pyqtSignal()
+    def __init__(self, app, cwd):
+        super(AfterInit, self).__init__()
+        self.app = app
+        self.cwd = cwd
+
+    def run(self):
+        if self.app.config.getboolean('notice', 'enable'):
+            self.checkMessage()
+            self.checkUpdate()
+            self.checkPublicCallData()
+
+    def checkUpdate(self):
+        updateData = requests.get('http://www.mangetsuc.top/arkhelper/update.json')
+        if updateData.status_code == 200:
+            updateData.encoding = 'utf-8'
+            self.app._updateData = loads(updateData.text)
+            newVersion =self.app._updateData['version'].split('.')
+            tempSelfVersion = self.app.ver.split('.')
+            ver0 = int(newVersion[0]) == int(tempSelfVersion[0])
+            ver1 = int(newVersion[1]) == int(tempSelfVersion[1])
+            ver2 = int(newVersion[2]) == int(tempSelfVersion[2])
+            isNeedUpdate = False
+            if ver0:
+                if ver1:
+                    if not ver2:
+                        if int(newVersion[2]) > int(tempSelfVersion[2]):
+                            isNeedUpdate = True
+                else:
+                    if int(newVersion[1]) > int(tempSelfVersion[1]):
+                        isNeedUpdate = True
+            else:
+                if int(newVersion[0]) > int(tempSelfVersion[0]):
+                    isNeedUpdate = True
+            if isNeedUpdate:
+                self.app.lNotice.setText('*有新版本*')
+                if self.app.btnShowBoard.isVisible():
+                    self.app.btnUpdateRight.show()
+                else:
+                    self.app.btnUpdateLeft.show()
+            else:
+                tempMd5Checker = Md5Analyse(self.cwd, self.app._updateData['onlinePath'] + '/v' + self.app.ver, self.app._updateData['exception'])
+                if tempMd5Checker.compareMd5():
+                    self.app.lNotice.setText('*资源更新*')
+                    if self.app.btnShowBoard.isVisible():
+                        self.app.btnUpdateRight.show()
+                    else:
+                        self.app.btnUpdateLeft.show()
+
+    def checkMessage(self):
+        noticeData = requests.get('http://www.mangetsuc.top/arkhelper/notice.html')
+        if noticeData.status_code == 200:
+            noticeData.encoding = 'utf-8'
+            noticeMd5 = md5()
+            noticeMd5.update(noticeData.text.encode("utf8"))
+            if noticeMd5.hexdigest() != self.app.config.get('notice', 'md5'):
+                self.app.noticeMd5 = noticeMd5.hexdigest()
+                self.app._notice = noticeData.text
+                self.signal.emit()
+                self.app.btnShowBoard.show()
+
+    def checkPublicCallData(self):
+        pcData = requests.get('http://www.mangetsuc.top/arkhelper/pcData.json')
+        if pcData.status_code == 200:
+            pcData.encoding = 'utf-8'
+            temp = loads(pcData.text)
+            tempData = dict()
+            tempData['data'] = temp
+            if tempData != self.app._data:
+                with open(self.cwd + '/data.json', 'w') as f:
+                    f.write(dumps(tempData, ensure_ascii=False))
+                self.app.publicCall.updateTag()
+
 
 if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)

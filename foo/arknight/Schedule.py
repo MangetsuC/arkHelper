@@ -373,6 +373,34 @@ class BattleSchedule:
                             self.switchB = False
                             toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
                             return False
+                        elif eachObj['obj'] == 'levelup.png':
+                                lackTem = False
+                                for eachTem in self.listBattleImg:
+                                    if eachTem['obj'] == 'stoneLack.png':
+                                        lackTem = eachTem
+                                        break
+                                if lackTem:
+                                    picLackInfo = pictureFind.matchImg(self.screenShot, lackTem, 0.9)
+                                    if picLackInfo:
+                                        self.adb.click(picLackInfo['result'][0], picLackInfo['result'][1], isSleep = True)
+                                        self.switch = False
+                                        toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                    else:
+                                        self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                        if eachObj['obj'] == 'startApartOF.png':
+                                            self.adb.screenShot()
+                                            OFend = pictureFind.matchImg(self.screenShot, self.cwd + '/res/act/OFend.png', 0.8)
+                                            if OFend != None:
+                                                self.switch = False
+                                                toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
+                                else:
+                                    self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                    if eachObj['obj'] == 'startApartOF.png':
+                                        self.adb.screenShot()
+                                        OFend = pictureFind.matchImg(self.screenShot, self.cwd + '/res/act/OFend.png', 0.8)
+                                        if OFend != None:
+                                            self.switch = False
+                                            toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
                         else:
                             self.adb.click(picPos[0], picPos[1], isSleep = True)
                         break

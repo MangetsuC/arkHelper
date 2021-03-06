@@ -1,13 +1,16 @@
 from os import getcwd, listdir
 from sys import path
 from time import sleep
+from PyQt5.QtCore import pyqtSignal, QObject
 
 path.append(getcwd())
 from foo.pictureR import pictureFind
 from foo.win import toast
 
-class BattleLoop:
+class BattleLoop(QObject):
+    signal = pyqtSignal()
     def __init__(self, adb, cwd, ico):
+        super(BattleLoop, self).__init__()
         self.cwd = cwd
         self.adb = adb
         self.ico = ico
@@ -17,6 +20,8 @@ class BattleLoop:
         self.autoRecStone = False
         self.stoneMaxNum = 0
 
+        self.isWaitingUser = False
+        self.isUselessContinue = False
 
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
@@ -31,6 +36,8 @@ class BattleLoop:
         self.recMed = pictureFind.picRead(self.cwd + "/res/panel/recovery/medicament.png")
         self.recStone = pictureFind.picRead(self.cwd + "/res/panel/recovery/stone.png")
         self.confirm = pictureFind.picRead(self.cwd + "/res/panel/recovery/confirm.png")
+
+        self.uselessLevel = pictureFind.picRead(self.cwd + "/res/panel/other/uselessLevel.png")
     
     def recChange(self, num, inputData):
         if num == 0:
@@ -63,10 +70,9 @@ class BattleLoop:
         restStone = self.stoneMaxNum
         #isFirstTurn = True
         self.switch = switchI
+        self.isUselessContinue = False
 
         if self.switch:
-            OFCount = 0
-            twiceTry = 0
             while self.switch:
                 self.adb.screenShot()
                 #判断代理指挥是否勾选
@@ -74,14 +80,21 @@ class BattleLoop:
                     isFirstTurn = False'''
                 picStartA = pictureFind.matchImg(self.screenShot, self.startA, confidencevalue= 0.9)
                 if picStartA != None and self.switch:
-                    print('> auto mode check <')
-                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                    if picAutoOn == None and self.switch:
-                        picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
-                        if picAutoOff != None and self.switch:
-                            posAutoOff = picAutoOff['result']
-                            self.adb.click(posAutoOff[0], posAutoOff[1])
-                            continue
+                    picIsUseless = pictureFind.matchImg(self.screenShot, self.uselessLevel)
+                    if picIsUseless and (not self.isUselessContinue):
+                        self.isWaitingUser = True
+                        self.signal.emit()
+                        while self.isWaitingUser:
+                            sleep(1)
+                        continue
+                    else:
+                        picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                        if picAutoOn == None and self.switch:
+                            picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
+                            if picAutoOff != None and self.switch:
+                                posAutoOff = picAutoOff['result']
+                                self.adb.click(posAutoOff[0], posAutoOff[1])
+                                continue
 
                     '''isDelayExit = False #加载延迟是否出现，即检查到开始行动A但实际上是正在进入关卡前的状态
                     for i in range(5):
@@ -167,10 +180,38 @@ class BattleLoop:
                                     self.adb.click(picPos[0], picPos[1], isSleep = True)
                                     self.switch = False
                                     toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
-                            elif eachObj['obj'] == "stoneLack.png":
+                            elif eachObj['obj'] == 'stoneLack.png':
                                 self.adb.click(picPos[0], picPos[1], isSleep = True)
                                 self.switch = False
                                 toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                            elif eachObj['obj'] == 'levelup.png':
+                                lackTem = False
+                                for eachTem in self.listImg:
+                                    if eachTem['obj'] == 'stoneLack.png':
+                                        lackTem = eachTem
+                                        break
+                                if lackTem:
+                                    picLackInfo = pictureFind.matchImg(self.screenShot, lackTem, 0.9)
+                                    if picLackInfo:
+                                        self.adb.click(picLackInfo['result'][0], picLackInfo['result'][1], isSleep = True)
+                                        self.switch = False
+                                        toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                    else:
+                                        self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                        if eachObj['obj'] == 'startApartOF.png':
+                                            self.adb.screenShot()
+                                            OFend = pictureFind.matchImg(self.screenShot, self.cwd + '/res/act/OFend.png', 0.8)
+                                            if OFend != None:
+                                                self.switch = False
+                                                toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
+                                else:
+                                    self.adb.click(picPos[0], picPos[1], isSleep = True)
+                                    if eachObj['obj'] == 'startApartOF.png':
+                                        self.adb.screenShot()
+                                        OFend = pictureFind.matchImg(self.screenShot, self.cwd + '/res/act/OFend.png', 0.8)
+                                        if OFend != None:
+                                            self.switch = False
+                                            toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
                             else:
                                 self.adb.click(picPos[0], picPos[1], isSleep = True)
                                 if eachObj['obj'] == 'startApartOF.png':

@@ -32,12 +32,19 @@ class PublicCall:
         self.pcInMark = pictureFind.picRead(self.cwd + '/res/panel/publicCall/inPcMark.png')
 
         self.is1Need = False
+        self.is5Need = False
         #self.monitorFlag = False
     
-    def setStar1(self, func, state = True):
+    def setStar(self, star, func, state = True):
         if func:
-            self.is1Need = state
-        return self.is1Need
+            if star == 1:
+                self.is1Need = state
+            elif star == 5:
+                self.is5Need = state
+        if star == 1:
+            return self.is1Need
+        elif star == 5:
+            return self.is5Need
 
     def updateTag(self):
         self.isTagNeedUpdate = True
@@ -270,13 +277,16 @@ class PublicCall:
         if star6Combination != []:
             return 6
         if star5Combination != []:
-            tagChoice = choice(star5Combination).split('+')
-            tagPos = []
-            for tag in tagChoice:
-                tagPos.append(tagNameAndPos[tag])
-            for pos in tagPos:
-                self.adb.click(pos[0], pos[1])
-            return 5
+            if self.is5Need:
+                return 6 #设定保留五星时返回6，即把这组5星tag当作6星处理，保留此组tag
+            else:
+                tagChoice = choice(star5Combination).split('+')
+                tagPos = []
+                for tag in tagChoice:
+                    tagPos.append(tagNameAndPos[tag])
+                for pos in tagPos:
+                    self.adb.click(pos[0], pos[1])
+                return 5
         if star4Combination != []:
             tagChoice = choice(star4Combination).split('+')
             tagChoice = list(set(tagChoice))

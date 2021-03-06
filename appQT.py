@@ -21,7 +21,7 @@ from foo.arknight.Schedule import BattleSchedule
 from foo.arknight.task import Task
 from foo.pictureR import pictureFind
 from foo.ui.console import Console
-from foo.ui.launch import BlackBoard, Launch
+from foo.ui.launch import BlackBoard, Launch, AfterInit
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
 from updateCheck import Md5Analyse
@@ -93,6 +93,9 @@ class App(QWidget):
             isNeedWrite = True
         if not self.config.has_option('function', 'autoPC_skip1Star'):
             self.config.set('function','autoPC_skip1Star','True')
+            isNeedWrite = True
+        if not self.config.has_option('function', 'autoPC_skip5Star'):
+            self.config.set('function','autoPC_skip5Star','True')
             isNeedWrite = True
         if not self.config.has_option('function', 'task'):
             self.config.set('function','task','True')
@@ -175,7 +178,8 @@ class App(QWidget):
                                 QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
                                 QPushButton:pressed{background:#606162;font:9pt;}
                                 QPushButton:checked{background:#70bbe4;}
-                                QInputDialog{background-color:#272626;}''')
+                                QInputDialog{background-color:#4d4d4d;}
+                                QMessageBox{background-color:#4d4d4d;}''')
 
         
         self.btnStartAndStop = QPushButton('启动虚拟博士', self) #启动/停止按钮
@@ -213,6 +217,10 @@ class App(QWidget):
         self.actSkipStar1.triggered.connect(self.setAutoPCFunc)
         if self.config.getboolean('function','autoPC_skip1Star'):
             self.actSkipStar1.setIcon(QIcon(self.selectedPNG))
+        self.actSkipStar5 = QAction('保留5星')
+        self.actSkipStar5.triggered.connect(self.setAutoPCFunc)
+        if self.config.getboolean('function','autoPC_skip5Star'):
+            self.actSkipStar5.setIcon(QIcon(self.selectedPNG))
 
         self.actSchJson = QAction('路线规划')
         self.actSchJson.triggered.connect(self.openSchEdit)
@@ -297,6 +305,7 @@ class App(QWidget):
 
         #self.settingMenu.addAction(self.actVersion1)
         self.settingMenu.addAction(self.actVersion2) #版本号显示
+        self.actVersion2.triggered.connect(self.testUpdate)
 
         self.btnSet.setMenu(self.settingMenu) #关联按钮与菜单
         self.btnSet.setStyleSheet('''QPushButton:menu-indicator{image:none;width:0px;}''')
@@ -309,7 +318,7 @@ class App(QWidget):
         self.btnClose.setFixedSize(75, 85)
         self.btnClose.clicked.connect(self.exit)
         
-        self.btnShowBoard = QPushButton('有新公告！',self)
+        self.btnShowBoard = QPushButton('重看公告',self)
         self.btnShowBoard.setFixedSize(75, 40)
         self.btnShowBoard.clicked.connect(self.showMessage)
         self.btnShowBoard.hide()
@@ -379,10 +388,10 @@ class App(QWidget):
         self.unSelPNG = self.cwd + '/res/gui/unSelected.png'
         
         self.noticeMd5 = ''
-        self.__notice = ''
-        self.__updateData = None
+        self._notice = ''
+        self._updateData = None
 
-        self.__data = None
+        self._data = None
         
         self.btnMainClicked = False
 
@@ -496,7 +505,8 @@ class App(QWidget):
         self.tbSchedule.setChecked(self.scheduleFlag)
         self.autoPCFlag = self.config.getboolean('function', 'autoPC')
         self.tbAutoPC.setChecked(self.autoPCFlag)
-        self.publicCall.setStar1(1, self.config.getboolean('function', 'autoPC_skip1Star')) #自动公招保留一星设定
+        self.publicCall.setStar(1, 1, self.config.getboolean('function', 'autoPC_skip1Star')) #自动公招保留一星设定
+        self.publicCall.setStar(5, 1, self.config.getboolean('function', 'autoPC_skip5Star'))
         self.taskFlag = self.config.getboolean('function', 'task')
         self.tbTask.setChecked(self.taskFlag) #任务选项
         self.creditFlag = self.config.getboolean('function', 'credit')
@@ -513,16 +523,22 @@ class App(QWidget):
     
     def initClass(self):
         self.adb = Adb(self.cwd + '/bin/adb', self.config)
+
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
+        self.battle.signal.connect(self.battleWarning)
+        
         self.schedule = BattleSchedule(self.adb, self.cwd, self.userDataPath, self.ico) #处于测试
         self.task = Task(self.adb, self.cwd, self.ico, self.listGoTo)
         self.credit = Credit(self.adb, self.cwd, self.listGoTo)
         with open(self.cwd + '/data.json', 'r') as f:
             temp = f.read()
-        self.__data = loads(temp)
-        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, self.listGoTo, self.__data['data'][0]['normal'], self.__data['data'][0]['high']) #公开招募
+        self._data = loads(temp)
+        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, self.listGoTo, self._data['data'][0]['normal'], self._data['data'][0]['high']) #公开招募
         self.schJsonEditer = JsonEdit(self.userDataPath, self.ico)
         self.board = BlackBoard()
+
+        self.afterInit_Q = AfterInit(self, self.cwd)
+        self.afterInit_Q.signal.connect(self.showMessage)
 
     def initSlrSel(self):
         '初始化模拟器选择'
@@ -597,6 +613,7 @@ class App(QWidget):
             rightClickMeun.addAction(self.actAutoSearch)
             rightClickMeun.addAction(self.actAutoEmploy)
             rightClickMeun.addAction(self.actSkipStar1)
+            rightClickMeun.addAction(self.actSkipStar5)
             rightClickMeun.addAction(self.line)
         elif self.source.text() == '任务交付':
             if self.config.getboolean('function', 'task'):
@@ -681,13 +698,21 @@ class App(QWidget):
             else:
                 source.setIcon(QIcon(''))
         elif source.text() == '保留1星':
-            self.publicCall.setStar1(1, not self.publicCall.setStar1(0))
-            if self.publicCall.setStar1(0):
+            self.publicCall.setStar(1, 1, not self.publicCall.setStar(1, 0))
+            if self.publicCall.setStar(1,0):
                 source.setIcon(QIcon(self.selectedPNG))
                 self.changeDefault('autopc_skip1star', True)
             else:
                 source.setIcon(QIcon(''))
                 self.changeDefault('autopc_skip1star', False)
+        elif source.text() == '保留5星':
+            self.publicCall.setStar(5, 1, not self.publicCall.setStar(5, 0))
+            if self.publicCall.setStar(5,0):
+                source.setIcon(QIcon(self.selectedPNG))
+                self.changeDefault('autopc_skip5star', True)
+            else:
+                source.setIcon(QIcon(''))
+                self.changeDefault('autopc_skip5star', False)
     
     def openSchEdit(self):
         self.schJsonEditer.editerShow()
@@ -759,70 +784,10 @@ class App(QWidget):
 
     def openIndex(self):
         openUrl('https://github.com/MangetsuC/arkHelper')
-    
-    def checkUpdate(self):
-        updateData = requests.get('http://www.mangetsuc.top/arkhelper/update.json')
-        if updateData.status_code == 200:
-            updateData.encoding = 'utf-8'
-            self.__updateData = loads(updateData.text)
-            newVersion = self.__updateData['version'].split('.')
-            tempSelfVersion = self.ver.split('.')
-            ver0 = int(newVersion[0]) == int(tempSelfVersion[0])
-            ver1 = int(newVersion[1]) == int(tempSelfVersion[1])
-            ver2 = int(newVersion[2]) == int(tempSelfVersion[2])
-            isNeedUpdate = False
-            if ver0:
-                if ver1:
-                    if not ver2:
-                        if int(newVersion[2]) > int(tempSelfVersion[2]):
-                            isNeedUpdate = True
-                else:
-                    if int(newVersion[1]) > int(tempSelfVersion[1]):
-                        isNeedUpdate = True
-            else:
-                if int(newVersion[0]) > int(tempSelfVersion[0]):
-                    isNeedUpdate = True
-            if isNeedUpdate:
-                self.lNotice.setText('*有新版本*')
-                if self.btnShowBoard.isVisible():
-                    self.btnUpdateRight.show()
-                else:
-                    self.btnUpdateLeft.show()
-            else:
-                tempMd5Checker = Md5Analyse(self.cwd, self.__updateData['onlinePath'] + '/v' + self.ver, self.__updateData['exception'])
-                if tempMd5Checker.compareMd5():
-                    self.lNotice.setText('*资源更新*')
-                    if self.btnShowBoard.isVisible():
-                        self.btnUpdateRight.show()
-                    else:
-                        self.btnUpdateLeft.show()
-
-    def checkMessage(self):
-        noticeData = requests.get('http://www.mangetsuc.top/arkhelper/notice.html')
-        if noticeData.status_code == 200:
-            noticeData.encoding = 'utf-8'
-            noticeMd5 = md5()
-            noticeMd5.update(noticeData.text.encode("utf8"))
-            if noticeMd5.hexdigest() != self.config.get('notice', 'md5'):
-                self.noticeMd5 = noticeMd5.hexdigest()
-                self.__notice = noticeData.text
-                self.btnShowBoard.show()
-
-    def checkPublicCallData(self):
-        pcData = requests.get('http://www.mangetsuc.top/arkhelper/pcData.json')
-        if pcData.status_code == 200:
-            pcData.encoding = 'utf-8'
-            temp = loads(pcData.text)
-            tempData = dict()
-            tempData['data'] = temp
-            if tempData != self.__data:
-                with open(self.cwd + '/data.json', 'w') as f:
-                    f.write(dumps(tempData, ensure_ascii=False))
-                self.publicCall.updateTag()
                 
     def showMessage(self):
         self.changeDefault('md5', self.noticeMd5, sec = 'notice')
-        self.board.updateText(self.__notice)
+        self.board.updateText(self._notice)
         self.board.show()
         #弹出公告
 
@@ -831,21 +796,26 @@ class App(QWidget):
             selfPidList = self.adb.cmd.getTaskList('arkhelper.exe')
             system('update.exe \"{localPath}\" {onlinePath} {selfPid} {exceptionFile}'.format(
                                                                                     localPath = self.cwd, 
-                                                                                    onlinePath = self.__updateData['onlinePath'] + '/v' +self.__updateData['version'], 
+                                                                                    onlinePath = self._updateData['onlinePath'] + '/v' +self._updateData['version'], 
                                                                                     selfPid = ','.join(selfPidList), 
-                                                                                    exceptionFile = self.__updateData['exception']))
-
-    def checkAll(self):
-        if self.config.getboolean('notice', 'enable'):
-            self.checkMessage()
-            self.checkUpdate()
-            self.checkPublicCallData()
-
-    def afterInit(self):
-        thAfterInit = Thread(target=self.checkAll)
-        thAfterInit.setDaemon(True)
-        thAfterInit.start()
+                                                                                    exceptionFile = self._updateData['exception']))
     
+    def battleWarning(self):
+        reply = QMessageBox.warning(self, '警告', '发现您选中的关卡可能无掉落，是否继续？', 
+                                    QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.No:
+            self.battle.stop()
+        elif reply == QMessageBox.Yes:
+            self.battle.isUselessContinue = True
+        self.battle.isWaitingUser = False
+
+    def testUpdate(self):
+        version, isOk = QInputDialog.getText(self, '???', '神秘代码')
+        if isOk:
+            if self._updateData != None:
+                self._updateData['version'] = version
+                self.startUpdate()
+
     def start(self):
         self.doctorFlag = self.battle.connect()
         if self.doctorFlag and self.scheduleFlag:
@@ -891,5 +861,5 @@ if __name__ == '__main__':
     app.processEvents()
     ex = App()
     exLaunch.finish(ex)
-    ex.afterInit()
+    ex.afterInit_Q.start()
     sys.exit(app.exec_())

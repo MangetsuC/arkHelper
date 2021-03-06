@@ -136,8 +136,8 @@ class UIPublicCall(QDialog):
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
     
-    def setStar1(self, func, state = True):
-        return self.publicCall.setStar1(func, state)
+    def setStar(self, star, func, state = True):
+        return self.publicCall.setStar(star, func, state)
     
     def showAllChange(self, ischecked):
         self.isShowAll = ischecked
