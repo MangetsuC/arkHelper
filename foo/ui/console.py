@@ -3,7 +3,7 @@ from time import localtime, strftime, time
 
 from PyQt5.QtCore import QObject, Qt, pyqtSignal
 from PyQt5.QtGui import QIcon, QTextCursor
-from PyQt5.QtWidgets import QDialog, QGridLayout, QTextBrowser
+from PyQt5.QtWidgets import QDialog, QGridLayout, QTextBrowser, QDesktopWidget
 
 
 class Console(QDialog):
@@ -39,6 +39,8 @@ class Console(QDialog):
         self.isShow = not self.isShow
         if self.isShow:
             self.show()
+            cp = QDesktopWidget().availableGeometry().center()
+            self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
             #self.move(0,0)
         else:
             self.hide()

@@ -1,9 +1,12 @@
 import sys
+from json import dumps, loads
 from os import getcwd
-from PyQt5.QtWidgets import QWidget,QApplication,QGridLayout,QListView,QPushButton,QMenu,QComboBox,QLineEdit,QLabel,QListView,QInputDialog,QDesktopWidget
-from PyQt5.QtCore import Qt,QStringListModel,QTimer
+
+from PyQt5.QtCore import QStringListModel, Qt, QTimer
 from PyQt5.QtGui import QIcon
-from json import loads,dumps
+from PyQt5.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
+                             QGridLayout, QInputDialog, QLabel, QLineEdit,
+                             QListView, QMenu, QPushButton, QWidget)
 
 
 class JsonEdit(QWidget):
@@ -178,6 +181,8 @@ class JsonEdit(QWidget):
         self.isshow = not self.isshow
         if self.isshow:
             self.show()
+            cp = QDesktopWidget().availableGeometry().center()
+            self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
         else:
             self.close()
 
@@ -587,10 +592,8 @@ class BootyChoice(QWidget):
 
     def center(self):
         #显示到屏幕中心
-        qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
 
 
 if __name__ == '__main__':

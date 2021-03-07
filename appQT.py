@@ -1,10 +1,10 @@
 import sys
+#import cgitb #调试时需要
 from configparser import ConfigParser
 from hashlib import md5
 from json import dumps, loads
 from os import getcwd, getlogin, mkdir, path, system
 from threading import Thread
-from urllib import request
 from webbrowser import open as openUrl
 
 import requests
@@ -29,7 +29,7 @@ from updateCheck import Md5Analyse
 
 class App(QWidget):
     def __init__(self):
-        super().__init__()
+        super(App, self).__init__()
         self.ver = '2.5.6'
 
         self.cwd = getcwd().replace('\\', '/')
@@ -190,7 +190,12 @@ class App(QWidget):
                                 QPushButton:pressed{background:#606162;font:9pt;}
                                 QPushButton:checked{background:#70bbe4;}
                                 QInputDialog{background-color:#4d4d4d;}
-                                QMessageBox{background-color:#4d4d4d;}''')
+                                QMessageBox{background-color:#4d4d4d;}
+                                QToolTip {font-family:"Microsoft YaHei", SimHei, SimSun; font-size:10pt; color:#ffffff;
+                                        padding-left:5px; padding-right:5px; padding-top:5px; padding-bottom:5px;
+                                        border-style:solid; border-width:1px; border-color:gray;
+                                        background-color:#272626;}
+                            ''')
 
         
         self.btnStartAndStop = QPushButton('启动虚拟博士', self) #启动/停止按钮
@@ -212,6 +217,7 @@ class App(QWidget):
         self.tbSchedule.setCheckable(True)
         self.tbSchedule.setFixedSize(75, 40)
         self.tbSchedule.clicked[bool].connect(self.functionSel)
+        self.tbSchedule.setToolTip('在右键菜单中设定你的计划')
 
         self.tbAutoPC = QPushButton('自动公招', self) #自动公招可选按钮
         self.tbAutoPC.setCheckable(True)
@@ -570,15 +576,13 @@ class App(QWidget):
 
     def center(self):
         #显示到屏幕中心
-        qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
 
 
     def mousePressEvent(self, event):
+        self.mousePos = event.globalPos() - self.pos() #获取鼠标相对窗口的位置
         if event.button() == Qt.LeftButton:
-            self.mousePos = event.globalPos() - self.pos() #获取鼠标相对窗口的位置
             #print(self.mousePos.x(),self.mousePos.y()) #调试参考选择可移动区域
             if self.mousePos.x() > 190 and self.mousePos.y() > 150: #判断是否在可移动区域
                 self.moveFlag = True
@@ -593,15 +597,16 @@ class App(QWidget):
             
     def mouseReleaseEvent(self, QMouseEvent):
         #停止窗口移动
-        self.moveFlag = False
-        if (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) > self.totalHeight:
-            self.move(QMouseEvent.globalPos().x() - self.mousePos.x(), self.totalHeight - self.height())
-        elif (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) < self.height()/4:
-            self.move(QMouseEvent.globalPos().x() - self.mousePos.x(), 0)
-        elif (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) < self.width()/4:
-            self.move(0, QMouseEvent.globalPos().y() - self.mousePos.y())
-        elif (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) > self.totalWidth + self.width()/4:
-            self.move(self.totalWidth - self.width(), QMouseEvent.globalPos().y() - self.mousePos.y())
+        if Qt.LeftButton:
+            self.moveFlag = False
+            if (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) > self.totalHeight:
+                self.move(QMouseEvent.globalPos().x() - self.mousePos.x(), self.totalHeight - self.height())
+            elif (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) < self.height()/4:
+                self.move(QMouseEvent.globalPos().x() - self.mousePos.x(), 0)
+            elif (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) < self.width()/4:
+                self.move(0, QMouseEvent.globalPos().y() - self.mousePos.y())
+            elif (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) > self.totalWidth + self.width()/4:
+                self.move(self.totalWidth - self.width(), QMouseEvent.globalPos().y() - self.mousePos.y())
     
     def functionSetMeun(self):
         self.source = self.sender()
@@ -874,6 +879,7 @@ class App(QWidget):
             self.stop()  
 
 if __name__ == '__main__':
+    #cgitb.enable(format = 'text')
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
     exLaunch = Launch()
