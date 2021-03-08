@@ -194,7 +194,7 @@ class App(QWidget):
                                 QInputDialog{background-color:#4d4d4d;}
                                 QMessageBox{background-color:#4d4d4d;}
                                 QToolTip {font-family:"Microsoft YaHei", SimHei, SimSun; font-size:10pt; color:#ffffff;
-                                        padding-left:5px; padding-right:5px; padding-top:5px; padding-bottom:5px;
+                                        padding:5px;
                                         border-style:solid; border-width:1px; border-color:gray;
                                         background-color:#272626;}
                             ''')
@@ -216,6 +216,7 @@ class App(QWidget):
                                     QPushButton:pressed{background:#272626;font:16pt;}
                                     ''')
         self.btnExit.clicked.connect(self.exit)
+        self.btnExit.setToolTip('关闭')
 
         self.btnMinimize = QPushButton('-',self)
         self.btnMinimize.setFixedSize(30,30)
@@ -223,6 +224,7 @@ class App(QWidget):
                                     QPushButton:pressed{background:#272626;font-family:SimSun;font:20pt;}
                                     ''')
         self.btnMinimize.clicked.connect(self.minimize)
+        self.btnMinimize.setToolTip('最小化')
 
         self.btnSetting = QPushButton('≡',self)
         self.btnSetting.setFixedSize(30,30)
@@ -230,6 +232,7 @@ class App(QWidget):
                                     QPushButton:pressed{background:#272626;font-family:SimHei, SimSun;font:14pt;}
                                     QPushButton:menu-indicator{image:none;width:0px;}
                                     ''')
+        self.btnSetting.setToolTip('设置')
 
         self.btnUpdate = QPushButton('∧',self)
         self.btnUpdate.setFixedSize(30,30)
@@ -237,6 +240,7 @@ class App(QWidget):
                                     QPushButton:pressed{background:#272626;font-family:SimHei, SimSun;font:12pt;}
                                     ''')
         self.btnUpdate.clicked.connect(self.startUpdate)
+        self.btnUpdate.setToolTip('自动更新')
         self.btnUpdate.hide()
 
         self.btnStartAndStop = QPushButton('启动虚拟博士', self) #启动/停止按钮
@@ -248,22 +252,25 @@ class App(QWidget):
         self.btnMonitorPublicCall.setFixedSize(155, 40)
         self.btnMonitorPublicCall.setCheckable(True)
         self.btnMonitorPublicCall.clicked[bool].connect(self.monitorPC)
+        self.btnMonitorPublicCall.setToolTip('打开公招计算器，它会自动帮你计算模拟器屏幕上的tag组合')
 
         self.tbBattle = QPushButton('战斗', self) #战斗可选按钮
         self.tbBattle.setCheckable(True)
         self.tbBattle.setFixedSize(75, 40)
         self.tbBattle.clicked[bool].connect(self.functionSel)
+        self.tbBattle.setToolTip('从你目前处在的关卡开始循环作战，直到理智不足')
 
         self.tbSchedule = QPushButton('计划战斗', self) #计划战斗可选按钮
         self.tbSchedule.setCheckable(True)
         self.tbSchedule.setFixedSize(75, 40)
         self.tbSchedule.clicked[bool].connect(self.functionSel)
-        self.tbSchedule.setToolTip('在右键菜单中设定你的计划')
+        self.tbSchedule.setToolTip('在右键菜单中设定你的计划，会按照设定的计划作战')
 
         self.tbAutoPC = QPushButton('自动公招', self) #自动公招可选按钮
         self.tbAutoPC.setCheckable(True)
         self.tbAutoPC.setFixedSize(75, 40)
         self.tbAutoPC.clicked[bool].connect(self.functionSel)
+        self.tbAutoPC.setToolTip('自动进行公开招募，在右键菜单中进行配置')
 
         self.actAutoSearch = QAction('自动招募')
         self.actAutoSearch.triggered.connect(self.setAutoPCFunc)
@@ -287,11 +294,13 @@ class App(QWidget):
         self.tbTask.setCheckable(True)
         self.tbTask.setFixedSize(75, 40)
         self.tbTask.clicked[bool].connect(self.functionSel)
+        self.tbTask.setToolTip('自动交付任务')
 
         self.tbCredit = QPushButton('获取信用', self)
         self.tbCredit.setCheckable(True)
         self.tbCredit.setFixedSize(75, 40)
         self.tbCredit.clicked[bool].connect(self.functionSel)
+        self.tbCredit.setToolTip('自动拜访好友的基建以获取信用点')
 
         self.tbShutdown = QPushButton('完成后关机', self)
         self.tbShutdown.setCheckable(True)
