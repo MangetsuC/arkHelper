@@ -1,5 +1,5 @@
+import cgitb  # 调试时需要
 import sys
-import cgitb #调试时需要
 from configparser import ConfigParser
 from hashlib import md5
 from json import dumps, loads
@@ -11,8 +11,9 @@ import requests
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QCursor, QIcon, QMouseEvent, QScreen
 from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QDesktopWidget,
-                             QGridLayout, QInputDialog, QLabel, QMenu,
-                             QMessageBox, QPushButton, QWidget)
+                             QGridLayout, QHBoxLayout, QInputDialog, QLabel,
+                             QMenu, QMessageBox, QPushButton, QVBoxLayout,
+                             QWidget)
 
 from foo.adb.adbCtrl import Adb
 from foo.arknight.Battle import BattleLoop
@@ -21,7 +22,7 @@ from foo.arknight.Schedule import BattleSchedule
 from foo.arknight.task import Task
 from foo.pictureR import pictureFind
 from foo.ui.console import Console
-from foo.ui.launch import BlackBoard, Launch, AfterInit
+from foo.ui.launch import AfterInit, BlackBoard, Launch
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
 from updateCheck import Md5Analyse
@@ -30,7 +31,7 @@ from updateCheck import Md5Analyse
 class App(QWidget):
     def __init__(self):
         super(App, self).__init__()
-        self.ver = '2.5.6'
+        self.ver = '2.5.7'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
@@ -178,12 +179,13 @@ class App(QWidget):
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
         #self.setFixedSize(522,196)
-        self.resize(522,196)
+        self.resize(420,150)
 
         self.line = QAction()
         self.line.setSeparator(True)
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
+        #self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowTitleHint)
         self.setStyleSheet('''App{background:#272626}QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:9pt;}
                                 QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}
                                 QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
@@ -197,14 +199,53 @@ class App(QWidget):
                                         background-color:#272626;}
                             ''')
 
-        
+        self.lTitle = QLabel('明日方舟小助手')
+        self.lTitle.setStyleSheet('''
+                                    QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
+                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}
+                                    ''')
+        self.lVer = QLabel(f'v{self.ver}')
+        self.lVer.setStyleSheet('''
+                                    QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
+                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}
+                                    ''')
+
+        self.btnExit = QPushButton('×',self)
+        self.btnExit.setFixedSize(30,30)
+        self.btnExit.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:20pt;}
+                                    QPushButton:pressed{background:#272626;font:16pt;}
+                                    ''')
+        self.btnExit.clicked.connect(self.exit)
+
+        self.btnMinimize = QPushButton('-',self)
+        self.btnMinimize.setFixedSize(30,30)
+        self.btnMinimize.setStyleSheet('''QPushButton{background:#272626;font-family:SimSun;font:normal 28pt;}
+                                    QPushButton:pressed{background:#272626;font-family:SimSun;font:20pt;}
+                                    ''')
+        self.btnMinimize.clicked.connect(self.minimize)
+
+        self.btnSetting = QPushButton('≡',self)
+        self.btnSetting.setFixedSize(30,30)
+        self.btnSetting.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:16pt;}
+                                    QPushButton:pressed{background:#272626;font-family:SimHei, SimSun;font:14pt;}
+                                    QPushButton:menu-indicator{image:none;width:0px;}
+                                    ''')
+
+        self.btnUpdate = QPushButton('∧',self)
+        self.btnUpdate.setFixedSize(30,30)
+        self.btnUpdate.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:14pt;}
+                                    QPushButton:pressed{background:#272626;font-family:SimHei, SimSun;font:12pt;}
+                                    ''')
+        self.btnUpdate.clicked.connect(self.startUpdate)
+        self.btnUpdate.hide()
+
         self.btnStartAndStop = QPushButton('启动虚拟博士', self) #启动/停止按钮
         self.btnStartAndStop.setFixedSize(180, 131)
         self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
         self.btnStartAndStop.clicked.connect(self.clickBtnStartAndStop)
 
         self.btnMonitorPublicCall = QPushButton('公开招募计算器', self)
-        self.btnMonitorPublicCall.setFixedSize(180, 40)
+        self.btnMonitorPublicCall.setFixedSize(155, 40)
         self.btnMonitorPublicCall.setCheckable(True)
         self.btnMonitorPublicCall.clicked[bool].connect(self.monitorPC)
 
@@ -257,11 +298,12 @@ class App(QWidget):
         self.tbShutdown.setFixedSize(155, 40)
         self.tbShutdown.clicked[bool].connect(self.functionSel)
 
-        self.btnSet = QPushButton('设置',self) #设置按钮
-        self.btnSet.setFixedSize(75, 40)
+        #self.btnSet = QPushButton('设置',self) #设置按钮
+        #self.btnSet.setFixedSize(75, 40)
 
         self.settingMenu = QMenu() #创建设置按钮菜单
-        self.settingMenu.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;background-color:#222724; margin:3px;}
+        self.settingMenu.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
+                                        background-color:#272626; margin:3px;}
                                         QMenu:item {padding:8px 32px;}
                                         QMenu:item:selected { background-color: #3f4140;}
                                         QMenu:icon{padding: 8px 20px;}''')
@@ -324,9 +366,11 @@ class App(QWidget):
         self.settingMenu.addAction(self.actVersion2) #版本号显示
         self.actVersion2.triggered.connect(self.testUpdate)
 
-        self.btnSet.setMenu(self.settingMenu) #关联按钮与菜单
-        self.btnSet.setStyleSheet('''QPushButton:menu-indicator{image:none;width:0px;}''')
+        #self.btnSet.setMenu(self.settingMenu) #关联按钮与菜单
+        #self.btnSet.setStyleSheet('''QPushButton:menu-indicator{image:none;width:0px;}''')
+        self.btnSetting.setMenu(self.settingMenu)
 
+        '''
         self.btnMin = QPushButton('最小化',self) #最小化按钮
         self.btnMin.setFixedSize(155, 40)
         self.btnMin.clicked.connect(self.minimize)
@@ -349,30 +393,43 @@ class App(QWidget):
         self.btnUpdateRight.setFixedSize(75, 40)
         self.btnUpdateRight.clicked.connect(self.startUpdate)
         self.btnUpdateRight.hide()
+        '''
         
-        self.lNotice = QLabel('按此处可拖动窗口')
+        #self.lNotice = QLabel('')
+
+        self.topLayout = QVBoxLayout(self)
+
+        self.HBox = QHBoxLayout()
+        self.HBox.addWidget(self.lTitle)
+        self.HBox.addWidget(self.lVer)
+        self.HBox.addStretch(1)
+        self.HBox.addWidget(self.btnUpdate)
+        self.HBox.addWidget(self.btnSetting)
+        self.HBox.addWidget(self.btnMinimize)
+        self.HBox.addWidget(self.btnExit)
 
         self.grid = QGridLayout()
         self.grid.setVerticalSpacing(5)
         self.grid.setHorizontalSpacing(5)
         
         self.grid.addWidget(self.btnStartAndStop, 0, 0, 3, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnMonitorPublicCall, 3, 0, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btnMonitorPublicCall, 1, 1, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbSchedule, 0, 4, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbAutoPC, 1, 1, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbSchedule, 2, 1, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbAutoPC, 1, 3, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbCredit, 0, 3, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbShutdown, 1, 2, 1, 2)
-        self.grid.addWidget(self.btnMin, 2, 2, 1, 2, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnClose, 1, 4, 2, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnShowBoard, 3, 1, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnUpdateLeft, 3, 1, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnUpdateRight, 3, 2, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.lNotice, 3, 3, 1, 2, alignment=Qt.AlignRight)
+        self.grid.addWidget(self.tbShutdown, 2, 2, 1, 2)
+        #self.grid.addWidget(self.btnMin, 2, 2, 1, 2, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.btnClose, 1, 4, 2, 1, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.btnShowBoard, 3, 1, 1, 1, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.btnUpdateLeft, 3, 1, 1, 1, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.btnUpdateRight, 3, 2, 1, 1, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.lNotice, 3, 3, 1, 2, alignment=Qt.AlignRight)
 
-        self.setLayout(self.grid)
+        self.topLayout.addLayout(self.HBox)
+        self.topLayout.addLayout(self.grid)
 
         #self.show()
 
@@ -403,6 +460,8 @@ class App(QWidget):
         self.ico = self.cwd + '/res/ico.ico'
         self.selectedPNG = self.cwd + '/res/gui/selected.png'
         self.unSelPNG = self.cwd + '/res/gui/unSelected.png'
+
+        self.moveFlag = False
         
         self.noticeMd5 = ''
         self._notice = ''
@@ -604,8 +663,7 @@ class App(QWidget):
         self.moveFlag = False
         self.mousePos = event.globalPos() - self.pos() #获取鼠标相对窗口的位置
         if event.button() == Qt.LeftButton:
-            #print(self.mousePos.x(),self.mousePos.y()) #调试参考选择可移动区域
-            if self.mousePos.x() > 190 and self.mousePos.y() > 150: #判断是否在可移动区域
+            if self.mousePos.y() < self.btnStartAndStop.y(): #判断是否在可移动区域
                 self.moveFlag = True
             event.accept()
             
@@ -616,21 +674,22 @@ class App(QWidget):
             
     def mouseReleaseEvent(self, QMouseEvent):
         #停止窗口移动
-        if Qt.LeftButton:
+        if Qt.LeftButton and self.moveFlag:
             self.moveFlag = False
             if (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) > self.totalHeight:
-                self.move(QMouseEvent.globalPos().x() - self.mousePos.x(), self.totalHeight - self.height())
-            elif (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) < self.height()/4:
-                self.move(QMouseEvent.globalPos().x() - self.mousePos.x(), 0)
-            elif (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) < self.width()/4:
-                self.move(0, QMouseEvent.globalPos().y() - self.mousePos.y())
-            elif (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) > self.totalWidth + self.width()/4:
-                self.move(self.totalWidth - self.width(), QMouseEvent.globalPos().y() - self.mousePos.y())
+                self.move(self.pos().x(), self.totalHeight - self.height())
+            if (QMouseEvent.globalPos().y() - self.mousePos.y()) < 0:
+                self.move(self.pos().x(), 0)
+            if (QMouseEvent.globalPos().x() - self.mousePos.x()) < 0:
+                self.move(0, self.pos().y())
+            if (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) > self.totalWidth:
+                self.move(self.totalWidth - self.width(), self.pos().y())
     
     def functionSetMeun(self):
         self.source = self.sender()
         rightClickMeun = QMenu()
-        rightClickMeun.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;background-color:#222724; margin:3px;}
+        rightClickMeun.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
+                                        background-color:#272626; margin:3px;}
                                         QMenu:item {padding:8px 32px;}
                                         QMenu:item:selected { background-color: #3f4140;}
                                         QMenu:icon{padding: 8px 20px;}

@@ -115,19 +115,25 @@ class AfterInit(QThread):
                 if int(newVersion[0]) > int(tempSelfVersion[0]):
                     isNeedUpdate = True
             if isNeedUpdate:
-                self.app.lNotice.setText('*有新版本*')
+                self.app.lVer.setText('*有新版本*')
+                self.app.btnUpdate.show()
+                '''
                 if self.app.btnShowBoard.isVisible():
                     self.app.btnUpdateRight.show()
                 else:
                     self.app.btnUpdateLeft.show()
+                '''
             else:
                 tempMd5Checker = Md5Analyse(self.cwd, self.app._updateData['onlinePath'] + '/v' + self.app.ver, self.app._updateData['exception'])
                 if tempMd5Checker.compareMd5():
-                    self.app.lNotice.setText('*资源更新*')
+                    self.app.lVer.setText('*资源更新*')
+                    self.app.btnUpdate.show()
+                    '''
                     if self.app.btnShowBoard.isVisible():
                         self.app.btnUpdateRight.show()
                     else:
                         self.app.btnUpdateLeft.show()
+                    '''
 
     def checkMessage(self):
         noticeData = requests.get('http://www.mangetsuc.top/arkhelper/notice.html')
@@ -139,7 +145,7 @@ class AfterInit(QThread):
                 self.app.noticeMd5 = noticeMd5.hexdigest()
                 self.app._notice = noticeData.text
                 self.boardNeedShow.emit()
-                self.app.btnShowBoard.show()
+                #self.app.btnShowBoard.show()
 
     def checkPublicCallData(self):
         pcData = requests.get('http://www.mangetsuc.top/arkhelper/pcData.json')

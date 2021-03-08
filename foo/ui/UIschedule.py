@@ -575,7 +575,7 @@ class BootyChoice(QWidget):
         self.close()
 
     def myShow(self):
-        if self.scheduleEdit.isBootyMode and self.isVisible():
+        if self.scheduleEdit.isBootyMode and not self.isVisible():
             self.center()
             self.show()
 
