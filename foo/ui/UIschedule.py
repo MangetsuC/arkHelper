@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
 
 class JsonEdit(QWidget):
     def __init__(self, dataPath, ico, parent = None, flags = Qt.WindowCloseButtonHint):
-        super().__init__(parent, flags)
+        super(JsonEdit, self).__init__(parent, flags)
 
         self.setStyleSheet('''JsonEdit{background:#272626}QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
                                 QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:11pt;}
@@ -178,17 +178,10 @@ class JsonEdit(QWidget):
         #self.show()
 
     def editerShow(self):
-        self.isshow = not self.isshow
-        if self.isshow:
+        if not self.isVisible():
             self.show()
             cp = QDesktopWidget().availableGeometry().center()
             self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
-        else:
-            self.close()
-
-    def closeEvent(self,event):
-        self.isshow = False
-        event.accept()
 
     def myTimer(self):
         self.updateTimer = QTimer()
@@ -349,7 +342,6 @@ class JsonEdit(QWidget):
 
     def loadPlan(self):
         if self.planCb.currentIndex() != 0:
-            #self.selNo = self.planCb.currentIndex() + 1
             self.jsonDict = self.jsonAll[self.planCb.currentIndex() + 1][self.allPlanList[self.planCb.currentIndex()]]
             self.selList = self.jsonDict.copy()
             self.refreshJsonView()
@@ -366,7 +358,6 @@ class JsonEdit(QWidget):
             self.updateJson()
             self.planCb.clear()
             self.planCb.addItems(self.allPlanList)
-        pass
 
     def delPlan(self):
         if self.planCb.currentIndex() != 0:
@@ -375,8 +366,6 @@ class JsonEdit(QWidget):
             self.updateJson()
             self.planCb.clear()
             self.planCb.addItems(self.allPlanList)
-        pass
-    
     
     def setBootMode(self, isChecked):
         self.isBootyMode = isChecked
@@ -586,7 +575,7 @@ class BootyChoice(QWidget):
         self.close()
 
     def myShow(self):
-        if self.scheduleEdit.isBootyMode:
+        if self.scheduleEdit.isBootyMode and self.isVisible():
             self.center()
             self.show()
 

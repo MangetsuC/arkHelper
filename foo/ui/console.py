@@ -36,26 +36,10 @@ class Console(QDialog):
         self.textBrowser.setTextCursor(cursor)
 
     def showOrHide(self):
-        self.isShow = not self.isShow
-        if self.isShow:
+        if not self.isVisible():
             self.show()
             cp = QDesktopWidget().availableGeometry().center()
             self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
-            #self.move(0,0)
-        else:
-            self.hide()
-
-    def closeEvent(self, event):
-        if not self.isExit:
-            event.ignore()
-            self.showOrHide()
-        else:
-            event.accept()
-        #self.hide()
-    
-    def exit(self):
-        self.isExit = True
-        self.close()
 
 class EmittingStr(QObject):
     sgnConsole = pyqtSignal(str)

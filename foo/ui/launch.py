@@ -6,7 +6,7 @@ from os import getcwd
 from threading import Thread
 from urllib import request
 from configparser import ConfigParser
-from  time import sleep
+from time import sleep
 import requests
 from json import loads, dumps
 from hashlib import md5
@@ -79,7 +79,8 @@ class BlackBoard(QWidget):
         #self.show()
 
 class AfterInit(QThread):
-    signal = pyqtSignal()
+    boardNeedShow = pyqtSignal()
+    reloadPcModule = pyqtSignal()
     def __init__(self, app, cwd):
         super(AfterInit, self).__init__()
         self.app = app
@@ -137,7 +138,7 @@ class AfterInit(QThread):
             if noticeMd5.hexdigest() != self.app.config.get('notice', 'md5'):
                 self.app.noticeMd5 = noticeMd5.hexdigest()
                 self.app._notice = noticeData.text
-                self.signal.emit()
+                self.boardNeedShow.emit()
                 self.app.btnShowBoard.show()
 
     def checkPublicCallData(self):
@@ -148,8 +149,12 @@ class AfterInit(QThread):
             tempData = dict()
             tempData['data'] = temp
             if tempData != self.app._data:
-                with open(self.cwd + '/data.json', 'w') as f:
-                    f.write(dumps(tempData, ensure_ascii=False))
+                with open(self.cwd + '/data.json', 'w', encoding='UTF-8') as f:
+                    f.write(dumps(tempData, ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ': ')))
+                if self.app._data == None:
+                    self.reloadPcModule.emit()
+                while self.app._data == None:
+                    sleep(0.1)
                 self.app.publicCall.updateTag()
 
 

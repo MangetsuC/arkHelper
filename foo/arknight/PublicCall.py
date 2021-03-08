@@ -100,7 +100,7 @@ class PublicCall:
         if tagOnScreenList == []:
             return False
         if self.isTagNeedUpdate: #判断是否从网站下载了新公招表
-            with open(self.cwd + '/data.json', 'r') as f:
+            with open(self.cwd + '/data.json', 'r', encoding = 'UTF-8') as f:
                 temp = f.read()
             temp = loads(temp)['data']
             self.tagDict = temp[0]['normal']

@@ -1,5 +1,5 @@
 import sys
-#import cgitb #调试时需要
+import cgitb #调试时需要
 from configparser import ConfigParser
 from hashlib import md5
 from json import dumps, loads
@@ -522,8 +522,7 @@ class App(QWidget):
         self.tbSchedule.setChecked(self.scheduleFlag)
         self.autoPCFlag = self.config.getboolean('function', 'autoPC')
         self.tbAutoPC.setChecked(self.autoPCFlag)
-        self.publicCall.setStar(1, 1, self.config.getboolean('function', 'autoPC_skip1Star')) #自动公招保留一星设定
-        self.publicCall.setStar(5, 1, self.config.getboolean('function', 'autoPC_skip5Star'))
+        
         self.taskFlag = self.config.getboolean('function', 'task')
         self.tbTask.setChecked(self.taskFlag) #任务选项
         self.creditFlag = self.config.getboolean('function', 'credit')
@@ -534,9 +533,8 @@ class App(QWidget):
 
         self.PCFlag = self.config.getboolean('function', 'publiccall')
         self.btnMonitorPublicCall.setChecked(self.PCFlag)
-        if self.PCFlag:
+        if self.PCFlag and self.publicCall != None:
             self.publicCall.turnOn()
-        pass
     
     def initClass(self):
         self.adb = Adb(self.cwd + '/bin/adb', self.config)
@@ -547,15 +545,37 @@ class App(QWidget):
         self.schedule = BattleSchedule(self.adb, self.cwd, self.userDataPath, self.ico) #处于测试
         self.task = Task(self.adb, self.cwd, self.ico, self.listGoTo)
         self.credit = Credit(self.adb, self.cwd, self.listGoTo)
-        with open(self.cwd + '/data.json', 'r') as f:
-            temp = f.read()
-        self._data = loads(temp)
-        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, self.listGoTo, self._data['data'][0]['normal'], self._data['data'][0]['high']) #公开招募
+
+        if path.exists(self.cwd + '/data.json'):
+            self.initPc()
+        else:
+            self._data = None
+            self.publicCall = None
+            self.tbAutoPC.setEnabled(False)
+            self.btnMonitorPublicCall.setEnabled(False)
+        
+        
         self.schJsonEditer = JsonEdit(self.userDataPath, self.ico)
         self.board = BlackBoard()
 
         self.afterInit_Q = AfterInit(self, self.cwd)
-        self.afterInit_Q.signal.connect(self.showMessage)
+        self.afterInit_Q.boardNeedShow.connect(self.showMessage)
+        self.afterInit_Q.reloadPcModule.connect(self.initPc)
+
+    def initPc(self):
+        try:
+            with open(self.cwd + '/data.json', 'r', encoding = 'gbk') as f:
+                temp = f.read()
+        except UnicodeDecodeError:
+            with open(self.cwd + '/data.json', 'r', encoding = 'UTF-8') as f:
+                temp = f.read()
+        self._data = loads(temp)
+        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, 
+                    self.listGoTo, self._data['data'][0]['normal'], self._data['data'][0]['high']) #公开招募
+        self.publicCall.setStar(1, 1, self.config.getboolean('function', 'autoPC_skip1Star')) #自动公招保留一星设定
+        self.publicCall.setStar(5, 1, self.config.getboolean('function', 'autoPC_skip5Star'))
+        self.tbAutoPC.setEnabled(True)
+        self.btnMonitorPublicCall.setEnabled(True)
 
     def initSlrSel(self):
         '初始化模拟器选择'
@@ -581,13 +601,12 @@ class App(QWidget):
 
 
     def mousePressEvent(self, event):
+        self.moveFlag = False
         self.mousePos = event.globalPos() - self.pos() #获取鼠标相对窗口的位置
         if event.button() == Qt.LeftButton:
             #print(self.mousePos.x(),self.mousePos.y()) #调试参考选择可移动区域
             if self.mousePos.x() > 190 and self.mousePos.y() > 150: #判断是否在可移动区域
                 self.moveFlag = True
-            else:
-                self.moveFlag = False
             event.accept()
             
     def mouseMoveEvent(self, QMouseEvent):
@@ -793,8 +812,9 @@ class App(QWidget):
         self.schJsonEditer.close()
         self.hide()
         self.stop()
-        self.console.exit()
-        self.publicCall.close()
+        self.console.close()
+        if self.publicCall != None:
+            self.publicCall.close()
         self.adb.killAdb()
         #self.close()
         sys.exit() #为了解决Error in atexit._run_exitfuncs:的问题，实际上我完全不知道这为什么出现
@@ -846,7 +866,7 @@ class App(QWidget):
             self.schedule.run(self.doctorFlag)
         if self.doctorFlag and self.battleFlag:
             self.battle.run(self.doctorFlag)
-        if self.doctorFlag and self.autoPCFlag:
+        if (self.publicCall != None) and self.doctorFlag and self.autoPCFlag:
             self.publicCall.autoPCRun(self.doctorFlag)
         if self.doctorFlag and self.taskFlag:
             self.task.run(self.doctorFlag)
@@ -860,7 +880,8 @@ class App(QWidget):
 
     def stop(self):
         self.doctorFlag = False
-        self.publicCall.autoPCStop()
+        if self.publicCall != None:
+            self.publicCall.autoPCStop()
         self.schedule.stop()
         self.battle.stop()
         self.task.stop()
@@ -879,7 +900,7 @@ class App(QWidget):
             self.stop()  
 
 if __name__ == '__main__':
-    #cgitb.enable(format = 'text')
+    cgitb.enable(format = 'text')
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
     exLaunch = Launch()
