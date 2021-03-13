@@ -3,10 +3,10 @@ from json import dumps, loads
 from os import getcwd
 
 from PyQt5.QtCore import QStringListModel, Qt, QTimer
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
                              QGridLayout, QInputDialog, QLabel, QLineEdit,
-                             QListView, QMenu, QPushButton, QWidget)
+                             QListView, QMenu, QPushButton, QWidget, QAction)
 
 
 class JsonEdit(QWidget):
@@ -65,9 +65,20 @@ class JsonEdit(QWidget):
         self.selIndex = None
         
         self.grid = QGridLayout()
-        self.lsv = QListView()
+        self.lsv = QListView() #计划显示框
         self.lsv.setFixedWidth(200)
         self.lsv.clicked.connect(self.clickSchedule)
+        self.lsv.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.lsv.customContextMenuRequested.connect(self.lsvRearrange)
+        self.actMoveUp = QAction('上移')
+        self.actMoveUp.triggered.connect(self.moveUpLine)
+        self.actMoveDown = QAction('下移')
+        self.actMoveDown.triggered.connect(self.moveDownLine)
+        self.actEdit = QAction('修改次数/个数')
+        self.actEdit.triggered.connect(self.editLine)
+        self.actDel = QAction('删除')
+        self.actDel.triggered.connect(self.delLine)
+
         self.slm = QStringListModel()
 
         self.partCb = QComboBox()
@@ -187,6 +198,22 @@ class JsonEdit(QWidget):
         self.updateTimer = QTimer()
         self.updateTimer.timeout.connect(self.updateList)
         self.updateTimer.start(10)
+
+    def lsvRearrange(self):
+        self.selIndex = self.lsv.currentIndex().row()
+        rightClickMeun = QMenu()
+        rightClickMeun.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
+                                        background-color:#272626; margin:3px;}
+                                        QMenu:item {padding:8px 32px;}
+                                        QMenu:item:selected { background-color: #3f4140;}
+                                        QMenu:icon{padding: 8px 20px;}
+                                        QMenu:separator{background-color: #7C7C7C; height:1px; margin-left:2px; margin-right:2px;}''')
+        rightClickMeun.addAction(self.actMoveUp)
+        rightClickMeun.addAction(self.actMoveDown)
+        rightClickMeun.addAction(self.actEdit)
+        rightClickMeun.addAction(self.actDel)
+        rightClickMeun.exec_(QCursor.pos())
+        
     
     def initJson(self):
         with open(self.json,'r', encoding='UTF-8') as s:
@@ -334,6 +361,36 @@ class JsonEdit(QWidget):
         if self.selIndex != None:
             self.listSchedule.pop(self.selIndex)
             self.selList.pop(self.selIndex)
+        self.selIndex = None
+
+    def moveUpLine(self):
+        if self.selIndex != 0 and self.selIndex != None:
+            #temp = self.listSchedule[self.selIndex - 1]
+            self.listSchedule[self.selIndex - 1], self.listSchedule[self.selIndex] = \
+                                            self.listSchedule[self.selIndex], self.listSchedule[self.selIndex - 1]
+            self.selList[self.selIndex - 1], self.selList[self.selIndex] = \
+                                            self.selList[self.selIndex], self.selList[self.selIndex - 1]
+        self.selIndex = None
+
+    def moveDownLine(self):
+        if self.selIndex != (len(self.listSchedule) - 1) and self.selIndex != None:
+            #temp = self.listSchedule[self.selIndex - 1]
+            self.listSchedule[self.selIndex + 1], self.listSchedule[self.selIndex] = \
+                                            self.listSchedule[self.selIndex], self.listSchedule[self.selIndex + 1]
+            self.selList[self.selIndex + 1], self.selList[self.selIndex] = \
+                                            self.selList[self.selIndex], self.selList[self.selIndex + 1]
+        self.selIndex = None
+
+    def editLine(self):
+        if self.selIndex != None:
+            if isinstance(self.selList[self.selIndex]['times'], dict):
+                newNum, isOk = QInputDialog.getText(self, '修改', '请输入新的掉落物个数')
+                if isOk:
+                    self.selList[self.selIndex]['times']['bootyNum'] = newNum
+            else:
+                newNum, isOk = QInputDialog.getText(self, '修改', '请输入新的次数')
+                self.selList[self.selIndex]['times'] = newNum
+            self.refreshJsonView()
         self.selIndex = None
 
     def clearLine(self):
