@@ -1,16 +1,14 @@
-import cgitb  # 调试时需要
+import cgitb
 import sys
 from configparser import ConfigParser
-from hashlib import md5
 from json import dumps, loads
 from os import getcwd, getlogin, mkdir, path, system
 from threading import Thread
 from webbrowser import open as openUrl
 
-import requests
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from PyQt5.QtGui import QCursor, QIcon, QMouseEvent, QScreen
-from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QDesktopWidget,
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QCursor, QIcon
+from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
                              QGridLayout, QHBoxLayout, QInputDialog, QLabel,
                              QMenu, QMessageBox, QPushButton, QVBoxLayout,
                              QWidget)
@@ -25,13 +23,12 @@ from foo.ui.console import Console
 from foo.ui.launch import AfterInit, BlackBoard, Launch
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
-from updateCheck import Md5Analyse
 
 
 class App(QWidget):
     def __init__(self):
         super(App, self).__init__()
-        self.ver = '2.5.7'
+        self.ver = '2.6.0'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错

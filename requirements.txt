@@ -2,3 +2,4 @@ win10toast==0.9
 opencv_python==4.4.0.42
 numpy==1.19.2
 PyQt5==5.15.1
+requests==2.25.1
