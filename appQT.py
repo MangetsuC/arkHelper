@@ -2,7 +2,7 @@ import cgitb
 import sys
 from configparser import ConfigParser
 from json import dumps, loads
-from os import getcwd, getlogin, mkdir, path, system
+from os import getcwd, getlogin, mkdir, path, startfile
 from threading import Thread
 from webbrowser import open as openUrl
 
@@ -175,16 +175,17 @@ class App(QWidget):
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
-        #self.setFixedSize(522,196)
+
         self.resize(420,150)
 
         self.line = QAction()
         self.line.setSeparator(True)
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
-        #self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowTitleHint)
+
         self.setStyleSheet('''App{background:#272626}QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:9pt;}
-                                QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}
+                                QPushButton{border:0px;background:#4d4d4d;
+                                color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}
                                 QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
                                 QPushButton:pressed{background:#606162;font:9pt;}
                                 QPushButton:checked{background:#70bbe4;}
@@ -339,9 +340,7 @@ class App(QWidget):
         self.actCheckUpdate = QAction('前往下载', parent=self.settingMenu)
         self.actIndex = QAction('访问主页', parent=self.settingMenu)
         
-        #self.actVersion1 = QAction('版本：', parent=self.settingMenu)
         self.actVersion2 = QAction(f'v{self.ver}', parent=self.settingMenu)
-
 
         self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrCustom] #self.actSlrYeshen, self.actSlrLeidian,
         #添加菜单选项
@@ -368,41 +367,11 @@ class App(QWidget):
         self.settingMenu.addAction(self.actIndex) #主页
         self.actIndex.triggered.connect(self.openIndex)
 
-        #self.settingMenu.addAction(self.actVersion1)
         self.settingMenu.addAction(self.actVersion2) #版本号显示
         self.actVersion2.triggered.connect(self.testUpdate)
 
-        #self.btnSet.setMenu(self.settingMenu) #关联按钮与菜单
-        #self.btnSet.setStyleSheet('''QPushButton:menu-indicator{image:none;width:0px;}''')
         self.btnSetting.setMenu(self.settingMenu)
-
-        '''
-        self.btnMin = QPushButton('最小化',self) #最小化按钮
-        self.btnMin.setFixedSize(155, 40)
-        self.btnMin.clicked.connect(self.minimize)
-
-        self.btnClose = QPushButton('退出',self) #退出按钮
-        self.btnClose.setFixedSize(75, 85)
-        self.btnClose.clicked.connect(self.exit)
         
-        self.btnShowBoard = QPushButton('重看公告',self)
-        self.btnShowBoard.setFixedSize(75, 40)
-        self.btnShowBoard.clicked.connect(self.showMessage)
-        self.btnShowBoard.hide()
-        
-        self.btnUpdateLeft = QPushButton('自动更新',self)
-        self.btnUpdateLeft.setFixedSize(75, 40)
-        self.btnUpdateLeft.clicked.connect(self.startUpdate)
-        self.btnUpdateLeft.hide()
-
-        self.btnUpdateRight = QPushButton('自动更新',self)
-        self.btnUpdateRight.setFixedSize(75, 40)
-        self.btnUpdateRight.clicked.connect(self.startUpdate)
-        self.btnUpdateRight.hide()
-        '''
-        
-        #self.lNotice = QLabel('')
-
         self.topLayout = QVBoxLayout(self)
 
         self.HBox = QHBoxLayout()
@@ -903,11 +872,13 @@ class App(QWidget):
     def startUpdate(self):
         if path.exists(self.cwd + '/update.exe'):
             selfPidList = self.adb.cmd.getTaskList('arkhelper.exe')
-            system('update.exe \"{localPath}\" {onlinePath} {selfPid} {exceptionFile}'.format(
-                                                                                    localPath = self.cwd, 
-                                                                                    onlinePath = self._updateData['onlinePath'] + '/v' +self._updateData['version'], 
-                                                                                    selfPid = ','.join(selfPidList), 
-                                                                                    exceptionFile = self._updateData['exception']))
+            updateJson = {'localPath': self.cwd, 
+                            'onlinePath': self._updateData['onlinePath'] + '/v' +self._updateData['version'],
+                            'Pid': ','.join(selfPidList),
+                            'exceptionFile': self._updateData['exception']}
+            with open('updateData.json', 'w', encoding='UTF-8') as f:
+                f.write(dumps(updateJson, sort_keys=True, indent=4, separators=(',', ': '), ensure_ascii=False))
+            startfile('update.exe')
     
     def battleWarning(self):
         reply = QMessageBox.warning(self, '警告', '发现您选中的关卡可能无掉落，是否继续？', 
