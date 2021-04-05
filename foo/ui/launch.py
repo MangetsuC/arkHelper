@@ -117,23 +117,6 @@ class AfterInit(QThread):
             if isNeedUpdate:
                 self.app.lVer.setText('*有新版本*')
                 self.app.btnUpdate.show()
-                '''
-                if self.app.btnShowBoard.isVisible():
-                    self.app.btnUpdateRight.show()
-                else:
-                    self.app.btnUpdateLeft.show()
-                '''
-            else:
-                tempMd5Checker = Md5Analyse(self.cwd, self.app._updateData['onlinePath'] + '/v' + self.app.ver, self.app._updateData['exception'])
-                if tempMd5Checker.compareMd5():
-                    self.app.lVer.setText('*资源更新*')
-                    self.app.btnUpdate.show()
-                    '''
-                    if self.app.btnShowBoard.isVisible():
-                        self.app.btnUpdateRight.show()
-                    else:
-                        self.app.btnUpdateLeft.show()
-                    '''
 
     def checkMessage(self):
         noticeData = requests.get('http://www.mangetsuc.top/arkhelper/notice.html')
