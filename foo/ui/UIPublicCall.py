@@ -311,10 +311,9 @@ class UIPublicCall(QDialog):
                 return False
             picInfo = pictureFind.matchImg(self.screenShot, self.pc9, confidencevalue=0.9)
             while picInfo == None:
-                for i in range(9):
-                    if not self.autoSwitch:
-                        return False
-                    self.adb.click(addBtn[0], addBtn[1])
+                if not self.autoSwitch:
+                    return False
+                self.adb.click(addBtn[0], addBtn[1])
                 self.adb.screenShot()
                 picInfo = pictureFind.matchImg(self.screenShot, self.pc9, confidencevalue=0.9)
             for i in range(5):

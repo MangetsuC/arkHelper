@@ -28,7 +28,7 @@ from foo.ui.UIschedule import JsonEdit
 class App(QWidget):
     def __init__(self):
         super(App, self).__init__()
-        self.ver = '2.6.0'
+        self.ver = '2.6.1'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
@@ -262,7 +262,9 @@ class App(QWidget):
         self.tbSchedule.setCheckable(True)
         self.tbSchedule.setFixedSize(75, 40)
         self.tbSchedule.clicked[bool].connect(self.functionSel)
-        self.tbSchedule.setToolTip('在右键菜单中设定你的计划，会按照设定的计划作战')
+        #self.tbSchedule.setToolTip('在右键菜单中设定你的计划，会按照设定的计划作战')
+        self.tbSchedule.setToolTip('暂时禁用')
+        self.tbSchedule.setEnabled(False) #临时关闭，修改完成后打开
 
         self.tbAutoPC = QPushButton('自动公招', self) #自动公招可选按钮
         self.tbAutoPC.setCheckable(True)
@@ -552,8 +554,10 @@ class App(QWidget):
         #功能开关
         self.battleFlag = self.config.getboolean('function', 'battle')
         self.tbBattle.setChecked(self.battleFlag) #战斗选项
-        self.scheduleFlag = self.config.getboolean('function', 'schedule')
-        self.tbSchedule.setChecked(self.scheduleFlag)
+        #self.scheduleFlag = self.config.getboolean('function', 'schedule')
+        #self.tbSchedule.setChecked(self.scheduleFlag)
+        self.scheduleFlag = False
+        self.tbSchedule.setChecked(False)#计划战斗暂时禁用
         self.autoPCFlag = self.config.getboolean('function', 'autoPC')
         self.tbAutoPC.setChecked(self.autoPCFlag)
         
