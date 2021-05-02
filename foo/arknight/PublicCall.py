@@ -52,7 +52,6 @@ class PublicCall:
     def getTag(self, src, isAutoMode = False):
         self.tagOnScreenList = []
         imSrc = src
-        trytime = 0
 
         self.matchTag(imSrc, self.tag)
 
@@ -81,7 +80,7 @@ class PublicCall:
         for each in objList:
             if len(self.tagOnScreenList) == 5:
                 break
-            tInfo = pictureFind.matchImg(src, each)
+            tInfo = pictureFind.matchImg(src, each, confidencevalue = 0.75)
             if tInfo != None:
                 self.tagOnScreenList.append((tInfo['obj'][:-4], tInfo['result']))
                 tInfo['rectangle'] = list(tInfo['rectangle'])
@@ -252,6 +251,8 @@ class PublicCall:
         self.adb.screenShot(pngName='autoPC')
         src = pictureFind.imreadCH(self.cwd + '/bin/adb/autoPC.png')
         tempTagList = self.getTag(src, isAutoMode=True)
+        if tempTagList == []:
+            return 6 #出现错误，跳过此组
         if self.is1Need: #小车
             for i in tempTagList:
                 if i[0] == '支援机械':
@@ -302,12 +303,17 @@ class PublicCall:
             if refreshPic != None:
                 for i in range(3):
                     self.adb.click(refreshPic['result'][0], refreshPic['result'][1])
+                    sleep(1)
                     self.adb.screenShot(pngName='autoPC')
-                    confirmPic = pictureFind.matchImg(self.cwd + '/bin/adb/autoPC.png', self.refresh)
-                    if confirmPic != None:
-                        while pictureFind.matchImg(self.cwd + '/bin/adb/autoPC.png', self.pcInMark) == None:
+                    startTime = perf_counter()
+                    while True:
+                        if perf_counter() - startTime > 20:
+                            break
+                        confirmPic = pictureFind.matchImg(self.cwd + '/bin/adb/autoPC.png', self.confirm)
+                        if confirmPic != None:
                             self.adb.click(confirmPic['result'][0], confirmPic['result'][1])
                             sleep(1)
                             self.adb.screenShot(pngName='autoPC')
-                        return 100
+                        else:
+                            return 100
         return 0

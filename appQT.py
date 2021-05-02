@@ -40,7 +40,11 @@ class App(QWidget):
         for i in range(QDesktopWidget().screenCount()):
             tempScreenList.append(QDesktopWidget().availableGeometry(i))
         theBottomOne = sorted(tempScreenList, key = lambda screen:screen.y())[-1]
+        theTopOne = sorted(tempScreenList, key = lambda screen:screen.y())[0]
         theRightOne = sorted(tempScreenList, key = lambda screen:screen.x())[-1]
+        theLeftOne = sorted(tempScreenList, key = lambda screen:screen.x())[0]
+        self.topPos = theTopOne.y()
+        self.leftPos = theLeftOne.x()
         self.totalWidth = theRightOne.x() + theRightOne.width()
         self.totalHeight = theBottomOne.y() + theBottomOne.height()
 
@@ -655,14 +659,14 @@ class App(QWidget):
         #停止窗口移动
         if Qt.LeftButton and self.moveFlag:
             self.moveFlag = False
-            if (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) > self.totalHeight:
-                self.move(self.pos().x(), self.totalHeight - self.height())
-            if (QMouseEvent.globalPos().y() - self.mousePos.y()) < 0:
-                self.move(self.pos().x(), 0)
-            if (QMouseEvent.globalPos().x() - self.mousePos.x()) < 0:
-                self.move(0, self.pos().y())
-            if (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) > self.totalWidth:
-                self.move(self.totalWidth - self.width(), self.pos().y())
+            if (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) > self.topPos + self.totalHeight:
+                self.move(self.pos().x(), self.topPos + self.totalHeight - self.height())
+            if (QMouseEvent.globalPos().y() - self.mousePos.y()) < self.topPos:
+                self.move(self.pos().x(), self.topPos)
+            if (QMouseEvent.globalPos().x() - self.mousePos.x()) < self.leftPos:
+                self.move(self.leftPos, self.pos().y())
+            if (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) > self.leftPos + self.totalWidth:
+                self.move(self.leftPos + self.totalWidth - self.width(), self.pos().y())
     
     def functionSetMeun(self):
         self.source = self.sender()
