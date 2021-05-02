@@ -67,6 +67,8 @@ class BattleLoop(QObject):
 
     def run(self, switchI):
         isInBattle = False
+        lastFoundPic = 'start'
+        loopTime = 0
         restStone = self.stoneMaxNum
         #isFirstTurn = True
         self.switch = switchI
@@ -96,29 +98,6 @@ class BattleLoop(QObject):
                                 self.adb.click(posAutoOff[0], posAutoOff[1])
                                 continue
 
-                    '''isDelayExit = False #加载延迟是否出现，即检查到开始行动A但实际上是正在进入关卡前的状态
-                    for i in range(5):
-                        if not self.switch:
-                            break
-                        isSSSuccess = self.adb.screenShot()
-                        if not isSSSuccess:
-                            print('unable to get screenshot')
-                            self.switchB = False
-                            return False
-                        for eachObj in self.listBattleImg:
-                            picInfo = pictureFind.matchImg(self.screenShot, eachObj, 0.8)
-                            if picInfo != None:
-                                if eachObj['obj'] != "startApart.png":
-                                    isDelayExit  = True
-                                    break
-
-                        picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                        if picAutoOn != None or isDelayExit:
-                            if isDelayExit:
-                                print("start delay exit")
-                            break'''
-
-                #sleep(1)
                 for eachObj in self.listImg:
                     if self.switch:
                         if eachObj['obj'] == "end.png" or eachObj['obj'] == "levelup.png":
@@ -131,6 +110,11 @@ class BattleLoop(QObject):
                         if picInfo != None:
                             if picInfo['result'][1] < 270:
                                 continue
+                            
+                            if eachObj['obj'] != lastFoundPic:
+                                lastFoundPic = eachObj['obj']
+                                if eachObj['obj'] == "endNormal.png":
+                                    loopTime += 1
 
                             if eachObj['obj'] == "startBpart.png":
                                 isInBattle = True
@@ -161,7 +145,7 @@ class BattleLoop(QObject):
                                                     break
                                         self.adb.click(picPos[0], picPos[1], isSleep = True)
                                         self.switch = False
-                                        toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                        toast.broadcastMsg("ArkHelper", f"理智耗尽，共循环{loopTime}次", self.ico)
                                     else:
                                         if self.autoRecMed:
                                             if medInfo != None:
@@ -175,15 +159,15 @@ class BattleLoop(QObject):
                                                     break
                                         self.adb.click(picPos[0], picPos[1], isSleep = True)
                                         self.switch = False
-                                        toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                        toast.broadcastMsg("ArkHelper", f"理智耗尽，共循环{loopTime}次", self.ico)
                                 else:
                                     self.adb.click(picPos[0], picPos[1], isSleep = True)
                                     self.switch = False
-                                    toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                    toast.broadcastMsg("ArkHelper", f"理智耗尽，共循环{loopTime}次", self.ico)
                             elif eachObj['obj'] == 'stoneLack.png':
                                 self.adb.click(picPos[0], picPos[1], isSleep = True)
                                 self.switch = False
-                                toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                toast.broadcastMsg("ArkHelper", f"理智耗尽，共循环{loopTime}次", self.ico)
                             elif eachObj['obj'] == 'levelup.png':
                                 lackTem = False
                                 for eachTem in self.listImg:
@@ -195,7 +179,7 @@ class BattleLoop(QObject):
                                     if picLackInfo:
                                         self.adb.click(picLackInfo['result'][0], picLackInfo['result'][1], isSleep = True)
                                         self.switch = False
-                                        toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
+                                        toast.broadcastMsg("ArkHelper", f"理智耗尽，共循环{loopTime}次", self.ico)
                                     else:
                                         self.adb.click(picPos[0], picPos[1], isSleep = True)
                                         if eachObj['obj'] == 'startApartOF.png':
@@ -203,7 +187,7 @@ class BattleLoop(QObject):
                                             OFend = pictureFind.matchImg(self.screenShot, self.cwd + '/res/act/OFend.png', 0.8)
                                             if OFend != None:
                                                 self.switch = False
-                                                toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
+                                                toast.broadcastMsg("ArkHelper", f"黑曜石节门票不足，共循环{loopTime}次", self.ico)
                                 else:
                                     self.adb.click(picPos[0], picPos[1], isSleep = True)
                                     if eachObj['obj'] == 'startApartOF.png':
@@ -211,7 +195,7 @@ class BattleLoop(QObject):
                                         OFend = pictureFind.matchImg(self.screenShot, self.cwd + '/res/act/OFend.png', 0.8)
                                         if OFend != None:
                                             self.switch = False
-                                            toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
+                                            toast.broadcastMsg("ArkHelper", f"黑曜石节门票不足，共循环{loopTime}次", self.ico)
                             else:
                                 self.adb.click(picPos[0], picPos[1], isSleep = True)
                                 if eachObj['obj'] == 'startApartOF.png':
@@ -219,7 +203,7 @@ class BattleLoop(QObject):
                                     OFend = pictureFind.matchImg(self.screenShot, self.cwd + '/res/act/OFend.png', 0.8)
                                     if OFend != None:
                                         self.switch = False
-                                        toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
+                                        toast.broadcastMsg("ArkHelper", f"黑曜石节门票不足，共循环{loopTime}次", self.ico)
 
                             break
                 if isInBattle:
