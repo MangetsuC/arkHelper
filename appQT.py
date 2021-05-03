@@ -549,7 +549,7 @@ class App(QWidget):
             self.actAutoStoneSche.setIcon(QIcon(self.unSelPNG))
             self.schedule.recChange(1, False)
         self.stoneMaxNum = self.config.getint('stone', 'maxnum')
-        self.actMaxNumber.setText(f'设置上限（当前：{self.stoneMaxNum}）')
+        self.actMaxNumber.setText(f'设置上限(当前：{self.stoneMaxNum})')
         self.battle.recChange(2, self.stoneMaxNum)
         self.schedule.recChange(2, self.stoneMaxNum)
 
@@ -578,9 +578,12 @@ class App(QWidget):
         self.adb = Adb(self.cwd + '/bin/adb', self.config)
 
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
-        self.battle.signal.connect(self.battleWarning)
+        self.battle.noBootySignal.connect(self.battleWarning)
+        self.battle.errorSignal.connect(self.clickBtnStartAndStop)
         
         self.schedule = BattleSchedule(self.adb, self.cwd, self.userDataPath, self.ico) #处于测试
+        self.schedule.errorSignal.connect(self.clickBtnStartAndStop)
+        
         self.task = Task(self.adb, self.cwd, self.ico, self.listGoTo)
         self.credit = Credit(self.adb, self.cwd, self.listGoTo)
 

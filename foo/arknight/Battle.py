@@ -8,7 +8,8 @@ from foo.pictureR import pictureFind
 from foo.win import toast
 
 class BattleLoop(QObject):
-    signal = pyqtSignal()
+    noBootySignal = pyqtSignal()
+    errorSignal = pyqtSignal()
     def __init__(self, adb, cwd, ico):
         super(BattleLoop, self).__init__()
         self.cwd = cwd
@@ -75,6 +76,7 @@ class BattleLoop(QObject):
         self.isUselessContinue = False
 
         if self.switch:
+            errorCount = 0
             while self.switch:
                 self.adb.screenShot()
                 #判断代理指挥是否勾选
@@ -85,7 +87,7 @@ class BattleLoop(QObject):
                     picIsUseless = pictureFind.matchImg(self.screenShot, self.uselessLevel)
                     if picIsUseless and (not self.isUselessContinue):
                         self.isWaitingUser = True
-                        self.signal.emit()
+                        self.noBootySignal.emit()
                         while self.isWaitingUser:
                             sleep(1)
                         continue
@@ -112,9 +114,17 @@ class BattleLoop(QObject):
                                 continue
                             
                             if eachObj['obj'] != lastFoundPic:
+                                errorCount = 0
                                 lastFoundPic = eachObj['obj']
                                 if eachObj['obj'] == "endNormal.png":
                                     loopTime += 1
+
+                            if eachObj['obj'] == "error.png":
+                                errorCount += 1
+                                if errorCount > 2:
+                                    self.errorSignal.emit()
+                                    self.switch = False
+                                break
 
                             if eachObj['obj'] == "startBpart.png":
                                 isInBattle = True

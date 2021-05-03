@@ -4,14 +4,17 @@ from time import sleep
 from threading import Thread
 from json import loads,dumps
 from cv2 import imread
+from PyQt5.QtCore import pyqtSignal, QObject
 
 path.append(getcwd())
 from foo.pictureR import pictureFind
 from foo.pictureR import bootyCount
 from foo.win import toast
 
-class BattleSchedule:
+class BattleSchedule(QObject):
+    errorSignal = pyqtSignal()
     def __init__(self, adb, cwd, dataPath, ico):
+        super(BattleSchedule, self).__init__()
         self.cwd = cwd
         self.adb = adb
         self.ico = ico
@@ -262,13 +265,11 @@ class BattleSchedule:
         countStep = 0
         totalCount = 0
         bootyTotalCount = 0
-        twiceTry = 0
+        errorCount = 0
         while self.switch and self.switchB:
             
             self.adb.screenShot()
             #判断代理指挥是否勾选
-            '''if isFirstTurn:
-                isFirstTurn = False'''
             picStartA = pictureFind.matchImg(self.screenShot, self.startA, confidencevalue= 0.9)
             if picStartA != None and self.switch and self.switchB:
                 picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
@@ -278,34 +279,6 @@ class BattleSchedule:
                         posAutoOff = picAutoOff['result']
                         self.adb.click(posAutoOff[0], posAutoOff[1])
                         continue
-
-                '''isDelayExit = False #加载延迟是否出现，即检查到开始行动A但实际上是正在进入关卡前的状态 #这段代码我不是很清楚我当时为什么会写，现在看来毫无用处，但先留在注释里
-                for i in range(5):
-                    if not (self.switch and self.switchB):
-                        break
-                    isSSSuccess = self.adb.screenShot()
-                    if not isSSSuccess:
-                        print('unable to get screenshot')
-                        self.switchB = False
-                        return False
-                    for eachObj in self.listBattleImg:
-                        if not (self.switch and self.switchB):
-                            break
-                        picInfo = pictureFind.matchImg(self.screenShot, eachObj, 0.8)
-                        if picInfo != None:
-                            if eachObj['obj'] != "startApart.png":
-                                isDelayExit  = True
-                                break
-
-                    picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
-                    if picAutoOn != None or isDelayExit:
-                        if isDelayExit:
-                            print("start delay exit")
-                        break
-                else:
-                    print('auto mode still off')
-                    self.switchB = False
-                    return True #返回True用来跳过此关'''
 
             isInBattle = False
             #sleep(1)
@@ -321,6 +294,16 @@ class BattleSchedule:
                     if picInfo != None:
                         if picInfo['result'][1] < 270:
                             continue
+
+                        if eachObj['obj'] == "error.png":
+                            errorCount += 1
+                            if errorCount > 2:
+                                self.errorSignal.emit()
+                                self.switch = False
+                                self.switchB = False
+                            break
+                        else:
+                            errorCount = 0
 
                         if eachObj['obj'] == "startBpart.png":
                             isInBattle = True
@@ -358,13 +341,6 @@ class BattleSchedule:
                             self.adb.click(picPos[0], picPos[1], isSleep = True)
                             self.switchB = False
                             return True
-                        '''self.adb.click(picPos[0], picPos[1], isSleep = True)
-                        if eachObj['obj'] == "cancel.png":
-                            self.switch = False
-                            self.switchB = False
-                            toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
-                            return False
-                        break'''
                         if eachObj['obj'] == "cancel.png":
                             if self.autoRecMed or self.autoRecStone:
                                 medInfo = pictureFind.matchImg(self.screenShot, self.recMed)
