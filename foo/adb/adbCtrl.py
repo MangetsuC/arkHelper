@@ -168,3 +168,9 @@ class Adb:
     def onePageRight(self):
         self.swipe(450,405,0,405,1000)
         sleep(1)
+
+    def mainToPreChap(self):
+        self.swipe(650, 400, 1050, 400, 500)
+
+    def mainToNextChap(self):
+        self.swipe(1050, 400, 650, 400, 500)

@@ -37,6 +37,7 @@ class BattleSchedule:
         self.recMed = pictureFind.picRead(self.cwd + "/res/panel/recovery/medicament.png")
         self.recStone = pictureFind.picRead(self.cwd + "/res/panel/recovery/stone.png")
         self.confirm = pictureFind.picRead(self.cwd + "/res/panel/recovery/confirm.png")
+        self.sign = pictureFind.picRead(self.cwd + "/res/panel/level/sign.png")
 
         #self.exPos = {'ex1':(220,280),'ex2':(845,580),'ex3':(1230,340)}
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
@@ -59,7 +60,8 @@ class BattleSchedule:
                 '2':self.cwd + "/res/panel/level/II/ep2.png", '3':self.cwd + "/res/panel/level/II/ep3.png",\
                 '4':self.cwd + "/res/panel/level/II/ep4.png", '5':self.cwd + "/res/panel/level/II/ep5.png",\
                 '6':self.cwd + "/res/panel/level/II/ep6.png", '7':self.cwd + "/res/panel/level/II/ep7.png",\
-                '8':self.cwd + "/res/panel/level/II/ep8.png"}
+                '8':self.cwd + "/res/panel/level/II/ep8.png",\
+                'ex': self.cwd + "/res/panel/level/II/EX.png"}
         self.exIV = {'ex1':self.cwd + "/res/panel/level/III/e01.png",'ex2':self.cwd + "/res/panel/level/III/e02.png", 'ex3':self.cwd + "/res/panel/level/III/e03.png",\
                     'ex4':self.cwd + "/res/panel/level/III/e04.png", 'exSwitch':self.cwd + "/res/panel/level/III/exSwitch.png"}
         self.exSymbol = self.cwd + "/res/panel/other/exSymbol.png"
@@ -72,7 +74,7 @@ class BattleSchedule:
         #前往一级菜单
         while self.switch:
             if self.adb.screenShot():
-                picTh = pictureFind.matchImg(self.screenShot, self.II['MAIN'])
+                picTh = pictureFind.matchImg(self.screenShot, self.sign)
                 if picTh != None:
                     break
             else:
@@ -107,27 +109,25 @@ class BattleSchedule:
                 return False
 
         #二级菜单的选择
-        if self.adb.screenShot():
-            picColumn = pictureFind.matchImg(self.screenShot, self.II[part])
-            if picColumn != None:
-                posColumn = picColumn['result']
-                self.adb.click(posColumn[0], posColumn[1])
-            else:
-                print('Column Choice Wrong')
-                return False
+        if part == 'MAIN':
+            self.adb.click(305,750)
+        elif part == 'EX':
+            self.adb.click(1125,750)
+        elif part == 'RS' or part == 'PR':
+            self.adb.click(920,750)
         else:
-            print('Fail to get screenshot')
             return False
 
         sleep(1)
         #三级菜单的选择
+        #主线MIAN，物资RS，芯片PR
+        if not self.chooseChap(chap):
+            return False
+
+        #关卡选择
         if part == 'EX':
-            #剿灭
             for i in range(5):
                 self.adb.screenShot()
-                '''picLevelOn = pictureFind.matchImg(self.screenShot,self.startA) #2020.11.15 不知道为什么要判断有没有选中的关
-                if picLevelOn != None:
-                    return True'''
                 picEx = pictureFind.matchImg(self.screenShot, self.exSymbol)
                 if picEx != None:
                     break
@@ -155,16 +155,10 @@ class BattleSchedule:
                         self.adb.click(picExObj['result'][0], picExObj['result'][1] + 80)
                     else:
                         self.adb.click(picExObj['result'][0], picExObj['result'][1])
+                    return True
             else:
                 return False
-            
         else:
-            #主线MIAN，物资RS，芯片PR
-            self.adb.speedToLeft()
-            if not self.chooseChap(chap):
-                return False
-
-        #关卡选择
             self.adb.speedToLeft()
             for i in range(25):
                 if not self.switch:
@@ -187,18 +181,71 @@ class BattleSchedule:
 
 
     def chooseChap(self,chap):
-        for i in range(20):
-            if not self.switch:
-                break
-            self.adb.screenShot()
-            picChap = pictureFind.matchImg(self.screenShot, self.III[chap])
-            if not self.switch:
-                break
-            elif picChap == None:
-                self.adb.onePageRight()
-            else:
+        self.adb.screenShot()
+        if chap == 'external':
+            picChap = pictureFind.matchImg(self.screenShot, self.III['ex'])
+            if picChap != None:
                 self.adb.click(picChap['result'][0],picChap['result'][1])
                 return True
+        elif chap.isdigit():
+            #主线
+            nowChap = -1
+            if int(chap) <= 3:
+                self.adb.click(165, 160)
+            elif int(chap) <= 8:
+                self.adb.click(165, 595)
+            for eachChap in range(1, 9):
+                picChap = pictureFind.matchImg(self.screenShot, self.III[str(eachChap)])
+                if picChap != None:
+                    nowChap = eachChap
+                    break
+            if nowChap < 0:
+                self.adb.mainToLeft()
+            else:
+                if int(chap) == nowChap:
+                    self.adb.click(1050, 400)
+                    return True
+                elif int(chap) > nowChap:
+                    for i in range(10):
+                        if not self.switch:
+                            break
+                        self.adb.screenShot()
+                        picChap = pictureFind.matchImg(self.screenShot, self.III[chap])
+                        if not self.switch:
+                            break
+                        elif picChap == None:
+                            self.adb.mainToNextChap()
+                        else:
+                            self.adb.click(1050, 400)
+                            return True
+                elif int(chap) < nowChap:
+                    for i in range(10):
+                        if not self.switch:
+                            break
+                        self.adb.screenShot()
+                        picChap = pictureFind.matchImg(self.screenShot, self.III[chap])
+                        if not self.switch:
+                            break
+                        elif picChap == None:
+                            self.adb.mainToPreChap()
+                        else:
+                            self.adb.click(1050, 400)
+                            return True
+        else:
+            #各类资源
+            self.adb.swipe(1050, 400, 1440, 400, 200) #左滑，避免关卡全开的情况
+            for i in range(20):
+                if not self.switch:
+                    break
+                self.adb.screenShot()
+                picChap = pictureFind.matchImg(self.screenShot, self.III[chap])
+                if not self.switch:
+                    break
+                elif picChap == None:
+                    self.adb.onePageRight()
+                else:
+                    self.adb.click(picChap['result'][0],picChap['result'][1])
+                    return True
         return False
 
     def runTimes(self, times = 1):
