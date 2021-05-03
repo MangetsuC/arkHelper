@@ -54,6 +54,7 @@ class UIPublicCall(QDialog):
         self.pcMark = pictureFind.picRead(self.cwd + '/res/panel/publicCall/pcMark.png')
         self.pcNew = pictureFind.picRead(self.cwd + '/res/panel/publicCall/pcNew.png')
         self.pcAddTime = pictureFind.picRead(self.cwd + '/res/panel/publicCall/addTime.png')
+        self.pcDecreaseTime = pictureFind.picRead(self.cwd + '/res/panel/publicCall/decreaseTime.png')
         self.pcEnter = pictureFind.picRead(self.cwd + '/res/panel/publicCall/enter.png')
 
         self.listGoTo = listGoTo
@@ -302,7 +303,7 @@ class UIPublicCall(QDialog):
         else:
             for i in range(5):
                 self.adb.screenShot()
-                addBtn = pictureFind.matchMultiImg(self.screenShot, self.pcAddTime)[0]
+                addBtn = pictureFind.matchMultiImg(self.screenShot, self.pcDecreaseTime)[0]
                 if addBtn != None:
                     addBtn.sort(key=lambda x:x[0])
                     addBtn = addBtn[0]
