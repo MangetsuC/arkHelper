@@ -11,7 +11,7 @@ from PyQt5.QtGui import QCursor, QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
                              QGridLayout, QHBoxLayout, QInputDialog, QLabel,
                              QMenu, QMessageBox, QPushButton, QVBoxLayout,
-                             QWidget)
+                             QWidget, QFileDialog)
 
 from foo.adb.adbCtrl import Adb
 from foo.arknight.Battle import BattleLoop
@@ -28,7 +28,7 @@ from foo.ui.UIschedule import JsonEdit
 class App(QWidget):
     def __init__(self):
         super(App, self).__init__()
-        self.ver = '2.6.2'
+        self.ver = '2.6.3'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
@@ -346,7 +346,7 @@ class App(QWidget):
         
         self.actVersion2 = QAction(f'v{self.ver}', parent=self.settingMenu)
 
-        self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrCustom] #self.actSlrYeshen, self.actSlrLeidian,
+        self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrYeshen, self.actSlrLeidian, self.actSlrCustom]
         #添加菜单选项
         self.settingMenu.addMenu(self.actSimulator) #模拟器二级菜单
         for eachSlr in self.slrList:
@@ -831,7 +831,10 @@ class App(QWidget):
         elif slrName == 'Mumu模拟器':
             self.changeSlr('mumu', '7555')
         elif slrName == '夜神模拟器':
-            self.changeSlr('yeshen', '62026')
+            noxPath = QFileDialog.getOpenFileName(None, '选取文件', './', '夜神模拟器程序 (Nox.exe)')
+            noxPath = path.dirname(noxPath[0])
+            self.changeDefault('noxPath', noxPath, sec = 'connect')
+            self.changeSlr('yeshen', '59865')
         elif slrName == '逍遥模拟器':
             self.changeSlr('xiaoyao', '21503')
         elif slrName == '雷电模拟器':

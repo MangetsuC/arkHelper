@@ -53,16 +53,6 @@ class Task:
                 else:
                     self.adb.click(bInfo['result'][0], bInfo['result'][1])
 
-        '''self.adb.screenShot()
-        if pictureFind.matchImg(self.screenShot, self.mainpageMark) == None:
-            bInfo = pictureFind.matchImg(self.screenShot, self.home)
-            if bInfo == None:
-                return False
-            else:
-                self.adb.click(bInfo['result'][0], bInfo['result'][1])
-                self.adb.screenShot()
-                bInfo = pictureFind.matchImg(self.screenShot, self.mainpage)
-                self.adb.click(bInfo['result'][0], bInfo['result'][1])'''
 
     def checkTask(self):
         tryCount = 0
