@@ -268,6 +268,11 @@ class PublicCall:
             tempNum = 0
             while minStar == 10:
                 tempNum += 1
+                if len(tagCombination[eachCombination]) == tempNum:
+                    if self.is1Need:
+                        return 1
+                    else:
+                        continue
                 minStar = tagCombination[eachCombination][tempNum][0]
             if minStar == 4:
                 star4Combination.append(eachCombination)
