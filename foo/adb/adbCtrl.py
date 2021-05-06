@@ -91,6 +91,8 @@ class Adb:
                     self.cmd = Cmd(config.get('connect', 'noxpath'))
                 else:
                     print('夜神模拟器未给出模拟器路径')
+            else:
+                self.cmd = Cmd(self.adbPath)
             self.ip = config.get('connect', 'ip') + ':' + config.get('connect', 'port')
         print(self.ip)
 
