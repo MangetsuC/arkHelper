@@ -23,6 +23,7 @@ from foo.ui.console import Console
 from foo.ui.launch import AfterInit, BlackBoard, Launch
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
+from foo.ui.screen import Screen
 
 
 class App(QWidget):
@@ -39,6 +40,7 @@ class App(QWidget):
         tempScreenList = []
         for i in range(QDesktopWidget().screenCount()):
             tempScreenList.append(QDesktopWidget().availableGeometry(i))
+        self.screen = Screen(tempScreenList)
         theBottomOne = sorted(tempScreenList, key = lambda screen:screen.y())[-1]
         theTopOne = sorted(tempScreenList, key = lambda screen:screen.y())[0]
         theRightOne = sorted(tempScreenList, key = lambda screen:screen.x())[-1]
@@ -658,6 +660,11 @@ class App(QWidget):
         #停止窗口移动
         if Qt.LeftButton and self.moveFlag:
             self.moveFlag = False
+            newPos = self.screen.checkWidget(QMouseEvent.globalPos().x() - self.mousePos.x(),
+                                             QMouseEvent.globalPos().y() - self.mousePos.y(), 
+                                             self.width(), self.height())
+            self.move(newPos[0], newPos[1])
+            '''
             if (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) > self.topPos + self.totalHeight:
                 self.move(self.pos().x(), self.topPos + self.totalHeight - self.height())
             if (QMouseEvent.globalPos().y() - self.mousePos.y()) < self.topPos:
@@ -666,6 +673,7 @@ class App(QWidget):
                 self.move(self.leftPos, self.pos().y())
             if (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) > self.leftPos + self.totalWidth:
                 self.move(self.leftPos + self.totalWidth - self.width(), self.pos().y())
+            '''
     
     def functionSetMeun(self):
         self.source = self.sender()
