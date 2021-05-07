@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QSplashScreen, QLabel, QWidget, QPushButton, QGridLayout, QTextBrowser, QApplication
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
-from os import getcwd
+from os import getcwd, path, remove, rename
 from threading import Thread
 from urllib import request
 from configparser import ConfigParser
@@ -97,6 +97,10 @@ class AfterInit(QThread):
         if updateData.status_code == 200:
             updateData.encoding = 'utf-8'
             self.app._updateData = loads(updateData.text)
+            updateEXE = self._updateData.get('updateEXE', 'update.exe')
+            if updateEXE != 'update.exe' and path.exists(self.cwd + '/update.exe') and path.exists(self.cwd + '/' + updateEXE):
+                remove(self.cwd + '/update.exe')
+                rename(self.cwd + '/' + updateEXE, self.cwd + '/update.exe')
             newVersion =self.app._updateData['version'].split('.')
             tempSelfVersion = self.app.ver.split('.')
             ver0 = int(newVersion[0]) == int(tempSelfVersion[0])

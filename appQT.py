@@ -900,10 +900,7 @@ class App(QWidget):
         #弹出公告
 
     def startUpdate(self):
-        updateEXE = self._updateData.get('updateEXE', 'update.exe')
-        if not path.exists(self.cwd + '/' + updateEXE):
-            updateEXE = 'update.exe'
-        if path.exists(self.cwd + '/' + updateEXE):
+        if path.exists(self.cwd + '/update.exe'):
             selfPidList = self.adb.cmd.getTaskList('arkhelper.exe')
             updateJson = {'localPath': self.cwd, 
                             'onlinePath': self._updateData['onlinePath'] + '/v' +self._updateData['version'],
@@ -911,7 +908,7 @@ class App(QWidget):
                             'exceptionFile': self._updateData['exception']}
             with open('updateData.json', 'w', encoding='UTF-8') as f:
                 f.write(dumps(updateJson, sort_keys=True, indent=4, separators=(',', ': '), ensure_ascii=False))
-            startfile(updateEXE)
+            startfile('update.exe')
     
     def battleWarning(self):
         reply = QMessageBox.warning(self, '警告', '发现您选中的关卡可能无掉落，是否继续？', 
