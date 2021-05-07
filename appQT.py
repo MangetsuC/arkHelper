@@ -693,7 +693,7 @@ class App(QWidget):
                                         QMenu:item:selected { background-color: #3f4140;}
                                         QMenu:icon{padding: 8px 20px;}
                                         QMenu:separator{background-color: #7C7C7C; height:1px; margin-left:2px; margin-right:2px;}''')
-        if '战斗：' in self.source.text():
+        if self.source == self.tbBattle:
             if self.config.getboolean('function', 'battle'):
                 text = '设为默认关闭'
             else:
@@ -769,7 +769,8 @@ class App(QWidget):
     
     def functionSel(self, isChecked):
         source = self.sender()
-        if source.text() == '战斗':
+        #if '战斗：' in source.text():
+        if source == self.tbBattle:
             self.battleFlag = isChecked
         elif source.text() == '计划战斗':
             self.scheduleFlag = isChecked

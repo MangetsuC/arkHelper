@@ -445,7 +445,10 @@ class BattleSchedule(QObject):
         for eachLevel in levelList:
             if not self.switch:
                 break
-            self.switchB = self.goLevel(eachLevel)
+            if eachLevel['part'] == 'THIS':
+                self.switchB = True
+            else:
+                self.switchB = self.goLevel(eachLevel)
             if self.switchB and self.switch:
                 levelCondition = self.runTimes(times=eachLevel['times'])
                 if not levelCondition:

@@ -122,9 +122,6 @@ class BattleLoop(QObject):
                                 continue
                             
                             if eachObj['obj'] == 'startApart.png' or eachObj['obj'] == 'startApartOF.png':
-                                print(loopTime)
-                                print(self.battleLoopTimes)
-                                print(loopTime == self.battleLoopTimes)
                                 if loopTime == self.battleLoopTimes:
                                     self.switch = False
                                     toast.broadcastMsg("ArkHelper", f"达到设定次数，共循环{loopTime}次", self.ico)

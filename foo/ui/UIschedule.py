@@ -54,8 +54,8 @@ class JsonEdit(QWidget):
         self.scheduleAdd = {'part':'MAIN', 'chap':'', 'objLevel':'', 'times':''}
         self.transEX = {'ex1':'切尔诺伯格','ex2':'龙门外环','ex3':'龙门市区','ex4':'当期委托'}
 
-        self.partList = ['主线','物资筹备','芯片搜索','剿灭作战']
-        self.partListJson = ['MAIN','RS','PR','EX']
+        self.partList = ['主线','物资筹备','芯片搜索','剿灭作战','选定关卡']
+        self.partListJson = ['MAIN','RS','PR','EX','THIS']
         self.mainChapList = ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章']
         self.rsChapList = ['战术演习','粉碎防御','空中威胁','货物运送','资源保障']
         self.prChapList = ['医疗重装','术士狙击','辅助先锋','特种近卫']
@@ -235,6 +235,8 @@ class JsonEdit(QWidget):
             temp = eachDict['objLevel']
             if 'ex' in temp:
                 temp = self.transEX[temp]
+            elif temp == 'this':
+                temp = '选定关卡'
             if eachDict['chap'] == 'LS':
                 temp = temp.replace('S', 'LS')
             if isinstance(eachDict['times'], dict):
@@ -260,8 +262,20 @@ class JsonEdit(QWidget):
     def changeChapList(self,indexI):
         self.scheduleAdd['part'] = self.partListJson[indexI]
         self.chapCb.clear()
-        self.chapCb.addItems(self.chapList[indexI])
-        self.changeLevel1List(0)
+        if indexI == 4:#当前关卡
+            self.chapCb.setEnabled(False)
+            self.level1Cb.clear()
+            self.level1Cb.setEnabled(False)
+            self.level2Edit.clear()
+            self.level2Edit.setReadOnly(True)
+            self.scheduleAdd['chap'] = 'this'
+            self.scheduleAdd['objLevel'] = 'this'
+            pass
+        else:
+            self.chapCb.setEnabled(True)
+            self.level1Cb.setEnabled(True)
+            self.chapCb.addItems(self.chapList[indexI])
+            self.changeLevel1List(0)
     
     def changeLevel1List(self,indexI):
         self.level1Cb.clear()
@@ -335,7 +349,7 @@ class JsonEdit(QWidget):
     
     def addLine(self):
         tempLevel = self.level2Edit.text()
-        if 'EX' != self.scheduleAdd['part']:
+        if self.scheduleAdd['part'] != 'EX' and self.scheduleAdd['part'] != 'THIS':
             self.scheduleAdd['objLevel'] = ''
         tempTimes = self.timeEdit.text()
         self.scheduleAdd['times'] = ''
