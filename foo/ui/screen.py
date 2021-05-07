@@ -53,9 +53,6 @@ class Screen:
             eachGroup.sort(key = lambda y:y[1])
             self.screenVLine.append([eachGroup[0], eachGroup[-1]])
 
-        print(self.screenHLine)
-        print(self.screenVLine)
-
 
     def addPoint(self, pointX, pointY):
         self.vertexes.append((pointX, pointY))

@@ -24,6 +24,8 @@ class BattleLoop(QObject):
         self.isWaitingUser = False
         self.isUselessContinue = False
 
+        self.battleLoopTimes = -1
+
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
         self.listActImg = pictureFind.picRead([self.cwd + "/res/actBattle/" + i for i in listdir(self.cwd + "/res/actBattle")])
@@ -40,6 +42,12 @@ class BattleLoop(QObject):
 
         self.uselessLevel = pictureFind.picRead(self.cwd + "/res/panel/other/uselessLevel.png")
     
+    def setLoopTimes(self, times):
+        self.battleLoopTimes = times
+
+    def getLoopTimes(self):
+        return self.battleLoopTimes
+
     def recChange(self, num, inputData):
         if num == 0:
             self.autoRecMed = inputData
@@ -113,6 +121,15 @@ class BattleLoop(QObject):
                             if picInfo['result'][1] < 270:
                                 continue
                             
+                            if eachObj['obj'] == 'startApart.png' or eachObj['obj'] == 'startApartOF.png':
+                                print(loopTime)
+                                print(self.battleLoopTimes)
+                                print(loopTime == self.battleLoopTimes)
+                                if loopTime == self.battleLoopTimes:
+                                    self.switch = False
+                                    toast.broadcastMsg("ArkHelper", f"达到设定次数，共循环{loopTime}次", self.ico)
+                                    break
+
                             if eachObj['obj'] != lastFoundPic:
                                 errorCount = 0
                                 lastFoundPic = eachObj['obj']

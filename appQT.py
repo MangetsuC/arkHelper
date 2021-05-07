@@ -258,11 +258,14 @@ class App(QWidget):
         self.btnMonitorPublicCall.clicked[bool].connect(self.monitorPC)
         self.btnMonitorPublicCall.setToolTip('打开公招计算器，它会自动帮你计算模拟器屏幕上的tag组合')
 
-        self.tbBattle = QPushButton('战斗', self) #战斗可选按钮
+        self.tbBattle = QPushButton('战斗：无限', self) #战斗可选按钮
         self.tbBattle.setCheckable(True)
         self.tbBattle.setFixedSize(75, 40)
         self.tbBattle.clicked[bool].connect(self.functionSel)
         self.tbBattle.setToolTip('从你目前处在的关卡开始循环作战，直到理智不足')
+
+        self.actBattleTimes = QAction('设定次数(当前：无限)')
+        self.actBattleTimes.triggered.connect(self.setLoopBattleTimes)
 
         self.tbSchedule = QPushButton('计划战斗', self) #计划战斗可选按钮
         self.tbSchedule.setCheckable(True)
@@ -519,6 +522,22 @@ class App(QWidget):
             self.changeDefault('maxnum', num, 'stone')
             self.actMaxNumber.setText(f'设置上限（当前：{self.stoneMaxNum}）')
 
+    def setLoopBattleTimes(self):
+        nowLoopTimes = self.battle.getLoopTimes()
+        if nowLoopTimes == -1:
+            nowLoopTimes = '无限'
+        times, ok = QInputDialog.getText(self, f'当前（{nowLoopTimes}）', '请输入作战次数(输入0即为无限)：')
+        if ok:
+            if not times.isdecimal():
+                times = -1
+            elif times == '0':
+                times = -1
+            self.battle.setLoopTimes(int(times))
+            if times == -1:
+                times = '无限'
+            self.actBattleTimes.setText(f'设定次数(当前：{times})')
+            self.tbBattle.setText(f'战斗：{times}')
+
     def initState(self):
         self.initSlrSel()
         #额外理智恢复设置初始化
@@ -664,16 +683,6 @@ class App(QWidget):
                                              QMouseEvent.globalPos().y() - self.mousePos.y(), 
                                              self.width(), self.height())
             self.move(newPos[0], newPos[1])
-            '''
-            if (QMouseEvent.globalPos().y() - self.mousePos.y() + self.height()) > self.topPos + self.totalHeight:
-                self.move(self.pos().x(), self.topPos + self.totalHeight - self.height())
-            if (QMouseEvent.globalPos().y() - self.mousePos.y()) < self.topPos:
-                self.move(self.pos().x(), self.topPos)
-            if (QMouseEvent.globalPos().x() - self.mousePos.x()) < self.leftPos:
-                self.move(self.leftPos, self.pos().y())
-            if (QMouseEvent.globalPos().x() - self.mousePos.x() + self.width()) > self.leftPos + self.totalWidth:
-                self.move(self.leftPos + self.totalWidth - self.width(), self.pos().y())
-            '''
     
     def functionSetMeun(self):
         self.source = self.sender()
@@ -684,11 +693,13 @@ class App(QWidget):
                                         QMenu:item:selected { background-color: #3f4140;}
                                         QMenu:icon{padding: 8px 20px;}
                                         QMenu:separator{background-color: #7C7C7C; height:1px; margin-left:2px; margin-right:2px;}''')
-        if self.source.text() == '战斗':
+        if '战斗：' in self.source.text():
             if self.config.getboolean('function', 'battle'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
+            rightClickMeun.addAction(self.actBattleTimes)
+            rightClickMeun.addAction(self.line)
         elif self.source.text() == '计划战斗':
             if self.config.getboolean('function', 'schedule'):
                 text = '设为默认关闭'
