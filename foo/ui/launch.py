@@ -97,7 +97,7 @@ class AfterInit(QThread):
         if updateData.status_code == 200:
             updateData.encoding = 'utf-8'
             self.app._updateData = loads(updateData.text)
-            updateEXE = self._updateData.get('updateEXE', 'update.exe')
+            updateEXE = self.app._updateData.get('updateEXE', 'update.exe')
             if updateEXE != 'update.exe' and path.exists(self.cwd + '/update.exe') and path.exists(self.cwd + '/' + updateEXE):
                 remove(self.cwd + '/update.exe')
                 rename(self.cwd + '/' + updateEXE, self.cwd + '/update.exe')
