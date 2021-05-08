@@ -258,7 +258,7 @@ class App(QWidget):
         self.btnMonitorPublicCall.clicked[bool].connect(self.monitorPC)
         self.btnMonitorPublicCall.setToolTip('打开公招计算器，它会自动帮你计算模拟器屏幕上的tag组合')
 
-        self.tbBattle = QPushButton('战斗：无限', self) #战斗可选按钮
+        self.tbBattle = QPushButton('战斗:无限', self) #战斗可选按钮
         self.tbBattle.setCheckable(True)
         self.tbBattle.setFixedSize(75, 40)
         self.tbBattle.clicked[bool].connect(self.functionSel)
@@ -536,7 +536,7 @@ class App(QWidget):
             if times == -1:
                 times = '无限'
             self.actBattleTimes.setText(f'设定次数(当前：{times})')
-            self.tbBattle.setText(f'战斗：{times}')
+            self.tbBattle.setText(f'战斗:{times}')
 
     def initState(self):
         self.initSlrSel()
@@ -769,7 +769,6 @@ class App(QWidget):
     
     def functionSel(self, isChecked):
         source = self.sender()
-        #if '战斗：' in source.text():
         if source == self.tbBattle:
             self.battleFlag = isChecked
         elif source.text() == '计划战斗':

@@ -272,7 +272,7 @@ class PublicCall:
                     if self.is1Need:
                         return 1
                     else:
-                        continue
+                        break
                 minStar = tagCombination[eachCombination][tempNum][0]
             if minStar == 4:
                 star4Combination.append(eachCombination)
