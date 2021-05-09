@@ -1,3 +1,8 @@
+from PyQt5.QtCore import QThread
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QDesktopWidget
+from time import sleep
+
 class Screen:
     def __init__(self, screens):
         self.vertexes = []
@@ -183,3 +188,26 @@ class Screen:
                 newPos[1] = tempNewPos[1]
 
         return newPos
+
+class ScreenRateMonitor(QThread):
+    rateChanged = pyqtSignal()
+    def __init__(self, window):
+        super(ScreenRateMonitor, self).__init__()
+        self.window = window
+        self.lastScreen = None
+        self.runFlag = False
+
+    def run(self):
+        self.runFlag = True
+        while self.runFlag:
+            if self.lastScreen == None:
+                self.lastScreen = QDesktopWidget().screenNumber(self.window)
+            elif QDesktopWidget().screenNumber(self.window) != self.lastScreen:
+                self.lastScreen = QDesktopWidget().screenNumber(self.window)
+                self.rateChanged.emit()
+            sleep(0.05)
+
+    def stop(self):
+        self.runFlag = False
+
+

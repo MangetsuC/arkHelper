@@ -8,9 +8,11 @@ from PyQt5.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
                              QGridLayout, QInputDialog, QLabel, QLineEdit,
                              QListView, QMenu, QPushButton, QWidget, QAction)
 
+from foo.ui.screen import ScreenRateMonitor
+
 
 class JsonEdit(QWidget):
-    def __init__(self, dataPath, ico, parent = None, flags = Qt.WindowCloseButtonHint):
+    def __init__(self, app, dataPath, ico, parent = None, flags = Qt.WindowCloseButtonHint):
         super(JsonEdit, self).__init__(parent, flags)
 
         self.setStyleSheet('''JsonEdit{background:#272626}QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
@@ -42,6 +44,8 @@ class JsonEdit(QWidget):
                                 QScrollBar:sub-line:horizontal{height:0px;width:0px;subcontrol-position:top;}
                                 QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{background:rgba(0,0,0,10%);border-radius:0px;}''')
 
+        self.app = app
+
         self.setWindowIcon(QIcon(ico))
         self.isshow = False
 
@@ -66,7 +70,7 @@ class JsonEdit(QWidget):
         
         self.grid = QGridLayout()
         self.lsv = QListView() #计划显示框
-        self.lsv.setFixedWidth(200)
+        self.lsv.setMinimumWidth(self.getRealSize(200))
         self.lsv.clicked.connect(self.clickSchedule)
         self.lsv.setContextMenuPolicy(Qt.CustomContextMenu)
         self.lsv.customContextMenuRequested.connect(self.lsvRearrange)
@@ -84,73 +88,78 @@ class JsonEdit(QWidget):
         self.partCb = QComboBox()
         self.partCb.addItems(self.partList)
         self.partCb.activated[int].connect(self.changeChapList)
-        self.partCb.setFixedSize(80, 40)
+        self.partCb.setFixedWidth(self.getRealSize(80))
+        self.partCb.setMinimumHeight(self.getRealSize(40))
         self.partCb.setView(QListView())
 
         self.chapCb = QComboBox()
         self.chapCb.addItems(self.mainChapList)
         self.chapCb.activated[int].connect(self.changeLevel1List)
-        self.chapCb.setFixedSize(100, 40)
+        self.chapCb.setFixedWidth(self.getRealSize(100))
+        self.chapCb.setMinimumHeight(self.getRealSize(40))
         self.chapCb.setView(QListView())
 
         self.level1Cb = QComboBox()
-        self.level1Cb.setFixedSize(60, 40)
+        self.level1Cb.setFixedWidth(self.getRealSize(60))
+        self.level1Cb.setMinimumHeight(self.getRealSize(40))
         self.level1Cb.setView(QListView())
 
         self.lineLable = QLabel()
         self.lineLable.setText('-')
 
         self.level2Edit = QLineEdit()
-        self.level2Edit.setFixedSize(50, 40)
+        self.level2Edit.setFixedWidth(self.getRealSize(60))
+        self.level2Edit.setMinimumHeight(self.getRealSize(40))
 
         self.timesLable = QLabel()
         self.timesLable.setText('次数:')
 
         self.timeEdit = QLineEdit()
-        self.timeEdit.setFixedSize(50, 40)
+        self.timeEdit.setFixedWidth(self.getRealSize(50))
+        self.timeEdit.setMinimumHeight(self.getRealSize(40))
 
         self.bootyModeBtn = QPushButton()
         self.bootyModeBtn.setCheckable(True)
         self.bootyModeBtn.setText('素材模式')
-        self.bootyModeBtn.setFixedHeight(40)
+        self.bootyModeBtn.setMinimumHeight(self.getRealSize(40))
         self.bootyModeBtn.clicked[bool].connect(self.setBootMode)
 
         self.bootySelBtn = QPushButton()
         self.bootySelBtn.setText('——')
-        self.bootySelBtn.setFixedHeight(40)
+        self.bootySelBtn.setMinimumHeight(self.getRealSize(40))
         self.bootySelBtn.clicked.connect(self.selPanel.myShow)
 
         self.delBtn = QPushButton()
         self.delBtn.setText('删除')
         self.delBtn.clicked.connect(self.delLine)
-        self.delBtn.setFixedHeight(40)
+        self.delBtn.setMinimumHeight(self.getRealSize(40))
         self.clearBtn = QPushButton()
         self.clearBtn.setText('清空')
         self.clearBtn.clicked.connect(self.clearLine)
-        self.clearBtn.setFixedHeight(40)
+        self.clearBtn.setMinimumHeight(self.getRealSize(40))
 
         self.addBtn = QPushButton()
         self.addBtn.setText('添加')
         self.addBtn.clicked.connect(self.addLine)
-        self.addBtn.setFixedHeight(40)
+        self.addBtn.setMinimumHeight(self.getRealSize(40))
 
         self.planCb = QComboBox()
-        self.planCb.setFixedSize(200, 40)
+        self.planCb.setMinimumSize(self.getRealSize(200), self.getRealSize(40))
         self.planCb.setView(QListView())
 
         self.loadPlanBtn = QPushButton()
         self.loadPlanBtn.setText('加载配置')
-        self.loadPlanBtn.setFixedHeight(40)
+        self.loadPlanBtn.setMinimumHeight(self.getRealSize(40))
         self.loadPlanBtn.clicked.connect(self.loadPlan)
 
         self.addPlanBtn = QPushButton()
         self.addPlanBtn.setText('以当前配置新建')
-        self.addPlanBtn.setFixedHeight(40)
+        self.addPlanBtn.setMinimumHeight(self.getRealSize(40))
         self.addPlanBtn.clicked.connect(self.addPlan)
 
         self.delPlanBtn = QPushButton()
         self.delPlanBtn.setText('删除此配置')
-        self.delPlanBtn.setFixedHeight(40)
+        self.delPlanBtn.setMinimumHeight(self.getRealSize(40))
         self.delPlanBtn.clicked.connect(self.delPlan)
 
         self.listScheduleBefore = []
@@ -186,7 +195,49 @@ class JsonEdit(QWidget):
         #self.resize(600,400)
 
         self.myTimer()
+
+        self.setMaximumHeight(self.getRealSize(200))
+
+        self.rateMonitor = ScreenRateMonitor(self)
+        self.rateMonitor.rateChanged.connect(self.resizeUI)
+        self.rateMonitor.start()
         #self.show()
+
+    def getRealSize(self, size):
+        rate = self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
+        if rate < 1.1:
+            rate = 1.0
+        elif rate < 1.4:
+            rate = 1.5
+        elif rate < 1.8:
+            rate = 1.75
+        else:
+            rate = 2
+        
+        return size * rate
+
+    def resizeUI(self):
+        self.setMaximumHeight(self.getRealSize(200))
+        self.lsv.setMinimumWidth(self.getRealSize(80))
+        self.partCb.setFixedWidth(self.getRealSize(80))
+        self.partCb.setMinimumHeight(self.getRealSize(40))
+        self.chapCb.setFixedWidth(self.getRealSize(100))
+        self.chapCb.setMinimumHeight(self.getRealSize(40))
+        self.level1Cb.setFixedWidth(self.getRealSize(60))
+        self.level1Cb.setMinimumHeight(self.getRealSize(40))
+        self.level2Edit.setFixedWidth(self.getRealSize(60))
+        self.level2Edit.setMinimumHeight(self.getRealSize(40))
+        self.timeEdit.setFixedWidth(self.getRealSize(50))
+        self.timeEdit.setMinimumHeight(self.getRealSize(40))
+        self.bootyModeBtn.setMinimumHeight(self.getRealSize(40))
+        self.bootySelBtn.setMinimumHeight(self.getRealSize(40))
+        self.delBtn.setMinimumHeight(self.getRealSize(40))
+        self.clearBtn.setMinimumHeight(self.getRealSize(40))
+        self.addBtn.setMinimumHeight(self.getRealSize(40))
+        self.planCb.setMinimumSize(self.getRealSize(200), self.getRealSize(40))
+        self.loadPlanBtn.setMinimumHeight(self.getRealSize(40))
+        self.addPlanBtn.setMinimumHeight(self.getRealSize(40))
+        self.delPlanBtn.setMinimumHeight(self.getRealSize(40))
 
     def editerShow(self):
         if not self.isVisible():
@@ -655,10 +706,3 @@ class BootyChoice(QWidget):
         cp = QDesktopWidget().availableGeometry().center()
         self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
 
-
-if __name__ == '__main__':
-    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-    app = QApplication(sys.argv)
-    ex = JsonEdit(getcwd()+'/res/ico.ico')
-    ex.editerShow()
-    sys.exit(app.exec_())

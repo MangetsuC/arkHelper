@@ -23,13 +23,15 @@ from foo.ui.console import Console
 from foo.ui.launch import AfterInit, BlackBoard, Launch
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
-from foo.ui.screen import Screen
+from foo.ui.screen import Screen, ScreenRateMonitor
 
 
 class App(QWidget):
-    def __init__(self):
+    def __init__(self, app):
         super(App, self).__init__()
-        self.ver = '2.6.3'
+        self.app = app
+
+        self.ver = '2.6.4'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
@@ -41,14 +43,6 @@ class App(QWidget):
         for i in range(QDesktopWidget().screenCount()):
             tempScreenList.append(QDesktopWidget().availableGeometry(i))
         self.screen = Screen(tempScreenList)
-        theBottomOne = sorted(tempScreenList, key = lambda screen:screen.y())[-1]
-        theTopOne = sorted(tempScreenList, key = lambda screen:screen.y())[0]
-        theRightOne = sorted(tempScreenList, key = lambda screen:screen.x())[-1]
-        theLeftOne = sorted(tempScreenList, key = lambda screen:screen.x())[0]
-        self.topPos = theTopOne.y()
-        self.leftPos = theLeftOne.x()
-        self.totalWidth = theRightOne.x() + theRightOne.width()
-        self.totalHeight = theBottomOne.y() + theBottomOne.height()
 
         self.initFile()
         self.initVar()
@@ -60,6 +54,19 @@ class App(QWidget):
         self.isRun = False
         self.center()
         self.show()
+
+    def getRealSize(self, size):
+        rate = self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
+        if rate < 1.1:
+            rate = 1.0
+        elif rate < 1.4:
+            rate = 1.5
+        elif rate < 1.8:
+            rate = 1.75
+        else:
+            rate = 2
+        
+        return size * rate
 
     def initFile(self):
         self.userDataPath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper'
@@ -178,11 +185,26 @@ class App(QWidget):
                     j.write(newJson)
                 #计划json初始化结束
     
+    def resizeUI(self):
+        self.setMaximumSize(self.getRealSize(420), self.getRealSize(150))
+        self.btnExit.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
+        self.btnMinimize.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
+        self.btnSetting.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
+        self.btnUpdate.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
+        self.btnStartAndStop.setMinimumSize(self.getRealSize(180), self.getRealSize(131))
+        self.btnMonitorPublicCall.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
+        self.tbBattle.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
+        self.tbSchedule.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
+        self.tbAutoPC.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
+        self.tbTask.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
+        self.tbCredit.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
+        self.tbShutdown.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
+
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
 
-        self.resize(420,150)
+        self.resize(self.getRealSize(420), self.getRealSize(150))
 
         self.line = QAction()
         self.line.setSeparator(True)
@@ -215,7 +237,7 @@ class App(QWidget):
                                     ''')
 
         self.btnExit = QPushButton('×',self)
-        self.btnExit.setFixedSize(30,30)
+        self.btnExit.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
         self.btnExit.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:20pt;}
                                     QPushButton:pressed{background:#272626;font:16pt;}
                                     ''')
@@ -223,7 +245,7 @@ class App(QWidget):
         self.btnExit.setToolTip('关闭')
 
         self.btnMinimize = QPushButton('-',self)
-        self.btnMinimize.setFixedSize(30,30)
+        self.btnMinimize.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
         self.btnMinimize.setStyleSheet('''QPushButton{background:#272626;font-family:SimSun;font:normal 28pt;}
                                     QPushButton:pressed{background:#272626;font-family:SimSun;font:20pt;}
                                     ''')
@@ -231,7 +253,7 @@ class App(QWidget):
         self.btnMinimize.setToolTip('最小化')
 
         self.btnSetting = QPushButton('≡',self)
-        self.btnSetting.setFixedSize(30,30)
+        self.btnSetting.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
         self.btnSetting.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:16pt;}
                                     QPushButton:pressed{background:#272626;font-family:SimHei, SimSun;font:14pt;}
                                     QPushButton:menu-indicator{image:none;width:0px;}
@@ -239,7 +261,7 @@ class App(QWidget):
         self.btnSetting.setToolTip('设置')
 
         self.btnUpdate = QPushButton('∧',self)
-        self.btnUpdate.setFixedSize(30,30)
+        self.btnUpdate.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
         self.btnUpdate.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:14pt;}
                                     QPushButton:pressed{background:#272626;font-family:SimHei, SimSun;font:12pt;}
                                     ''')
@@ -248,19 +270,19 @@ class App(QWidget):
         self.btnUpdate.hide()
 
         self.btnStartAndStop = QPushButton('启动虚拟博士', self) #启动/停止按钮
-        self.btnStartAndStop.setFixedSize(180, 131)
+        self.btnStartAndStop.setMinimumSize(self.getRealSize(180), self.getRealSize(131))
         self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
         self.btnStartAndStop.clicked.connect(self.clickBtnStartAndStop)
 
         self.btnMonitorPublicCall = QPushButton('公开招募计算器', self)
-        self.btnMonitorPublicCall.setFixedSize(155, 40)
+        self.btnMonitorPublicCall.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
         self.btnMonitorPublicCall.setCheckable(True)
         self.btnMonitorPublicCall.clicked[bool].connect(self.monitorPC)
         self.btnMonitorPublicCall.setToolTip('打开公招计算器，它会自动帮你计算模拟器屏幕上的tag组合')
 
         self.tbBattle = QPushButton('战斗:无限', self) #战斗可选按钮
         self.tbBattle.setCheckable(True)
-        self.tbBattle.setFixedSize(75, 40)
+        self.tbBattle.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
         self.tbBattle.clicked[bool].connect(self.functionSel)
         self.tbBattle.setToolTip('从你目前处在的关卡开始循环作战，直到理智不足')
 
@@ -269,13 +291,13 @@ class App(QWidget):
 
         self.tbSchedule = QPushButton('计划战斗', self) #计划战斗可选按钮
         self.tbSchedule.setCheckable(True)
-        self.tbSchedule.setFixedSize(75, 40)
+        self.tbSchedule.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
         self.tbSchedule.clicked[bool].connect(self.functionSel)
         self.tbSchedule.setToolTip('在右键菜单中设定你的计划，会按照设定的计划作战')
 
         self.tbAutoPC = QPushButton('自动公招', self) #自动公招可选按钮
         self.tbAutoPC.setCheckable(True)
-        self.tbAutoPC.setFixedSize(75, 40)
+        self.tbAutoPC.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
         self.tbAutoPC.clicked[bool].connect(self.functionSel)
         self.tbAutoPC.setToolTip('自动进行公开招募，在右键菜单中进行配置')
 
@@ -299,19 +321,19 @@ class App(QWidget):
 
         self.tbTask = QPushButton('任务交付', self) #任务交付可选按钮
         self.tbTask.setCheckable(True)
-        self.tbTask.setFixedSize(75, 40)
+        self.tbTask.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
         self.tbTask.clicked[bool].connect(self.functionSel)
         self.tbTask.setToolTip('自动交付任务')
 
         self.tbCredit = QPushButton('获取信用', self)
         self.tbCredit.setCheckable(True)
-        self.tbCredit.setFixedSize(75, 40)
+        self.tbCredit.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
         self.tbCredit.clicked[bool].connect(self.functionSel)
         self.tbCredit.setToolTip('自动拜访好友的基建以获取信用点')
 
         self.tbShutdown = QPushButton('完成后关机', self)
         self.tbShutdown.setCheckable(True)
-        self.tbShutdown.setFixedSize(155, 40)
+        self.tbShutdown.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
         self.tbShutdown.clicked[bool].connect(self.functionSel)
 
         #self.btnSet = QPushButton('设置',self) #设置按钮
@@ -617,12 +639,15 @@ class App(QWidget):
             self.btnMonitorPublicCall.setEnabled(False)
         
         
-        self.schJsonEditer = JsonEdit(self.userDataPath, self.ico)
+        self.schJsonEditer = JsonEdit(self.app, self.userDataPath, self.ico)
         self.board = BlackBoard()
 
         self.afterInit_Q = AfterInit(self, self.cwd)
         self.afterInit_Q.boardNeedShow.connect(self.showMessage)
         self.afterInit_Q.reloadPcModule.connect(self.initPc)
+
+        self.rateMonitor = ScreenRateMonitor(self)
+        self.rateMonitor.rateChanged.connect(self.resizeUI)
 
     def initPc(self):
         try:
@@ -683,6 +708,7 @@ class App(QWidget):
                                              QMouseEvent.globalPos().y() - self.mousePos.y(), 
                                              self.width(), self.height())
             self.move(newPos[0], newPos[1])
+            #self.resizeUI()
     
     def functionSetMeun(self):
         self.source = self.sender()
@@ -879,7 +905,11 @@ class App(QWidget):
         if self.publicCall != None:
             self.publicCall.close()
         self.adb.killAdb()
-        #self.close()
+
+        #退出两个窗口的放大倍率检测线程
+        self.schJsonEditer.rateMonitor.stop()
+        self.rateMonitor.stop()
+
         sys.exit() #为了解决Error in atexit._run_exitfuncs:的问题，实际上我完全不知道这为什么出现
 
     def minimize(self):
@@ -971,7 +1001,8 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     exLaunch = Launch()
     app.processEvents()
-    ex = App()
+    ex = App(app)
     exLaunch.finish(ex)
     ex.afterInit_Q.start()
+    ex.rateMonitor.start()
     sys.exit(app.exec_())
