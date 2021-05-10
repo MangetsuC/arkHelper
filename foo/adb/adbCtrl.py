@@ -2,9 +2,7 @@ from os import path, remove, getcwd
 from time import sleep, perf_counter
 from subprocess import Popen, PIPE, call
 from re import split as resplit
-#from PIL import Image, ImageFile
-
-#ImageFile.LOAD_TRUNCATED_IMAGES = True
+from foo.win import toast
 
 def delImg(dir):
     if path.exists(dir):
@@ -59,7 +57,7 @@ class Cmd():
         
 
 class Adb:
-    def __init__(self, adbPath, config = None):
+    def __init__(self, ico, adbPath, config = None):
         self.adbPath = adbPath
         self.cmd = Cmd(self.adbPath)
         self.ip = None
@@ -67,6 +65,18 @@ class Adb:
         self.changeConfig(config)
         self.screenX = 1440
         self.screenY = 810
+        self.ico = ico
+
+    def getTagConfidence(self):
+        if (self.screenX/ self.screenY) == (16/ 9):
+            if self.screenX <= 1080:
+                return 0.75
+            elif self.screenX > 1920:
+                return 0.75
+            else:
+                return 0.8
+        else:
+            return 0.8
 
     def startAdb(self):
         adbstr = self.cmd.run('adb start-server')
@@ -115,10 +125,15 @@ class Adb:
             screenMsg = screenMsg.replace(' ', '')
             screenMsg = screenMsg.replace('\n', '')
             print(screenMsg)
-            temp = screenMsg.partition("size:")
+            temp = screenMsg.partition('size:')
             temp = temp[2].split('x')
             self.screenX = int(temp[0])
             self.screenY = int(temp[1])
+            if (self.screenX / self.screenY) != (16/9):
+                toast.broadcastMsg('ArkHelper', '检测到模拟器分辨率非16:9或为竖屏，请检查分辨率', self.ico)
+            else:
+                if self.screenX > 1920:
+                    toast.broadcastMsg('ArkHelper', '模拟器分辨率设置较高，可能出现无法正常工作的问题，发现请及时反馈。', self.ico)
             #print(temp, self.screenX, self.screenY)
             return True
         else:

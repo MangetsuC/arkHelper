@@ -618,7 +618,7 @@ class App(QWidget):
             self.publicCall.turnOn()
     
     def initClass(self):
-        self.adb = Adb(self.cwd + '/bin/adb', self.config)
+        self.adb = Adb(self.ico, self.cwd + '/bin/adb', self.config)
 
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
         self.battle.noBootySignal.connect(self.battleWarning)

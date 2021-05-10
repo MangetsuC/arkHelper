@@ -361,7 +361,7 @@ class UIPublicCall(QDialog):
         return True
 
     def search(self):
-        picInfo = pictureFind.matchMultiImg(self.screenShot, self.pcNew)[0]
+        picInfo = pictureFind.matchMultiImg(self.screenShot, self.pcNew)[0] #找到所有空的招募位
         if picInfo != None:
             for eachPos in picInfo:
                 for i in range(3):

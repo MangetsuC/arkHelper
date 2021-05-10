@@ -31,6 +31,8 @@ class PublicCall:
         self.confirm = pictureFind.picRead(self.cwd + '/res/panel/other/confirm.png')
         self.pcInMark = pictureFind.picRead(self.cwd + '/res/panel/publicCall/inPcMark.png')
 
+        self.tagConfidence = 0.75
+
         self.is1Need = False
         self.is5Need = False
         #self.monitorFlag = False
@@ -77,10 +79,11 @@ class PublicCall:
                 return []
 
     def matchTag(self, src, objList):
+        self.tagConfidence = self.adb.getTagConfidence()
         for each in objList:
             if len(self.tagOnScreenList) == 5:
                 break
-            tInfo = pictureFind.matchImg(src, each, confidencevalue = 0.75)
+            tInfo = pictureFind.matchImg(src, each, confidencevalue = self.tagConfidence)
             if tInfo != None:
                 self.tagOnScreenList.append((tInfo['obj'][:-4], tInfo['result']))
                 tInfo['rectangle'] = list(tInfo['rectangle'])
