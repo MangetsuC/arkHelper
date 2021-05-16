@@ -1,16 +1,12 @@
 import sys
-from PyQt5.QtWidgets import QSplashScreen, QLabel, QWidget, QPushButton, QGridLayout, QTextBrowser, QApplication
+from PyQt5.QtWidgets import QSplashScreen, QWidget, QPushButton, QGridLayout, QTextBrowser, QApplication
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from os import getcwd, path, remove, rename
-from threading import Thread
-from urllib import request
-from configparser import ConfigParser
 from time import sleep
 import requests
 from json import loads, dumps
 from hashlib import md5
-from updateCheck import Md5Analyse
 
 class Launch(QSplashScreen):
     def __init__(self):
@@ -92,6 +88,17 @@ class AfterInit(QThread):
             self.checkUpdate()
             self.checkPublicCallData()
 
+    def getFileMd5(self, fileName):
+        m = md5()   #创建md5对象
+        with open(fileName,'rb') as fobj:
+            while True:
+                data = fobj.read(4096)
+                if not data:
+                    break
+                m.update(data)  #更新md5对象
+
+        return m.hexdigest()    #返回md5对象
+
     def checkUpdate(self):
         updateData = requests.get('http://www.mangetsuc.top/arkhelper/update.json')
         if updateData.status_code == 200:
@@ -101,6 +108,11 @@ class AfterInit(QThread):
             if updateEXE != 'update.exe' and path.exists(self.cwd + '/update.exe') and path.exists(self.cwd + '/' + updateEXE):
                 remove(self.cwd + '/update.exe')
                 rename(self.cwd + '/' + updateEXE, self.cwd + '/update.exe')
+            if path.exists(self.cwd + '/update.exe') and updateEXE != 'update.exe':
+                myUpdateMd5 = self.getFileMd5(self.cwd + '/update.exe')
+                if myUpdateMd5 == updateEXE.split('.')[0]:
+                    self.app._updateData['exception'] = self.app._updateData['exception'] + f',{updateEXE}'
+
             newVersion =self.app._updateData['version'].split('.')
             tempSelfVersion = self.app.ver.split('.')
             ver0 = int(newVersion[0]) == int(tempSelfVersion[0])

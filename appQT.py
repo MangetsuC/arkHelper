@@ -31,7 +31,7 @@ class App(QWidget):
         super(App, self).__init__()
         self.app = app
 
-        self.ver = '2.6.5'
+        self.ver = '2.6.4'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
