@@ -1,9 +1,8 @@
-from os import path, remove, getcwd
-from time import sleep, perf_counter
+from os import path, remove
+from time import sleep
 from subprocess import Popen, PIPE, call
 from re import split as resplit
 from re import findall as refind
-import re
 from foo.win import toast
 
 def delImg(dir):

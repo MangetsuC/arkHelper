@@ -6,7 +6,7 @@ from os import getcwd, getlogin, mkdir, path, startfile
 from threading import Thread
 from webbrowser import open as openUrl
 
-from PyQt5.QtCore import Qt, qWarning
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor, QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
                              QGridLayout, QHBoxLayout, QInputDialog, QLabel,
