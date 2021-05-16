@@ -13,7 +13,7 @@ One Easy-Use Arknight Helper	一款明日方舟护肝小助手
 
 | 网盘   | 链接                                          |
 | :----- | --------------------------------------------- |
-| 蓝奏云 | [下载地址](https://www.lanzous.com/b0d1w6v7g) |
+| 蓝奏云 | [下载地址](https://mangetsuc.lanzoui.com/b0d1w6v7g) |
 |Github|[release](https://github.com/MangetsuC/arkHelper/releases)|
 > * 下载提供的是master分支使用pyinstaller打包后的文件，可以直接使用，而无需安装python。
 >
@@ -28,8 +28,10 @@ One Easy-Use Arknight Helper	一款明日方舟护肝小助手
 | opencv_python | 4.4.0.42 |
 | win10toast | 0.9   |
 | numpy | 1.19.2 |
-|PyQt5|5.15.0|
+|PyQt5|5.15.4|
+|requests|2.25.1|
 
+> 库的版本由于我的失误发生了一些变化
 > 你也可以在仓库里找到requirements.txt，并使用pip install -r requirements.txt来部署环境。
 ***
 ##### 适用场景
@@ -46,17 +48,22 @@ One Easy-Use Arknight Helper	一款明日方舟护肝小助手
 
 ### 界面
 ***
-![newUI.png](https://i.loli.net/2020/08/15/7kVP6Jc34GHzBsK.png)
+![UI2_6_4.png](https://i.loli.net/2021/05/16/3Qe9OMsSoYBbrVR.png)
 * metro风格的界面参考了windows10的菜单，简洁明了  
-* 可以方便地通过主界面上的菜单来选择您的模拟器！也可以自定义  
+### 模拟器支持
+***
+![menu_simulator_2_6_4.png](https://i.loli.net/2021/05/16/FwdEJsZVj9LKSko.png)
+* 选单中有的模拟器我们都做了支持和验证
+* 但也有可能出现一些小问题，如果您发现任何问题还请通知我  
 ## 特色功能！——计划战斗
 ### 打开计划战斗选项
 ***
-![schedule0.png](https://i.loli.net/2020/08/15/2QEaXCMcALoW41G.png)
+![schedule_right_2_6_4.png](https://i.loli.net/2021/05/16/goFqc6E3MGASwjl.png)
 * 小助手会根据您的配置，自动按规划的路线进行战斗
 * 不论是正好差一次剿灭，还是想要从1-7中获得8个固源岩，都可以实现
 * 仅支持主线、物资筹备、芯片搜索和剿灭作战，即一般不支持活动关卡
 * 如果启用计划战斗，请在首页或是可以看到HOME图标的界面启动小助手
+* 在右键菜单中打开配置界面
 ### 使用路线规划窗口编辑您的计划
 ***
 ![scheduleGIF.gif](https://i.loli.net/2020/08/17/cDr89tUMjqWfNYb.gif)
@@ -71,34 +78,39 @@ One Easy-Use Arknight Helper	一款明日方舟护肝小助手
 ## 通用功能
 ### 单一关卡循环作战
 ***
-![battle.png](https://i.loli.net/2020/08/15/WzCLcKe9EkyNMtS.png)
+![loop_right_2_6_4.png](https://i.loli.net/2021/05/16/b2ge6jVFatAu8Pz.png)
 * 这个选项用于在您已选择的关卡不断循环，直到理智耗尽
+* 您也可以在右键菜单中设置循环次数，那么将会循环到设定的次数（除非没有理智了）
 #### 在何时启动
 ![auto.png](https://i.loli.net/2020/05/04/NbRDLEm437xFXWQ.png)
 * 如果您仅使用循环作战，您至少应当在此状态下启动
 * 实际上，您也可以先进入代理指挥开始战斗，再启动小助手
 ### 任务交付
 ***
-![task.png](https://i.loli.net/2020/08/15/UYcVFzhCMbjSlk1.png)
 * 不知您有没有注意到界面上被选中的任务开关，这代表在战斗结束后小助手会帮助您交付任务！
 ### 获取信用
 ***
-![credit.png](https://i.loli.net/2020/08/15/mbayH2cWN4jl1eC.png)
+* 点击按钮打开任务交付功能吧！
 * 自动访问你的好友来获取更多的信用点数！
+### 自动公招
+***
+![pc_right_2_6_4.png](https://i.loli.net/2021/05/16/94VXG3q7oDQz5Pr.png)
+* 打开自动公招功能，小助手会帮助你自动聘用和招募干员
+* 在右键菜单中进行一些简单的设置
+* 自动招募指的是搜寻干员，而自动聘用则是指招募完成后的聘用
 ### 获取额外的理智
 ***
-![add.png](https://i.loli.net/2020/08/15/SlLdyjhxZDWEOC5.png)
+![menu_autoRec_2_6_4.png](https://i.loli.net/2021/05/16/nKbEpHwC8vqkJdr.png)
 * 您可以在这里设置当理智不足时是否使用理智合剂或源石恢复
 * 源石恢复可以设置上限，计划作战与循环战斗共用一个上限值
 > 实际上，使用源石恢复理智我并没有测试过，但是大概没有问题（笑）
 ### 关闭计算机
 ***
-![shut.png](https://i.loli.net/2020/08/15/ZrvBLimK5W8tXya.png)
 * 启用此选项，当小助手完成全部工作，它就会尝试关闭计算机并自动退出
 * 该功能关闭计算机有2分钟倒计时，您可以用`shutdown -a`指令来取消关闭计算机的计划
 ### 这些是开关
 ***
-![setDefault.png](https://i.loli.net/2020/08/15/T9CavxGuVpzDRoE.png)
+* 所有的按键都有右键菜单
 * 因此，如果您不需要这个功能，可以单击以关闭
 * 使用右键菜单来设置功能的默认状态
 ### 公开招募计算器
@@ -124,6 +136,4 @@ One Easy-Use Arknight Helper	一款明日方舟护肝小助手
 ~~大概是在计划战斗中加入某材料多少个这样的判断条件吧，想着直接设置要3个扭转醇和5个固源岩就可以运行了，太美好了。~~
 ~~至于什么时候能真的上线，我并不清楚，而我目前的进度是，约1%我猜，还处在思考怎么实现的阶段（悲）。~~
 已经实现了，而且还挺好用，期待大家提出优化建议
-目前的计划是为计划作战增加一个统计面板
-以及下一步的基建部分的实现（更难了）
-在日日日日日日日后，考虑一下把小助手迁移到c++上，大概会提升点运行效率
+基建 基建 基建

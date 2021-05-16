@@ -948,7 +948,7 @@ class App(QWidget):
         self.showMinimized()
 
     def openUpdate(self):
-        openUrl('https://www.lanzous.com/b0d1w6v7g')
+        openUrl('https://mangetsuc.lanzoui.com/b0d1w6v7g')
 
     def openIndex(self):
         openUrl('https://github.com/MangetsuC/arkHelper')
