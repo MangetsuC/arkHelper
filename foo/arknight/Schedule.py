@@ -12,7 +12,7 @@ from foo.pictureR import bootyCount
 from foo.win import toast
 
 class BattleSchedule(QObject):
-    errorSignal = pyqtSignal()
+    errorSignal = pyqtSignal(str)
     def __init__(self, adb, cwd, dataPath, ico):
         super(BattleSchedule, self).__init__()
         self.cwd = cwd
@@ -24,6 +24,10 @@ class BattleSchedule(QObject):
         self.switchB = False
         self.autoRecMed = False
         self.autoRecStone = False
+
+        self.isWaitingUser = False
+        self.isRecovered = False
+
         self.stoneMaxNum = 0
         self.BootyDetect = bootyCount.Booty(self.cwd)
         self.imgInit()
@@ -70,6 +74,7 @@ class BattleSchedule(QObject):
         self.exSymbol = self.cwd + "/res/panel/other/exSymbol.png"
 
     def goLevel(self, level):
+        tempCount = 0
         part = level['part']
         chap = level['chap']
         objLevel = level['objLevel']
@@ -104,8 +109,12 @@ class BattleSchedule(QObject):
                             print('Fail to get screenshot')
                             return False
                     else:
-                        print('unable to init')
-                        return False
+                        tempCount += 1
+                        if tempCount > 5:
+                            print('unable to init')
+                            return False
+                        else:
+                            continue
                 
             else:
                 print('Fail to get screenshot')
@@ -188,7 +197,7 @@ class BattleSchedule(QObject):
         if chap == 'external':
             picChap = pictureFind.matchImg(self.screenShot, self.III['ex'])
             if picChap != None:
-                self.adb.click(picChap['result'][0],picChap['result'][1])
+                self.adb.click(325, 600)
                 return True
         elif chap.isdigit():
             #主线
@@ -295,12 +304,17 @@ class BattleSchedule(QObject):
                         if picInfo['result'][1] < 270:
                             continue
 
-                        if eachObj['obj'] == "error.png":
+                        if eachObj['obj'] == "error.png" or eachObj['obj'] == "giveup.png":
                             errorCount += 1
                             if errorCount > 2:
-                                self.errorSignal.emit()
-                                self.switch = False
-                                self.switchB = False
+                                self.errorSignal.emit('schedule')
+                                sleep(1)
+                                while self.isWaitingUser:
+                                    sleep(5)
+                                if not self.isRecovered:
+                                    self.switch = False
+                                    self.switchB = False
+                                self.isRecovered = False
                             break
                         else:
                             errorCount = 0

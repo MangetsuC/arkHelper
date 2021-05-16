@@ -9,7 +9,7 @@ from foo.win import toast
 
 class BattleLoop(QObject):
     noBootySignal = pyqtSignal()
-    errorSignal = pyqtSignal()
+    errorSignal = pyqtSignal(str)
     def __init__(self, adb, cwd, ico):
         super(BattleLoop, self).__init__()
         self.cwd = cwd
@@ -23,6 +23,7 @@ class BattleLoop(QObject):
 
         self.isWaitingUser = False
         self.isUselessContinue = False
+        self.isRecovered = False
 
         self.battleLoopTimes = -1
 
@@ -133,11 +134,16 @@ class BattleLoop(QObject):
                                 if eachObj['obj'] == "endNormal.png":
                                     loopTime += 1
 
-                            if eachObj['obj'] == "error.png":
+                            if eachObj['obj'] == "error.png" or eachObj['obj'] == "giveup.png":
                                 errorCount += 1
                                 if errorCount > 2:
-                                    self.errorSignal.emit()
-                                    self.switch = False
+                                    self.errorSignal.emit('loop')
+                                    sleep(1)
+                                    while self.isWaitingUser:
+                                        sleep(5)
+                                    if not self.isRecovered:
+                                        self.switch = False
+                                        self.isRecovered = False
                                 break
 
                             if eachObj['obj'] == "startBpart.png":

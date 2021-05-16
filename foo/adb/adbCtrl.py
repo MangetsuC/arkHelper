@@ -2,6 +2,8 @@ from os import path, remove, getcwd
 from time import sleep, perf_counter
 from subprocess import Popen, PIPE, call
 from re import split as resplit
+from re import findall as refind
+import re
 from foo.win import toast
 
 def delImg(dir):
@@ -106,15 +108,23 @@ class Adb:
             self.ip = config.get('connect', 'ip') + ':' + config.get('connect', 'port')
         print(self.ip)
 
+    def autoGetPort(self):
+        self.cmd.run('adb start-server')
+        devicesText = self.cmd.run('adb devices')
+        ports = refind(r':[0-9]*' ,devicesText)
+        if len(ports) == 1:
+            return ports[0][1:]
+        else:
+            return False
 
     def connect(self):
         self.cmd.run('adb start-server')
         if self.simulator == 'leidian':
-            self.cmdText = 'connected to leidian' #雷电模拟器不需要连接，做特殊处理
+            cmdText = 'connected to leidian' #雷电模拟器不需要连接，做特殊处理
         else:
-            self.cmdText = self.cmd.run('adb connect {0}'.format(self.ip))
-            print(self.cmdText)
-        if ('connected to' in self.cmdText) and ('nable' not in self.cmdText):
+            cmdText = self.cmd.run('adb connect {0}'.format(self.ip))
+            print(cmdText)
+        if ('connected to' in cmdText) and ('nable' not in cmdText):
             while True:
                 if self.simulator == 'leidian':
                     screenMsg = self.cmd.run('adb shell wm size')

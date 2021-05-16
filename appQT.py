@@ -6,7 +6,7 @@ from os import getcwd, getlogin, mkdir, path, startfile
 from threading import Thread
 from webbrowser import open as openUrl
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, qWarning
 from PyQt5.QtGui import QCursor, QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
                              QGridLayout, QHBoxLayout, QInputDialog, QLabel,
@@ -31,7 +31,7 @@ class App(QWidget):
         super(App, self).__init__()
         self.app = app
 
-        self.ver = '2.6.4'
+        self.ver = '2.6.5'
 
         self.cwd = getcwd().replace('\\', '/')
         self.console = Console(self.cwd) #接管输出与报错
@@ -622,10 +622,10 @@ class App(QWidget):
 
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
         self.battle.noBootySignal.connect(self.battleWarning)
-        self.battle.errorSignal.connect(self.clickBtnStartAndStop)
+        self.battle.errorSignal.connect(self.errorDetect)
         
         self.schedule = BattleSchedule(self.adb, self.cwd, self.userDataPath, self.ico) #处于测试
-        self.schedule.errorSignal.connect(self.clickBtnStartAndStop)
+        self.schedule.errorSignal.connect(self.errorDetect)
         
         self.task = Task(self.adb, self.cwd, self.ico, self.listGoTo)
         self.credit = Credit(self.adb, self.cwd, self.listGoTo)
@@ -880,6 +880,36 @@ class App(QWidget):
             noxPath = path.dirname(noxPath[0])
             self.changeDefault('noxPath', noxPath, sec = 'connect')
             self.changeSlr('yeshen', '59865')
+            self.initSlrSel()
+            ans = QMessageBox.question(self, '夜神模拟器端口号设置', '是否自动获取夜神模拟器端口号?', 
+                                    QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes) 
+            isAutoGetPortSuccess = False
+            if ans == QMessageBox.Yes:
+                QMessageBox.warning(self, '警告', '自动获取端口号前请确认已启动夜神模拟器', 
+                                    QMessageBox.Yes, QMessageBox.Yes)
+                isAutoGetPortSuccess = self.adb.autoGetPort()
+                if isAutoGetPortSuccess:
+                    self.changeSlr('yeshen', isAutoGetPortSuccess)
+                else:
+                    QMessageBox.warning(self, '警告', '自动获取端口号失败！请您手动输入', 
+                                    QMessageBox.Yes, QMessageBox.Yes)
+            if ans == QMessageBox.No or (not isAutoGetPortSuccess):
+                while True:
+                    port, isOk = QInputDialog.getText(self, '夜神模拟器端口号', '请输入夜神模拟器端口号')
+                    if isOk:
+                        if port.isnumeric():
+                            self.changeSlr('yeshen', port)
+                            break
+                        else:
+                            QMessageBox.warning(self, '警告', '请输入正确的端口号！', 
+                                        QMessageBox.Yes, QMessageBox.Yes)
+                            self.changeSlr('yeshen', '59865')
+                    else:
+                        QMessageBox.warning(self, '警告', '您取消了端口号录入，将使用默认值59865', 
+                                        QMessageBox.Yes, QMessageBox.Yes)
+                        self.changeSlr('yeshen', '59865')
+                        break
+
         elif slrName == '逍遥模拟器':
             self.changeSlr('xiaoyao', '21503')
         elif slrName == '雷电模拟器':
@@ -895,6 +925,7 @@ class App(QWidget):
             each.setIcon(QIcon(''))
 
         self.initSlrSel()
+
         
     def exit(self):
         '退出按钮'
@@ -994,6 +1025,24 @@ class App(QWidget):
         else:
             self.stop()  
             self.thRun.join()
+
+    def errorDetect(self, source):
+        if source == 'loop':
+            self.battle.isWaitingUser = True
+            self.battle.isRecovered = False
+            reply = QMessageBox.warning(self, '警告', '发现网络中断或代理异常，是否继续？（请在恢复异常后继续）', 
+                                    QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+            self.battle.isWaitingUser = False
+            if reply:
+                self.battle.isRecovered = True
+        elif source == 'schedule':
+            self.schedule.isWaitingUser = True
+            self.schedule.isRecovered = False
+            reply = QMessageBox.warning(self, '警告', '发现网络中断或代理异常，是否继续？（请在恢复异常后继续）', 
+                                    QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+            self.schedule.isWaitingUser = False
+            if reply:
+                self.schedule.isRecovered = True
 
 if __name__ == '__main__':
     cgitb.enable(format = 'text')

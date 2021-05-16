@@ -361,7 +361,19 @@ class UIPublicCall(QDialog):
         return True
 
     def search(self):
-        picInfo = pictureFind.matchMultiImg(self.screenShot, self.pcNew)[0] #找到所有空的招募位
+        lastPicInfo = None
+        for i in range(5):
+            #多次搜索，确保找到所有可招募的位置
+            self.adb.screenShot()
+            picInfo = pictureFind.matchMultiImg(self.screenShot, self.pcNew)[0] #找到所有空的招募位
+            if picInfo != None and len(picInfo) == 4:
+                #已达到最多空闲位数，直接跳出
+                break
+            elif lastPicInfo == None:
+                lastPicInfo = picInfo
+            elif len(picInfo) > len(lastPicInfo):
+                lastPicInfo = picInfo
+        picInfo = lastPicInfo
         if picInfo != None:
             for eachPos in picInfo:
                 for i in range(3):
