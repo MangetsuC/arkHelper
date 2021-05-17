@@ -373,7 +373,8 @@ class UIPublicCall(QDialog):
                 lastPicInfo = picInfo
             elif len(picInfo) > len(lastPicInfo):
                 lastPicInfo = picInfo
-        picInfo = lastPicInfo
+        if lastPicInfo != None:
+            picInfo = lastPicInfo
         if picInfo != None:
             for eachPos in picInfo:
                 for i in range(3):
