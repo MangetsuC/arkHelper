@@ -31,6 +31,19 @@ class Cmd():
             print(strerr)
         #self.p.wait(timeout = waitTime)
         return strout
+
+    def getVersion(self):
+        exePath = self.path.replace('/', '\\\\') + '\\\\arkhelper.exe'
+        if path.exists(exePath):
+            ans = self.run('wmic datafile where \"name=\'{dir}\'\" get version'.format(dir = exePath))
+            #ans = self.run('wmic datafile where \"name=\'E:\\\\workSpace\\\\CodeRelease\\\\arknightHelper\\\\arkHelper\\\\arkhelper.exe\'\" get version')
+            ans = refind('[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*', ans)[0]
+            if ans[-1] == '0':
+                ans = '.'.join(ans.split('.')[0:3])
+        else:
+            ans = 'DEV'
+        return ans
+
         
     def blockRun(self, code):
         return call(code, cwd = self.path ,timeout = 60)

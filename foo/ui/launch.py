@@ -114,25 +114,26 @@ class AfterInit(QThread):
                     self.app._updateData['exception'] = self.app._updateData['exception'] + f',{updateEXE}'
 
             newVersion =self.app._updateData['version'].split('.')
-            tempSelfVersion = self.app.ver.split('.')
-            ver0 = int(newVersion[0]) == int(tempSelfVersion[0])
-            ver1 = int(newVersion[1]) == int(tempSelfVersion[1])
-            ver2 = int(newVersion[2]) == int(tempSelfVersion[2])
-            isNeedUpdate = False
-            if ver0:
-                if ver1:
-                    if not ver2:
-                        if int(newVersion[2]) > int(tempSelfVersion[2]):
+            if self.app.ver != 'DEV':
+                tempSelfVersion = self.app.ver.split('.')
+                ver0 = int(newVersion[0]) == int(tempSelfVersion[0])
+                ver1 = int(newVersion[1]) == int(tempSelfVersion[1])
+                ver2 = int(newVersion[2]) == int(tempSelfVersion[2])
+                isNeedUpdate = False
+                if ver0:
+                    if ver1:
+                        if not ver2:
+                            if int(newVersion[2]) > int(tempSelfVersion[2]):
+                                isNeedUpdate = True
+                    else:
+                        if int(newVersion[1]) > int(tempSelfVersion[1]):
                             isNeedUpdate = True
                 else:
-                    if int(newVersion[1]) > int(tempSelfVersion[1]):
+                    if int(newVersion[0]) > int(tempSelfVersion[0]):
                         isNeedUpdate = True
-            else:
-                if int(newVersion[0]) > int(tempSelfVersion[0]):
-                    isNeedUpdate = True
-            if isNeedUpdate:
-                self.app.lVer.setText('*有新版本*')
-                self.app.btnUpdate.show()
+                if isNeedUpdate:
+                    self.app.lVer.setText('*有新版本*')
+                    self.app.btnUpdate.show()
 
     def checkMessage(self):
         noticeData = requests.get('http://www.mangetsuc.top/arkhelper/notice.html')

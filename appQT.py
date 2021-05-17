@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
                              QMenu, QMessageBox, QPushButton, QVBoxLayout,
                              QWidget, QFileDialog)
 
-from foo.adb.adbCtrl import Adb
+from foo.adb.adbCtrl import Adb, Cmd
 from foo.arknight.Battle import BattleLoop
 from foo.arknight.credit import Credit
 from foo.arknight.Schedule import BattleSchedule
@@ -31,10 +31,11 @@ class App(QWidget):
         super(App, self).__init__()
         self.app = app
 
-        self.ver = '2.6.4'
-
         self.cwd = getcwd().replace('\\', '/')
+
         self.console = Console(self.cwd) #接管输出与报错
+
+        self.ver = Cmd(self.cwd).getVersion() #获取版本号
 
         #获取整块屏幕的尺寸
         self.totalWidth = 0
