@@ -36,10 +36,13 @@ class Cmd():
         exePath = self.path.replace('/', '\\\\') + '\\\\arkhelper.exe'
         if path.exists(exePath):
             ans = self.run('wmic datafile where \"name=\'{dir}\'\" get version'.format(dir = exePath))
-            #ans = self.run('wmic datafile where \"name=\'E:\\\\workSpace\\\\CodeRelease\\\\arknightHelper\\\\arkHelper\\\\arkhelper.exe\'\" get version')
-            ans = refind('[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*', ans)[0]
-            if ans[-1] == '0':
-                ans = '.'.join(ans.split('.')[0:3])
+            ans = refind('[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*', ans)
+            if len(ans) != 1:
+                ans = ans[0]
+                if ans[-1] == '0':
+                    ans = '.'.join(ans.split('.')[0:3])
+            else:
+                ans = 'ERR'
         else:
             ans = 'DEV'
         return ans
@@ -83,7 +86,7 @@ class Adb:
 
     def getTagConfidence(self):
         if (self.screenX/ self.screenY) == (16/ 9):
-            if self.screenX <= 1080:
+            if self.screenX <= 1280:
                 return 0.75
             elif self.screenX > 1920:
                 return 0.75

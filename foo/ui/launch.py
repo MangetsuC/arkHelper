@@ -114,7 +114,7 @@ class AfterInit(QThread):
                     self.app._updateData['exception'] = self.app._updateData['exception'] + f',{updateEXE}'
 
             newVersion =self.app._updateData['version'].split('.')
-            if self.app.ver != 'DEV':
+            if self.app.ver != 'DEV' and self.app.ver != 'ERR':
                 tempSelfVersion = self.app.ver.split('.')
                 ver0 = int(newVersion[0]) == int(tempSelfVersion[0])
                 ver1 = int(newVersion[1]) == int(tempSelfVersion[1])
