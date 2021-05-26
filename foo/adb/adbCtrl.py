@@ -37,7 +37,7 @@ class Cmd():
         if path.exists(exePath):
             ans = self.run('wmic datafile where \"name=\'{dir}\'\" get version'.format(dir = exePath))
             ans = refind('[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*', ans)
-            if len(ans) != 1:
+            if len(ans) == 1:
                 ans = ans[0]
                 if ans[-1] == '0':
                     ans = '.'.join(ans.split('.')[0:3])
