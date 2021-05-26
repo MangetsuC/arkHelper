@@ -96,7 +96,13 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
     if targetSize != (0,0):
         imsrc = resize(imsrc, targetSize)
 
-    match_result = find_template(imsrc,imobj,confidencevalue)
+    if isinstance(confidencevalue, list):
+        for i in confidencevalue:
+            match_result = find_template(imsrc,imobj,i)
+            if match_result != None:
+                break
+    else:
+        match_result = find_template(imsrc,imobj,confidencevalue)
     #match_result = None
     if match_result != None:
         if isinstance(imgobj,str):

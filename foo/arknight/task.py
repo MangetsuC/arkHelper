@@ -12,19 +12,15 @@ class Task:
         self.cwd = cwd
         self.switch = False
         self.icon = ico
-        #self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
-        #self.mainpage = pictureFind.picRead(self.cwd + "/res/panel/other/mainpage.png")
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.task = pictureFind.picRead(self.cwd + "/res/panel/other/task.png")
-        self.taskNo = pictureFind.picRead(self.cwd + "/res/panel/other/taskNo.png")
         self.get = pictureFind.picRead(self.cwd + "/res/panel/other/get.png")
-        self.getMaterial = pictureFind.picRead(self.cwd + "/res/panel/other/getMaterial.png")
         self.daySel = pictureFind.picRead(self.cwd + "/res/panel/other/dailyTaskSelect.png")
         self.actSel = pictureFind.picRead(self.cwd + "/res/panel/other/actSelect.png")
         self.weekUnSel = pictureFind.picRead(self.cwd + "/res/panel/other/weeklyTaskUnSelect.png")
         self.weekSel = pictureFind.picRead(self.cwd + "/res/panel/other/weeklyTaskSelect.png")
-        #self.mainpageMark = pictureFind.picRead(self.cwd + "/res/panel/other/act.png")
-        self.waitForNew = pictureFind.picRead(self.cwd + "/res/panel/other/waitForNew.png")
+        self.back = pictureFind.picRead(self.cwd + '/res/panel/other/back.png')
+        self.rewardFinish = pictureFind.picRead(self.cwd + '/res/panel/other/rewardFinish.png')
 
         self.listGoTo = listGoTo
         self.mainpage = self.listGoTo[0]
@@ -75,40 +71,38 @@ class Task:
                         return False
 
     def submitTask(self):
+        #交付当前栏的任务
+        endCount = 0
         while self.switch:
+            self.adb.screenShot()
             gInfo = pictureFind.matchImg(self.screenShot, self.get, 0.9)
-            nInfo = pictureFind.matchImg(self.screenShot, self.waitForNew, 0.9)
-            if nInfo != None:
-                return True
-            if gInfo == None:
-                mInfo = pictureFind.matchImg(self.screenShot, self.getMaterial)
-                if mInfo == None:
+            backInfo = pictureFind.matchImg(self.screenShot, self.back, 0.9)
+            rewardFinishInfo = pictureFind.matchMultiImg(self.screenShot, self.rewardFinish)[0]
+            if rewardFinishInfo != None:
+                rewardFinishInfo.sort(key = lambda x:x[1])
+                if rewardFinishInfo[0][1] < 250:#该栏任务交付全部完成
                     return True
-                #break
-            else:
+            if gInfo != None: #有任务待交付
+                endCount = 0
                 self.adb.click(gInfo['result'][0], gInfo['result'][1])
-            
-            tryFlag = False
-            while self.switch:
-                self.adb.screenShot()
-                mInfo = pictureFind.matchImg(self.screenShot, self.getMaterial)
-                hInfo = pictureFind.matchImg(self.screenShot, self.home)
-                if mInfo != None:
-                    tryFlag = True
-                    self.adb.click(mInfo['result'][0], mInfo['result'][1])
-                elif hInfo != None:
-                    if tryFlag:
-                        tryFlag = False
-                        continue
-                    else:
-                        self.adb.screenShot()
-                        break
+                continue
+            elif backInfo != None: #没有任务待交付
+                endCount += 1
+                if endCount > 3:
+                    return True
+                else:
+                    continue
+            else: #获取了奖励
+                endCount = 0
+                self.adb.click(900, 450)
+                continue
 
     def oneByOne(self):
         #self.adb.screenShot()
         tryCount = 0
         self.submitTask()
         while self.switch:
+            #切换到每周任务
             wInfo = pictureFind.matchImg(self.screenShot, self.weekUnSel)
             self.adb.click(wInfo['result'][0], wInfo['result'][1])
             self.adb.screenShot()
