@@ -113,11 +113,11 @@ class BattleLoop(QObject):
                     if self.switch:
                         if eachObj['obj'] == "end.png" or eachObj['obj'] == "levelup.png":
                             confidence = 0.8
+                        elif eachObj['obj'] == 'endExterminate.png':
+                            confidence = self.adb.getTagConfidence()
                         else:
                             confidence = 0.9
-                        #print(self.screenShot + ' ' + self.cwd + '/res/battle/' + eachObj)
                         picInfo = pictureFind.matchImg(self.screenShot, eachObj, confidence)
-                        #print(eachObj+ '：', picInfo)
                         if picInfo != None:
                             if picInfo['result'][1] < 270:
                                 continue

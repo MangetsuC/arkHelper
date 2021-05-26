@@ -194,7 +194,7 @@ class BattleSchedule(QObject):
 
     def chooseChap(self,chap):
         self.adb.screenShot()
-        if chap == 'external':
+        if chap == 'external' or chap == 'tempE':
             picChap = pictureFind.matchImg(self.screenShot, self.III['ex'])
             if picChap != None:
                 self.adb.click(325, 600)

@@ -86,7 +86,9 @@ class Adb:
 
     def getTagConfidence(self):
         if (self.screenX/ self.screenY) == (16/ 9):
-            if self.screenX <= 1280:
+            if self.screenX <= 1024:
+                return 0.7
+            elif self.screenX <= 1280:
                 return 0.75
             elif self.screenX > 1920:
                 return 0.75
