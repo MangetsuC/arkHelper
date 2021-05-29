@@ -3,7 +3,6 @@ from sys import path
 from time import sleep
 from PyQt5.QtCore import pyqtSignal, QObject
 
-path.append(getcwd())
 from foo.pictureR import pictureFind
 from foo.win import toast
 

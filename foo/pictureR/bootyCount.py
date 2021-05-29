@@ -2,7 +2,6 @@ from os import getcwd
 from sys import path
 from  cv2 import resize
 
-path.append(getcwd())
 from foo.pictureR import pictureFind
 
 class Booty:

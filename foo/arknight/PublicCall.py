@@ -7,7 +7,6 @@ from cv2 import fillConvexPoly, imshow, waitKey
 from numpy import array
 from random import choice
 
-path.append(getcwd())
 from foo.pictureR import pictureFind
 
 class PublicCall:

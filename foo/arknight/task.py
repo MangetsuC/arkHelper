@@ -1,8 +1,6 @@
 from os import getcwd, listdir
 from sys import path
-#from time import sleep
 
-path.append(getcwd())
 from foo.pictureR import pictureFind
 from foo.win import toast
 

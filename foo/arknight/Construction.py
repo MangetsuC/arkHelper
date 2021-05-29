@@ -2,8 +2,6 @@ from os import getcwd, listdir
 from sys import path
 from time import sleep
 
-path.append(getcwd())  #位置不可调整，用于增加import的搜索路径
-
 from foo.adb import adbCtrl
 from foo.pictureR import pictureFind
 

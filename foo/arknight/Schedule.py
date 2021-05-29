@@ -4,7 +4,6 @@ from time import sleep
 from json import loads
 from PyQt5.QtCore import pyqtSignal, QObject
 
-path.append(getcwd())
 from foo.pictureR import pictureFind
 from foo.pictureR import bootyCount
 from foo.win import toast

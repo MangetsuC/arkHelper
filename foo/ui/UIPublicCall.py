@@ -1,8 +1,6 @@
-from os import getcwd
 from sys import path
 from threading import Thread, Lock
 from time import sleep, perf_counter
-path.append(getcwd())
 from foo.arknight.PublicCall import PublicCall
 from foo.pictureR import pictureFind
 
