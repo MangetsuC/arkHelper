@@ -1,4 +1,3 @@
-#from aircv import find_template
 from os import getcwd, listdir, path, remove
 from re import split as resplit
 

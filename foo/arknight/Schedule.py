@@ -1,9 +1,7 @@
 from os import getcwd, listdir
 from sys import path
 from time import sleep
-from threading import Thread
-from json import loads,dumps
-from cv2 import imread
+from json import loads
 from PyQt5.QtCore import pyqtSignal, QObject
 
 path.append(getcwd())
@@ -334,7 +332,7 @@ class BattleSchedule(QObject):
                                 countStep += 1
                                 if bootyMode:
                                     for i in range(10):
-                                        temp = imread(self.screenShot)
+                                        temp = pictureFind.imreadCH(self.screenShot)#改用picRead
                                         self.adb.screenShot()
                                         if pictureFind.matchImg(temp, self.screenShot, confidencevalue=0.99) != None:
                                             break

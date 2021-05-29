@@ -1,6 +1,6 @@
-from os import getcwd, listdir
+from os import getcwd
 from sys import path
-from  cv2 import imread, resize, imshow, waitKey
+from  cv2 import resize
 
 path.append(getcwd())
 from foo.pictureR import pictureFind
@@ -68,11 +68,9 @@ class Booty:
         self.two = pictureFind.picRead(self.cwd + '/res/booty/num/2.png')
 
     def bootyCheck(self, bootyName, screenshot):
-        scs = imread(screenshot)
+        scs = pictureFind.imreadCH(screenshot)
         scs = resize(scs, (1920, 1080))
         scs = scs[770:1080, 710:1920]
-        #imshow('test', scs)
-        #waitKey(0)
         bootyInfo = pictureFind.matchImg(scs, self.bootyList[bootyName], confidencevalue=0.5, targetSize=(0,0))
         if bootyInfo == None:
             return 0
@@ -96,14 +94,11 @@ class Booty:
             if corpX1 < 0 or corpX2 > 1210 or corpY1 < 0 or corpY2 > 310:
                 return 0
             bootyNumPic = scs[corpY1:corpY2, corpX1:corpX2]
-            
-            #imshow('test', bootyNumPic)
-            #waitKey(0)
 
             oneCheck = pictureFind.matchImg(bootyNumPic, self.one, targetSize=(0,0))
-            #print(oneCheck)
+
             twoCheck = pictureFind.matchImg(bootyNumPic, self.two, targetSize=(0,0))
-            #print(twoCheck)
+
             if oneCheck != None:
                 return 1
             elif twoCheck != None:
