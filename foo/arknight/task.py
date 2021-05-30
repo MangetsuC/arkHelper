@@ -75,7 +75,8 @@ class Task:
             self.adb.screenShot()
             gInfo = pictureFind.matchImg(self.screenShot, self.get, 0.9)
             backInfo = pictureFind.matchImg(self.screenShot, self.back, 0.9)
-            rewardFinishInfo = pictureFind.matchMultiImg(self.screenShot, self.rewardFinish)[0]
+            rewardFinishInfo = pictureFind.matchMultiImg(self.screenShot, self.rewardFinish, 
+                                                        confidencevalue = self.adb.getTagConfidence())[0]
             if rewardFinishInfo != None:
                 rewardFinishInfo.sort(key = lambda x:x[1])
                 if rewardFinishInfo[0][1] < 250:#该栏任务交付全部完成
