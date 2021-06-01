@@ -115,7 +115,7 @@ class Adb:
     
     def changeConfig(self, config):
         if config == None:
-            self.ip = '127.0.0.1:5555'
+            self.ip = '127.0.0.1:7555'
         else:
             self.simulator = config.get('connect', 'simulator')
             if self.simulator == 'yeshen':
@@ -205,15 +205,11 @@ class Adb:
             pic1 = open(self.adbPath + '/' + pngName +'.png', 'bw')   
             pic1.write(bys)
             pic1.close()
-
-        '''tempImg = Image.open(self.adbPath + '/' + pngName +'.png')
-        out = tempImg.resize((1440,810),Image.ANTIALIAS)
-        out.save(self.adbPath + '/' + pngName +'.png', 'png')'''
         return True
 
     def click(self, x, y, isSleep = True):
-        x = (x / 1440) * self.screenX
-        y = (int(y) / 810) * self.screenY
+        x = int((x / 1440) * self.screenX)
+        y = int((y / 810) * self.screenY)
         if self.simulator == 'leidian':
             self.cmd.run('adb shell input tap {0} {1}'.format(x, y))
         else:
