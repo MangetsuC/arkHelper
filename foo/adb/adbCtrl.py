@@ -84,6 +84,9 @@ class Adb:
         self.screenY = 810
         self.ico = ico
 
+    def getResolution(self):
+        return (self.screenX, self.screenY)
+
     def getTagConfidence(self):
         if (self.screenX/ self.screenY) == (16/ 9):
             if self.screenX <= 1024:
