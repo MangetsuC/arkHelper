@@ -14,9 +14,10 @@ class Logistic:
 
         self.similarChar = {'巧':15}
         self.operatorPosOffset = [757-1355, 885-1355, 1009-1355, 1137-1355, 1264-1355]
+        self.moodsPos = [(353, 577, 87, 35), (353, 614, 87, 35), (353, 650, 87, 35), (353, 686, 87, 35), (353, 722, 87, 35)]
 
-        self.moodThreshold = 5
-        self.enableRooms = ['制造', '会客', '贸易', '发电', '办公']
+        self.moodThreshold = 0
+        self.enableRooms = ['制', '造', '会', '客', '贸', '易', '发', '电', '办', '公']
 
         self.resourceInit()
     
@@ -27,7 +28,8 @@ class Logistic:
         self.adb.click(picResult[0], picResult[1])
 
     def swipe(self, startPoint, endPoint):
-        self.adb.swipe(startPoint[0], startPoint[1], endPoint[0], endPoint[1], lastTime = 2500)
+        self.adb.swipe(startPoint[0], startPoint[1], endPoint[0], endPoint[1], lastTime = 500)
+        self.adb.swipe(endPoint[0], endPoint[1], endPoint[0], endPoint[1], lastTime = 200)
 
     def matchPic(self, obj):
         return pictureFind.matchImg(self.screenShot, obj, confidencevalue = 0.7)
@@ -36,11 +38,23 @@ class Logistic:
         ans = pictureFind.matchMultiImg(self.screenShot, obj, confidencevalue = 0.7)
         return ans[0] if ans != None else None
 
+    def getDormMoods(self):
+        ans = []
+        for i in self.moodsPos:
+            isFull = pictureFind.matchImg_roi(self.screenShot, self.full, i, confidencevalue = 0.75)
+            if isFull != None:
+                ans.append('0/24') #即认为已疲劳，后续处理撤下
+            else:
+                ans.append('') #认为此处无人，不操作
+        return ans
+
     def resourceInit(self):
         self.freeOperator_sel = pictureFind.picRead(self.cwd + '/res/logistic/general/freeOperator_sel.png')
         self.freeOperator_unSel = pictureFind.picRead(self.cwd + '/res/logistic/general/freeOperator_unSel.png')
         self.roomFlag = pictureFind.picRead(self.cwd + '/res/logistic/general/roomFlag.png')
         self.unDetected = pictureFind.picRead(self.cwd + '/res/logistic/general/unDetected.png')
+        self.zero = pictureFind.picRead(self.cwd + '/res/logistic/general/zero.png')
+        self.full = pictureFind.picRead(self.cwd + '/res/logistic/general/full.png')
 
     def freeOperator(self):
         freeCount = 0
@@ -63,6 +77,7 @@ class Logistic:
             tryCount = 0
 
         tryCount = 0
+        endCount = 0
         isLastTurn = False
         while not isLastTurn:
             self.getScreen()
@@ -79,10 +94,17 @@ class Logistic:
                     upper = roomsOnScreen[0]
                     lower = roomsOnScreen[-1]
                     for eachRoom in roomsOnScreen:
+                        isDorm = False
                         roomName = ocr.ocr_roomName(self.screenShot, eachRoom, self.adb.getResolution())
-                        if '训练' in roomName:
-                            isLastTurn = True
+                        if '训' in roomName or '练' in roomName:
+                            endCount += 1
+                            if endCount > 1:
+                                isLastTurn = True
                             continue
+                        elif '中' in roomName or '枢' in roomName:
+                            continue
+                        elif '宿' in roomName or '舍' in roomName:
+                            isDorm = True
                         else:
                             #只操作启用的房间
                             isDisable = True
@@ -94,7 +116,10 @@ class Logistic:
                                 continue
                         self.click((eachRoom[0] - 785, eachRoom[1] + 6))
                         self.getScreen()
-                        moods = ocr.ocr_operatorMood(self.screenShot, roi = (344, 574, 455 - 344, 761 - 574),
+                        if isDorm:
+                            moods = self.getDormMoods()
+                        else:
+                            moods = ocr.ocr_operatorMood(self.screenShot, roi = (344, 574, 455 - 344, 761 - 574),
                                                                                  resolution = self.adb.getResolution())
                         for eachOperator in range(len(moods)):
                             if moods[eachOperator] != '':
@@ -108,6 +133,18 @@ class Logistic:
                                         break
                                     else:
                                         if restMood.isdigit():
+                                            if '2' in restMood:
+                                                #检测0
+                                                isZero = pictureFind.matchImg_roi(self.screenShot, self.zero, 
+                                                                        self.moodsPos[eachOperator], confidencevalue = 0.75)
+                                                if isZero != None:
+                                                    if len(restMood) == 1:
+                                                        restMood = '0'
+                                                    elif len(restMood) == 2:
+                                                        restMood = restMood[0] + '0'
+                                                    else:
+                                                        print('err:错误的心情')
+                                                        restMood = '24'
                                             restMood = int(restMood)
                                             break
                                 else:
@@ -120,10 +157,11 @@ class Logistic:
                                     #已降到阈值以下
                                     self.click((eachRoom[0] + self.operatorPosOffset[eachOperator], eachRoom[1]))
                                     freeCount += 1
-                    self.swipe(lower, upper)
+                    self.swipe((550, lower[1]), (550, upper[1] + 70))
 
                     lastScreen = None
                     while True:
+                        #判断滑动已完全停止
                         self.getScreen()
                         if lastScreen != None:
                             isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.999)
