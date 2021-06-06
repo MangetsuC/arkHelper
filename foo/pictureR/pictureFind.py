@@ -87,7 +87,19 @@ def matchImg_roi(imgsrc, imgobj, roi, confidencevalue=0.8,targetSize=(1440, 810)
     if targetSize != (0,0):
         imsrc = resize(imsrc, targetSize)
 
-    imsrc = imsrc[roi[1]:roi[1] + roi[3], roi[0]:roi[0] + roi[2]]
+    x0 = int(roi[0])
+    x1 = int(roi[0] + roi[2])
+    y0 = int(roi[1])
+    y1 = int(roi[1] + roi[3])
+
+    if x0 > imsrc.shape[1] or y0 > imsrc.shape[0]:
+        return None
+    if x1 > imsrc.shape[1]:
+        x1 = imsrc.shape[1]
+    if y1 > imsrc.shape[0]:
+        y1 = imsrc.shape[0]
+
+    imsrc = imsrc[y0:y1, x0:x1]
     return matchImg(imsrc, imgobj, confidencevalue, targetSize = (0, 0))
 
 def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc=原始图像，imgobj=待查找的图片
@@ -102,8 +114,11 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
     #imobj = imread(imgobj)
     if isinstance(imgobj,str):
         imobj = imreadCH(imgobj)
-    else:
+    elif isinstance(imgobj, dict):
         imobj = imgobj['pic']    #现在此情况传入的一定是字典
+    else:
+        imobj = imgobj
+
     if targetSize != (0,0):
         imsrc = resize(imsrc, targetSize)
 
@@ -116,12 +131,13 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
         match_result = find_template(imsrc,imobj,confidencevalue)
     #match_result = None
     if match_result != None:
-        if isinstance(imgobj,str):
+        if isinstance(imgobj, str):
             match_result['obj'] = resplit(r'[\\ /]', imgobj)[-1]
+        elif isinstance(imgobj, dict):
+            match_result['obj'] = imgobj['obj']
         else:
-            match_result['obj']=imgobj['obj']
+            match_result['obj'] = 'numpy'
 
-    #delImg(imgsrc)
     return match_result
 
 

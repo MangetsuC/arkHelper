@@ -4,7 +4,7 @@ from time import sleep
 
 path.append(getcwd())
 from foo.adb import adbCtrl
-from foo.pictureR import pictureFind, ocr
+from foo.pictureR import pictureFind, ocr, wordsTemplate
 
 class Logistic:
     def __init__(self, adb, cwd):
@@ -17,7 +17,7 @@ class Logistic:
         self.moodsPos = [(353, 577, 87, 35), (353, 614, 87, 35), (353, 650, 87, 35), (353, 686, 87, 35), (353, 722, 87, 35)]
 
         self.moodThreshold = 0
-        self.enableRooms = ['制', '造', '会', '客', '贸', '易', '发', '电', '办', '公']
+        self.enableRooms = ['制造站', '贸易站', '发电站', '办公室', '会客室']
 
         self.resourceInit()
     
@@ -77,7 +77,7 @@ class Logistic:
             tryCount = 0
 
         tryCount = 0
-        endCount = 0
+        dormCount = 0
         isLastTurn = False
         while not isLastTurn:
             self.getScreen()
@@ -96,82 +96,42 @@ class Logistic:
                     for eachRoom in roomsOnScreen:
                         isDorm = False
                         roomName = ocr.ocr_roomName(self.screenShot, eachRoom, self.adb.getResolution())
-                        if '训' in roomName or '练' in roomName:
-                            endCount += 1
-                            if endCount > 1:
-                                isLastTurn = True
-                            continue
-                        elif '中' in roomName or '枢' in roomName:
-                            continue
-                        elif '宿' in roomName or '舍' in roomName:
-                            isDorm = True
-                        else:
-                            #只操作启用的房间
-                            isDisable = True
-                            for i in self.enableRooms:
-                                if i in roomName:
-                                    isDisable = False
-                                    break
-                            if isDisable:
-                                continue
+                        if roomName not in self.enableRooms:
+                            if roomName == '宿舍':
+                                isDorm = True
+                                dormCount += 1
+                                if dormCount >= 4:
+                                    isLastTurn = True
                         self.click((eachRoom[0] - 785, eachRoom[1] + 6))
                         self.getScreen()
-                        if isDorm:
-                            moods = self.getDormMoods()
-                        else:
-                            moods = ocr.ocr_operatorMood(self.screenShot, roi = (344, 574, 455 - 344, 761 - 574),
-                                                                                 resolution = self.adb.getResolution())
-                        for eachOperator in range(len(moods)):
-                            if moods[eachOperator] != '':
+                        #if isDorm:
+                        #    moods = self.getDormMoods()
+                        #else:
+                        moods = ocr.ocr_operatorMood(self.screenShot, roi = (355, 576.5, 85, 180))
+                        for eachOpMood in range(len(moods)):
+                            if moods[eachOpMood] > -1:
                                 #该位置有人
-                                restMood = ''
-                                for eachChar in moods[eachOperator]:
-                                    if ord('0') <= ord(eachChar) <= ord('9'):
-                                        restMood += eachChar
-                                    elif restMood == '' and eachOperator in self.similarChar.keys():
-                                        restMood = self.similarChar[eachOperator]
-                                        break
-                                    else:
-                                        if restMood.isdigit():
-                                            if '2' in restMood:
-                                                #检测0
-                                                isZero = pictureFind.matchImg_roi(self.screenShot, self.zero, 
-                                                                        self.moodsPos[eachOperator], confidencevalue = 0.75)
-                                                if isZero != None:
-                                                    if len(restMood) == 1:
-                                                        restMood = '0'
-                                                    elif len(restMood) == 2:
-                                                        restMood = restMood[0] + '0'
-                                                    else:
-                                                        print('err:错误的心情')
-                                                        restMood = '24'
-                                            restMood = int(restMood)
-                                            break
-                                else:
-                                    if restMood.isdigit():
-                                        restMood = int(restMood)
-                                    else:
-                                        continue
-                                #已获取此位置心情
-                                if restMood <= self.moodThreshold:
-                                    #已降到阈值以下
-                                    self.click((eachRoom[0] + self.operatorPosOffset[eachOperator], eachRoom[1]))
+                                if (isDorm and moods[eachOpMood] == 24) or \
+                                    ((not isDorm) and moods[eachOpMood] <= self.moodThreshold):
+                                    #已降到阈值以下 或 宿舍满心情
+                                    self.click((eachRoom[0] + self.operatorPosOffset[eachOpMood], eachRoom[1]))
                                     freeCount += 1
-                    self.swipe((550, lower[1]), (550, upper[1] + 70))
+                    if not isLastTurn:
+                        self.swipe((550, lower[1]), (550, upper[1] + 70))
 
-                    lastScreen = None
-                    while True:
-                        #判断滑动已完全停止
-                        self.getScreen()
-                        if lastScreen != None:
-                            isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.999)
-                            if isScreenStop != None:
-                                break
+                        lastScreen = None
+                        while True:
+                            #判断滑动已完全停止
+                            self.getScreen()
+                            if lastScreen != None:
+                                isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.999)
+                                if isScreenStop != None:
+                                    break
+                                else:
+                                    lastScreen = pictureFind.picRead(self.screenShot)
+                                    sleep(0.5)
                             else:
                                 lastScreen = pictureFind.picRead(self.screenShot)
-                                sleep(0.5)
-                        else:
-                            lastScreen = pictureFind.picRead(self.screenShot)
 
             else:
                 tryCount += 1
@@ -180,8 +140,18 @@ class Logistic:
                     return -1
         return freeCount
 
+    def findOpOnScreen(self, operatorName):
+        self.getScreen()
+        picInfo = pictureFind.matchImg(self.screenShot, wordsTemplate.getTemplatePic_CH(operatorName, 23), confidencevalue = 0.7)
+        if picInfo != None:
+            return picInfo['result']
+        else:
+            return False
+        
+
 if __name__ == '__main__':
     adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')
     adb.connect()
     test = Logistic(adb, getcwd())
     test.freeOperator()
+    #print(test.findOpOnScreen('梓兰'))

@@ -5,38 +5,42 @@ from sys import path
 
 from cv2 import (COLOR_BGRA2BGR, COLOR_RGBA2GRAY, INTER_AREA, INTER_CUBIC, INTER_LANCZOS4, THRESH_BINARY, THRESH_BINARY_INV,
                  bilateralFilter, convertScaleAbs, cvtColor, filter2D, imwrite,
-                 resize, threshold, erode, getStructuringElement, MORPH_RECT, dilate)
+                 resize, threshold, erode, getStructuringElement, MORPH_RECT, dilate, imshow, waitKey)
 from numpy import array as npArray
 from numpy import float32, uint8, ones
 
 path.append(getcwd())
-from foo.pictureR import pictureFind
+from foo.pictureR import pictureFind, wordsTemplate
 
-def ocr_operatorMood(pic, roi = (0, 0, 0, 0), resolution = (1440, 810)):
-    img = pictureFind.imreadCH(pic)
-    
-    if roi != (0, 0, 0, 0):
-        #roi = (int(roi[0]/1440*resolution[0]), int(roi[1]/1440*resolution[0]), 
-        #        int(roi[2]/1440*resolution[0]), int(roi[3]/1440*resolution[0]))
-        img = img[roi[1]:roi[1] + roi[3], roi[0]:roi[0] + roi[2]]
-    newHeight = int(img.shape[0]*5/1440*resolution[0])
-    newWidth = int(img.shape[1]*5/1440*resolution[0])
-
-    #缩放图片
-    img = resize(img, (newWidth, newHeight), interpolation=INTER_LANCZOS4)
-    img = cvtColor(img, COLOR_RGBA2GRAY) #转为灰度图
-    img = bilateralFilter(img, 5, 50, 50)
-    img = threshold(img, 200, 255, THRESH_BINARY_INV)[1]
-    img = erode(img, getStructuringElement(MORPH_RECT, (6,6))) #腐蚀，将线条变细，便于使用windowsOCR，文字较粗识别率大幅下降
-    imwrite(ospath.dirname(pic) + '/' + 'ocrTemp.png', img)
+def ocr_operatorMood(pic, roi = (0, 0, 0, 0)):
     ans = []
-    for i in range(5):
-        ans.append(_ocrAnalyse(ospath.dirname(pic) + '/' + 'ocrTemp.png', roi=(0, int(newHeight/5*i - 0.5), 
-                                                                                    newWidth, int(newHeight/5 - 0.5))))
+    maxMood = pictureFind.imreadCH(getcwd() + '/res/logistic/general/maxMood.png')
+    if roi != (0, 0, 0, 0):
+        for i in range(5):
+            moodRightPart = pictureFind.matchImg_roi(pic, maxMood, 
+                                                roi = (roi[0], roi[1] + (roi[3]/5)*i, roi[2], roi[3]/5),
+                                                confidencevalue = 0.7)
+            if moodRightPart != None:
+                for mood in range(24, -1, -1):
+                    if pictureFind.matchImg_roi(pic, wordsTemplate.getTemplatePic_NUM(mood, 29), 
+                                            roi = (roi[0], roi[1] + (roi[3]/5)*i, moodRightPart['rectangle'][0][0], roi[3]/5),
+                                            confidencevalue = 0.7) != None:
+                        ans.append(mood)
+                        break
+                else:
+                    ans.append(-1)
+            else:
+                ans.append(-2)
     return ans
 
-def ocr_roomName(pic, basePoint, resolution = (1440, 810)):
-    return _ocrAnalyse(pic, roi = (basePoint[0]-884, basePoint[1]-73, 222, 53), resolution = resolution)
+def ocr_roomName(pic, basePoint):
+    for eachRoom in ['控制中枢', '会客室', '贸易站', '制造站', '发电站', '宿舍', '加工站', '办公室', '训练室']:
+        if pictureFind.matchImg_roi(pic, wordsTemplate.getTemplatePic_CH(eachRoom, 28), 
+                                    roi = (basePoint[0]-884, basePoint[1]-73, 222, 53),
+                                    confidencevalue = 0.7) != None:
+            return eachRoom
+    else:
+        return ''
 
 def _ocrAnalyse(pic, roi = (0, 0, 0, 0), resolution = (1440, 810)):
     if roi != (0, 0, 0, 0):
