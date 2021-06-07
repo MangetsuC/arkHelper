@@ -22,7 +22,7 @@ def ocr_operatorMood(pic, roi = (0, 0, 0, 0)):
                                                 confidencevalue = 0.7)
             if moodRightPart != None:
                 for mood in range(24, -1, -1):
-                    if pictureFind.matchImg_roi(pic, wordsTemplate.getTemplatePic_NUM(mood, 29), 
+                    if pictureFind.matchImg_roi(pic, wordsTemplate.getTemplatePic_NUM(mood, 28), 
                                             roi = (roi[0], roi[1] + (roi[3]/5)*i, moodRightPart['rectangle'][0][0], roi[3]/5),
                                             confidencevalue = 0.7) != None:
                         ans.append(mood)

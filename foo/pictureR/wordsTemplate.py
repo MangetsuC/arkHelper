@@ -12,7 +12,7 @@ def getTemplatePic_CH(words, fontsize):
     return cvtColor(asarray(wordsPic), COLOR_RGB2BGR)
 
 def getTemplatePic_NUM(num, fontsize):
-    #字号典型值 进驻总览干员心情29
+    #字号典型值 进驻总览干员心情28
     num = str(num)
     ttf = ImageFont.truetype(getcwd() + "/res/fonts/Bender.otf", fontsize) #字体选用bender
     wordsPic = Image.new('RGB', ttf.getsize(num), color = (255, 255, 255))

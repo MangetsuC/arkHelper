@@ -79,6 +79,7 @@ def picRead(pics):
         return tempDict
 
 def matchImg_roi(imgsrc, imgobj, roi, confidencevalue=0.8,targetSize=(1440, 810)):
+    '返回roi中的位置'
     if isinstance(imgsrc,str):
         imsrc = imreadCH(imgsrc)
     else:
@@ -101,6 +102,39 @@ def matchImg_roi(imgsrc, imgobj, roi, confidencevalue=0.8,targetSize=(1440, 810)
 
     imsrc = imsrc[y0:y1, x0:x1]
     return matchImg(imsrc, imgobj, confidencevalue, targetSize = (0, 0))
+
+def matchMultiImg_roi(imgsrc, imgobj, roi, confidencevalue=0.8, targetSize=(1440, 810)):
+    '返回真实位置'
+    if isinstance(imgsrc,str):
+        imsrc = imreadCH(imgsrc)
+    else:
+        imsrc = imgsrc
+
+    if targetSize != (0,0):
+        imsrc = resize(imsrc, targetSize)
+
+    x0 = int(roi[0])
+    x1 = int(roi[0] + roi[2])
+    y0 = int(roi[1])
+    y1 = int(roi[1] + roi[3])
+
+    if x0 > imsrc.shape[1] or y0 > imsrc.shape[0]:
+        return None
+    if x1 > imsrc.shape[1]:
+        x1 = imsrc.shape[1]
+    if y1 > imsrc.shape[0]:
+        y1 = imsrc.shape[0]
+
+    imsrc = imsrc[y0:y1, x0:x1]
+    ans = matchMultiImg(imsrc, imgobj, confidencevalue = confidencevalue, isResize = False)
+    ansReal = None
+    if ans != None:
+        ans = ans[0]
+        if ans != None:
+            ansReal = []
+            for eachPos in ans:
+                ansReal.append([eachPos[0] + x0, eachPos[1] + y0])
+    return ansReal
 
 def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc=原始图像，imgobj=待查找的图片
     '用于查找原始图片中的单一目标图片，如果原始图片中可找到多个目标图片，则随机返回一个匹配的结果，返回值为一个字典'
@@ -141,7 +175,7 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
     return match_result
 
 
-def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, maxReturn=-1, colorSpace = (0,0,0), debugMode = False):
+def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, maxReturn=-1, isResize = True, colorSpace = (0,0,0), debugMode = False):
     '用于查找原始图片中的多个目标图片，若不存在图片则返回None，否则返回一个目标图片坐标构成的元组；imgsrc为原始图片路径，imgobj为目标图片路径，confidencevalue为置信度，maxReturn在非负的情况下只会返回相应数值的坐标，为0则永远返回None]'
     maxReturn = int(maxReturn)
     if isinstance(imgsrc,str):
@@ -151,11 +185,14 @@ def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, maxReturn=-1, colorSpace 
             return None
     else:
         imsrc = imgsrc
-    imsrc = resize(imsrc, (1440, 810))
+    if isResize:
+        imsrc = resize(imsrc, (1440, 810))
     if isinstance(imgobj,str):
         imobj = imreadCH(imgobj)
-    else:
+    elif isinstance(imgobj, dict):
         imobj = imgobj['pic']    #现在此情况传入的一定是字典
+    else:
+        imobj = imgobj
     matchRect = []
     matchPositionXY = []
     while True:
