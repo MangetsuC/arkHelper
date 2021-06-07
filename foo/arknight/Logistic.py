@@ -117,9 +117,6 @@ class Logistic:
                                 continue
                         self.click((eachRoom[0] - 785, eachRoom[1] + 6))
                         self.getScreen()
-                        #if isDorm:
-                        #    moods = self.getDormMoods()
-                        #else:
                         moods = ocr.ocr_operatorMood(self.screenShot, roi = (355, 576.5, 85, 180))
                         for eachOpMood in range(len(moods)):
                             if moods[eachOpMood] > -1:
@@ -225,7 +222,7 @@ if __name__ == '__main__':
     adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')
     adb.connect()
     test = Logistic(adb, getcwd())
-    #need2relax = test.freeOperator()
+    need2relax = test.freeOperator()
     #print(f'需要休息的人数：{need2relax}')
-    test.relaxOperator(1)
+    #test.relaxOperator(1)
     #print(test.findOpOnScreen('梓兰'))
