@@ -75,12 +75,26 @@ class Logistic:
         self.todoList_unSel = pictureFind.picRead(self.cwd + '/res/logistic/general/todoList_unSel.png')
         self.todoList_sel = pictureFind.picRead(self.cwd + '/res/logistic/general/todoList_sel.png')
         self.exitroom = pictureFind.picRead(self.cwd + '/res/logistic/general/exitroom.png')
-        self.submitting = pictureFind.picRead(self.cwd + '/res/logistic/general/submitting.png')
+        self.submitting = pictureFind.picRead(self.cwd + '/res/logistic/general/submitting.png') #正在连接神经网络
         self.todoListPic = [pictureFind.picRead(self.cwd + '/res/logistic/general/manufactory_output.png'),
                             pictureFind.picRead(self.cwd + '/res/logistic/general/trade_output.png'),
                             pictureFind.picRead(self.cwd + '/res/logistic/general/trust_touch.png')]
 
         #self.back = pictureFind.picRead(self.cwd + '/res/panel/other/back.png')
+
+    def enterOverview(self):
+        '进入进驻总览'
+        self.getScreen()
+        overviewEntry = self.matchPic(self.overviewEntry)
+        if overviewEntry != None:
+            self.click(overviewEntry['result'])
+            self.getScreen()
+            while self.matchPic(self.freeOperator_unSel) == None:
+                sleep(0.5)
+                self.getScreen()
+            return 0
+        else:
+            return -1
 
     def freeOperator(self):
         '撤下心情低于设定值的工作中干员以及心情高于设定值的宿舍中的干员'
@@ -244,6 +258,27 @@ class Logistic:
                         break
         return 0
 
+    def resizeLogisticPanel(self):
+        '恢复基建页面标准大小'
+        self.getScreen()
+        smallIcon = self.matchPic(self.exit_icon_small)
+        if smallIcon != None:
+            self.click(smallIcon['result'])
+            while True:
+                self.getScreen()
+                if self.matchPic(self.exitroom) != None:
+                    break
+                else:
+                    sleep(0.5)
+            self.clickBack()
+            while True:
+                self.getScreen()
+                if (self.matchPic(self.exitroom) == None) and (self.matchPic(self.exit_icon_large) != None):
+                    break
+                else:
+                    sleep(0.5)
+        return 0
+
     def checkDormVacancy(self, basePoint):
         vacancyPos = pictureFind.matchMultiImg_roi(self.screenShot, self.vacancy, 
                                     roi = (basePoint[0] - 652, basePoint[1] - 64, 625, 125), 
@@ -272,7 +307,9 @@ if __name__ == '__main__':
     adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')
     adb.connect()
     test = Logistic(adb, getcwd())
-    test.checkToDoList()
+    test.enterOverview()
+    #test.resizeLogisticPanel()
+    #test.checkToDoList()
     '''
     need2relax = test.freeOperator()
     print(f'需要休息的人数：{need2relax}')
