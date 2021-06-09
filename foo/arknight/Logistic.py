@@ -29,6 +29,9 @@ class Logistic:
     def click(self, picResult):
         self.adb.click(picResult[0], picResult[1])
 
+    def clickBack(self):
+        self.click((100,50))
+
     def swipe(self, startPoint, endPoint, stopCheck = True):
         self.adb.swipe(startPoint[0], startPoint[1], endPoint[0], endPoint[1], lastTime = 500)
         self.adb.swipe(endPoint[0], endPoint[1], endPoint[0], endPoint[1], lastTime = 200)
@@ -57,17 +60,30 @@ class Logistic:
 
 
     def resourceInit(self):
+        #总览界面
         self.freeOperator_sel = pictureFind.picRead(self.cwd + '/res/logistic/general/freeOperator_sel.png')
         self.freeOperator_unSel = pictureFind.picRead(self.cwd + '/res/logistic/general/freeOperator_unSel.png')
         self.roomFlag = pictureFind.picRead(self.cwd + '/res/logistic/general/roomFlag.png')
         self.roomFlagNormal = pictureFind.picRead(self.cwd + '/res/logistic/general/roomFlagNormal.png')
         self.unDetected = pictureFind.picRead(self.cwd + '/res/logistic/general/unDetected.png')
-        #self.zero = pictureFind.picRead(self.cwd + '/res/logistic/general/zero.png')
-        #self.full = pictureFind.picRead(self.cwd + '/res/logistic/general/full.png')
         self.vacancy = pictureFind.picRead(self.cwd + '/res/logistic/general/vacancy.png')
         self.confirmInDorm = pictureFind.picRead(self.cwd + '/res/logistic/general/confirmInDorm.png')
+        #基建主界面
+        self.overviewEntry = pictureFind.picRead(self.cwd + '/res/logistic/general/overviewEntry.png')
+        self.exit_icon_small = pictureFind.picRead(self.cwd + '/res/logistic/general/exit_icon_small.png')
+        self.exit_icon_large = pictureFind.picRead(self.cwd + '/res/logistic/general/exit_icon_large.png')
+        self.todoList_unSel = pictureFind.picRead(self.cwd + '/res/logistic/general/todoList_unSel.png')
+        self.todoList_sel = pictureFind.picRead(self.cwd + '/res/logistic/general/todoList_sel.png')
+        self.exitroom = pictureFind.picRead(self.cwd + '/res/logistic/general/exitroom.png')
+        self.submitting = pictureFind.picRead(self.cwd + '/res/logistic/general/submitting.png')
+        self.todoListPic = [pictureFind.picRead(self.cwd + '/res/logistic/general/manufactory_output.png'),
+                            pictureFind.picRead(self.cwd + '/res/logistic/general/trade_output.png'),
+                            pictureFind.picRead(self.cwd + '/res/logistic/general/trust_touch.png')]
+
+        #self.back = pictureFind.picRead(self.cwd + '/res/panel/other/back.png')
 
     def freeOperator(self):
+        '撤下心情低于设定值的工作中干员以及心情高于设定值的宿舍中的干员'
         freeCount = 0
         tryCount = 0
         while True:
@@ -137,6 +153,7 @@ class Logistic:
         return freeCount
 
     def relaxOperator(self, num):
+        '安排指定数量的干员进入宿舍，num需大于0'
         #要求num > 0
         tryCount = 0
         need2relax = num #需进入宿舍干员数
@@ -183,6 +200,13 @@ class Logistic:
                                 self.click(self.relaxPos[i])
                                 relaxing += 1
                             self.click((1325, 760)) #确认按钮的坐标
+                            #此处应当判断有无回到总览界面
+                            while True:
+                                self.getScreen()
+                                if self.matchPic(self.freeOperator_unSel) != None:
+                                    break
+                                else:
+                                    sleep(0.5)
                             if relaxing >= need2relax:
                                 isLastTurn = True
                                 break
@@ -193,6 +217,32 @@ class Logistic:
             else:
                 return -1
         return need2relax - relaxing if need2relax > relaxing else 0
+
+    def checkToDoList(self):
+        '收获制造站产出，交付订单，获取信赖'
+        self.getScreen()
+        isTodoListExist = self.matchPic(self.todoList_unSel)
+        isTodoListSel = self.matchPic(self.todoList_sel)
+        if isTodoListExist != None or isTodoListSel != None:
+            if isTodoListExist:
+                self.click(isTodoListExist['result'])
+                while True:
+                    self.getScreen()
+                    if self.matchPic(self.todoList_sel) != None:
+                        break
+            interactTodo = []
+            for i in self.todoListPic:
+                interactBtn = self.matchPic(i)
+                if interactBtn != None:
+                    interactTodo.append(interactBtn['result'])
+            interactTodo.sort(key = lambda x:x[0], reverse = True)
+            for i in interactTodo:
+                self.click(i)
+                while True:
+                    self.getScreen()
+                    if self.matchPic(self.submitting) == None: #等待提交完成
+                        break
+        return 0
 
     def checkDormVacancy(self, basePoint):
         vacancyPos = pictureFind.matchMultiImg_roi(self.screenShot, self.vacancy, 
@@ -222,7 +272,11 @@ if __name__ == '__main__':
     adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')
     adb.connect()
     test = Logistic(adb, getcwd())
+    test.checkToDoList()
+    '''
     need2relax = test.freeOperator()
-    #print(f'需要休息的人数：{need2relax}')
-    #test.relaxOperator(1)
+    print(f'需要休息的人数：{need2relax}')
+    if need2relax > 0:
+        test.relaxOperator(need2relax)
+    '''
     #print(test.findOpOnScreen('梓兰'))
