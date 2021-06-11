@@ -1,4 +1,4 @@
-from os import getcwd, listdir
+from os import getcwd
 from sys import path
 from time import sleep
 
@@ -74,6 +74,7 @@ class Logistic:
         self.exit_icon_large = pictureFind.picRead(self.cwd + '/res/logistic/general/exit_icon_large.png')
         self.todoList_unSel = pictureFind.picRead(self.cwd + '/res/logistic/general/todoList_unSel.png')
         self.todoList_sel = pictureFind.picRead(self.cwd + '/res/logistic/general/todoList_sel.png')
+        self.todoList_no = pictureFind.picRead(self.cwd + '/res/logistic/general/todoList_no.png')
         self.exitroom = pictureFind.picRead(self.cwd + '/res/logistic/general/exitroom.png')
         self.submitting = pictureFind.picRead(self.cwd + '/res/logistic/general/submitting.png') #正在连接神经网络
         self.todoListPic = [pictureFind.picRead(self.cwd + '/res/logistic/general/manufactory_output.png'),
@@ -144,6 +145,8 @@ class Logistic:
                                 trainRoomCount += 1
                                 if trainRoomCount >= 2: #为了保证检查到B4的宿舍
                                     isLastTurn = True
+                                continue
+                            else:
                                 continue
                         self.click((eachRoom[0] - 785, eachRoom[1] + 6))
                         self.getScreen()
@@ -234,9 +237,16 @@ class Logistic:
 
     def checkToDoList(self):
         '收获制造站产出，交付订单，获取信赖'
-        self.getScreen()
-        isTodoListExist = self.matchPic(self.todoList_unSel)
-        isTodoListSel = self.matchPic(self.todoList_sel)
+        while True:
+            #避免进入基建的时候右上角弹出提示遮挡提示按钮
+            self.getScreen()
+            isTodoListExist = self.matchPic(self.todoList_unSel)
+            isTodoListSel = self.matchPic(self.todoList_sel)
+            isTodoListNo = pictureFind.matchImg_roi(self.screenShot, self.todoList_no, (1315, 70, 125, 60), confidencevalue = 0.7)
+            if isTodoListNo != None or isTodoListExist != None or isTodoListSel != None:
+                break
+            else:
+                sleep(0.5)
         if isTodoListExist != None or isTodoListSel != None:
             if isTodoListExist:
                 self.click(isTodoListExist['result'])
@@ -256,6 +266,7 @@ class Logistic:
                     self.getScreen()
                     if self.matchPic(self.submitting) == None: #等待提交完成
                         break
+            self.click((20, 800))
         return 0
 
     def resizeLogisticPanel(self):
@@ -280,6 +291,7 @@ class Logistic:
         return 0
 
     def checkDormVacancy(self, basePoint):
+        '判断此宿舍是否还有空位，返回一个列表，[0]为剩余空位数，[1]为最左侧空位对应的坐标'
         vacancyPos = pictureFind.matchMultiImg_roi(self.screenShot, self.vacancy, 
                                     roi = (basePoint[0] - 652, basePoint[1] - 64, 625, 125), 
                                     confidencevalue = 0.7)
@@ -289,31 +301,25 @@ class Logistic:
             return [0, None]
 
     def dormRange(self, remaingNum, vacancyNum):
+        '适用于填充宿舍时的range函数'
         if remaingNum >= vacancyNum:
             return range(vacancyNum)
         else:
             return range(vacancyNum - remaingNum, vacancyNum)
 
-    def findOpOnScreen(self, operatorName):
-        self.getScreen()
-        picInfo = pictureFind.matchImg(self.screenShot, wordsTemplate.getTemplatePic_CH(operatorName, 23), confidencevalue = 0.7)
-        if picInfo != None:
-            return picInfo['result']
-        else:
-            return False
-        
-
 if __name__ == '__main__':
     adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')
     adb.connect()
     test = Logistic(adb, getcwd())
-    test.enterOverview()
-    #test.resizeLogisticPanel()
-    #test.checkToDoList()
     '''
+    #test.resizeLogisticPanel()
+    test.checkToDoList()
+    
+    test.enterOverview()
     need2relax = test.freeOperator()
     print(f'需要休息的人数：{need2relax}')
     if need2relax > 0:
         test.relaxOperator(need2relax)
     '''
-    #print(test.findOpOnScreen('梓兰'))
+    
+    #print(test.findOpOnScreen('德克萨斯'))

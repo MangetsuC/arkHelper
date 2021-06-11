@@ -175,7 +175,7 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
     return match_result
 
 
-def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, maxReturn=-1, isResize = True, colorSpace = (0,0,0), debugMode = False):
+def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, targetSize = (1440, 810), maxReturn=-1, isResize = True, colorSpace = (0,0,0), debugMode = False):
     '用于查找原始图片中的多个目标图片，若不存在图片则返回None，否则返回一个目标图片坐标构成的元组；imgsrc为原始图片路径，imgobj为目标图片路径，confidencevalue为置信度，maxReturn在非负的情况下只会返回相应数值的坐标，为0则永远返回None]'
     maxReturn = int(maxReturn)
     if isinstance(imgsrc,str):
@@ -186,7 +186,7 @@ def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, maxReturn=-1, isResize = 
     else:
         imsrc = imgsrc
     if isResize:
-        imsrc = resize(imsrc, (1440, 810))
+        imsrc = resize(imsrc, targetSize)
     if isinstance(imgobj,str):
         imobj = imreadCH(imgobj)
     elif isinstance(imgobj, dict):

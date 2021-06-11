@@ -1,17 +1,10 @@
 from os import getcwd
-from os import path as ospath
-from subprocess import PIPE, Popen
 from sys import path
-
-from cv2 import (COLOR_BGRA2BGR, COLOR_RGBA2GRAY, INTER_AREA, INTER_CUBIC, INTER_LANCZOS4, THRESH_BINARY, THRESH_BINARY_INV,
-                 bilateralFilter, convertScaleAbs, cvtColor, filter2D, imwrite,
-                 resize, threshold, erode, getStructuringElement, MORPH_RECT, dilate, imshow, waitKey)
-from numpy import array as npArray
-from numpy import float32, uint8, ones
 
 path.append(getcwd())
 from foo.pictureR import pictureFind, wordsTemplate
 
+#实际上并没有真正用到ocr技术
 def ocr_operatorMood(pic, roi = (0, 0, 0, 0)):
     ans = []
     maxMood = pictureFind.imreadCH(getcwd() + '/res/logistic/general/maxMood.png')
@@ -43,34 +36,5 @@ def ocr_roomName(pic, basePoint):
     else:
         return ''
 
-def _ocrAnalyse(pic, roi = (0, 0, 0, 0), resolution = (1440, 810)):
-    if roi != (0, 0, 0, 0):
-        roi = list(roi)
-        img = pictureFind.imreadCH(pic)
-        maxWidth = img.shape[1]
-        maxHeight = img.shape[0]
-        roi = (int(roi[0]/1440*resolution[0]), int(roi[1]/810*resolution[1]),
-                int(roi[2]/1440*resolution[0]), int(roi[3]/810*resolution[1]))
-        if roi[0] + roi[2] > maxWidth:
-            roi[2] = maxWidth - roi[0]
-        if roi[1] + roi[3] > maxHeight:
-            roi[3] = maxHeight - roi[1]
-        cmdReturn = Popen('Windows.Media.Ocr.Cli.exe -r {x} {y} {width} {height} {picName}'.
-                    format(x = roi[0], y = roi[1], width = roi[2], height = roi[3], picName = pic), 
-                shell = True, stdout = PIPE, stderr = PIPE, bufsize = -1, cwd = getcwd() + '/bin/ocr').communicate()
-    else:
-        cmdReturn = Popen('Windows.Media.Ocr.Cli.exe {picName}'.format(picName = pic), 
-            shell = True, stdout = PIPE, stderr = PIPE, bufsize = -1, cwd = getcwd() + '/bin/ocr').communicate()
-    strout = cmdReturn[0].decode('gbk').replace('\r\n', '\n')
-    return strout.strip()
-
-def checkOcr():
-    if _ocrAnalyse('ocrTest.png') == '成功':
-        return True
-    else:
-        return False
-
-if __name__ == '__main__':
-    print(checkOcr())
 
 

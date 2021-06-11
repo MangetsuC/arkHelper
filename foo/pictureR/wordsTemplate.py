@@ -4,7 +4,7 @@ from cv2 import cvtColor, COLOR_RGB2BGR
 from os import getcwd
 
 def getTemplatePic_CH(words, fontsize):
-    #字号典型值 基建干员名称23 进驻总览房屋名称28
+    #字号典型值 基建干员名称23 进驻总览房屋名称28(1440*810) 基建干员名称30 进驻总览房屋名称38(1920*1080)
     ttf = ImageFont.truetype(getcwd() + "/res/fonts/SourceHanSansCN-Normal.ttf", fontsize) #字体选用思源黑体
     wordsPic = Image.new('RGB', ttf.getsize(words))
     wordsDraw = ImageDraw.Draw(wordsPic)
