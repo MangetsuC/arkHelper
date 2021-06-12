@@ -150,7 +150,7 @@ class Adb:
                     screenMsg = self.cmd.run('adb shell wm size')
                 else:
                     screenMsg = self.cmd.run('adb -s {device} shell wm size'.format(device = self.ip))
-                if screenMsg != None:
+                if screenMsg != '':
                     break
             screenMsg = screenMsg.replace(' ', '')
             screenMsg = screenMsg.replace('\n', '')
@@ -185,26 +185,16 @@ class Adb:
             else:
                 sleep(1)
             
-        if self.simulator == 'yeshen':
-            self.cmd.run('adb -s {device} shell screencap -p /sdcard/arktemp.png'\
-                .format(device = self.ip))#这两段拷贝到文件，夜神处理
-            self.cmd.run('adb -s {device} pull \"/sdcard/arktemp.png\" \"{0}/{1}.png\"'\
-                .format(self.adbPath, pngName, device = self.ip))
-        elif self.simulator == 'leidian':
-            self.cmd.run('adb exec-out screencap -p > {0}/{1}.png'\
+        if self.simulator == 'leidian':
+            self.cmd.run('adb shell screencap -p /sdcard/arktemp.png')
+            self.cmd.run('adb pull \"/sdcard/arktemp.png\" \"{0}/{1}.png\"'\
                 .format(self.adbPath, pngName))
         else:
-            self.cmd.run('adb -s {device} exec-out screencap -p > \"{0}/{1}.png\"'\
+            self.cmd.run('adb -s {device} shell screencap -p /sdcard/arktemp.png'\
+                .format(device = self.ip))
+            self.cmd.run('adb -s {device} pull \"/sdcard/arktemp.png\" \"{0}/{1}.png\"'\
                 .format(self.adbPath, pngName, device = self.ip))
 
-        if self.simulator != 'yeshen':
-            pic0 = open(self.adbPath + '/' + pngName +'.png', 'br')
-            bys = pic0.read().replace(b'\r\n', b'\n')
-            pic0.close()
-            
-            pic1 = open(self.adbPath + '/' + pngName +'.png', 'bw')   
-            pic1.write(bys)
-            pic1.close()
         return True
 
     def click(self, x, y, isSleep = True):
