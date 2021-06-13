@@ -2,6 +2,7 @@ from os import getcwd
 
 class RuleEncoder:
     def __init__(self, rulePath):
+        self.rulePath = rulePath
         self.rules = self.loadRules(rulePath)
 
     def loadRules(self, rulePath):
@@ -24,10 +25,10 @@ class RuleEncoder:
                         if len(temp) != 1:
                             ruleName = temp[1]
                         else:
-                            ruleName = '未命名'
+                            ruleName = '未命名配置'
                         pass
                     elif 'END' in text and text[0:3] == 'END':
-                        '规则结束'
+                        #规则结束
                         thisRule[roomName] = ruleOneRoom.copy()
                         rules[ruleName] = thisRule.copy()
                         thisRule.clear()
@@ -53,6 +54,9 @@ class RuleEncoder:
                                 ruleOneRoom.append(text[-1])
         return rules
 
+    def reloadRule(self):
+        self.rules = self.loadRules(self.rulePath)
+
     def getAllRulesName(self):
         return list(self.rules.keys())
 
@@ -60,5 +64,5 @@ class RuleEncoder:
         return self.rules.get(ruleName, 'CANNOT FIND THIS RULE')
 
 if __name__ == '__main__':
-    test = RuleEncoder(getcwd() + '/logisticRule')
-    print(test.getOneRule('测试配置'))
+    test = RuleEncoder(getcwd() + '/logisticRule.ahrule')
+    print(test.getOneRule('示例配置'))

@@ -1,6 +1,8 @@
 from os import getcwd
 from sys import path
-from time import sleep
+from time import sleep, time
+
+from cv2 import resize
 
 path.append(getcwd())
 from foo.pictureR import pictureFind, ocr, wordsTemplate
@@ -30,6 +32,12 @@ class Room:
 
     def clickBack(self):
         self.click((100,50))
+
+    def checkSubmitting(self):
+        while True:
+            self.getScreen()
+            if pictureFind.matchImg(self.screenShot, submitting, confidencevalue = 0.7) == None: #等待提交完成
+                break
 
     def swipeToOperatorHead(self):
         '选择干员界面回到最左侧'
@@ -70,14 +78,13 @@ class Room:
                 lastScreen = pictureFind.picRead(self.screenShot)
         return 0
 
-    def backToOneLevel(self, layerMark):
+    def backToOneLayer(self, layerMark):
         '回到某一层'
-        tryTime = 0
+        startTime = time()
         while pictureFind.matchImg(self.screenShot, layerMark, confidencevalue = 0.7) == None:
             self.clickBack()
             self.getScreen()
-            tryTime += 1
-            if tryTime > 5:
+            if time() - startTime > 30:
                 return -1
         return 0
 
@@ -94,12 +101,12 @@ class Room:
     def checkOpAvailable(self, basePoint):
         workingPic = pictureFind.matchImg_roi(self.screenShot, working,
                                                 roi = (basePoint[0] - 80, basePoint[1] - 144, 115, 60),
-                                                confidencevalue = 0.7)
+                                                confidencevalue = 0.5)
         if workingPic != None:
             return False
         restingPic = pictureFind.matchImg_roi(self.screenShot, resting,
                                                 roi = (basePoint[0] - 80, basePoint[1] - 144, 115, 60),
-                                                confidencevalue = 0.7)
+                                                confidencevalue = 0.5)
         if restingPic != None:
             return False
         return True
@@ -115,16 +122,18 @@ class Room:
         if restingPic != None:
             if restingPic['result'][0] > 800:
                 return False
+        thisScreen = pictureFind.imreadCH(self.screenShot)
+        thisScreen = resize(thisScreen, (1920, 1080))
         for i in operatorList:
             i = i.strip('+').strip('|').strip('*').strip('$')
-            if pictureFind.matchImg(self.screenShot, wordsTemplate.getTemplatePic_CH(i, 30),
-                                targetSize = (1920, 1080), confidencevalue = 0.7) != None:
+            if pictureFind.matchImg(thisScreen, wordsTemplate.getTemplatePic_CH(i, 30),
+                                targetSize = (0, 0), confidencevalue = 0.7) != None:
                 return True
         return False
 
     def backToMain(self):
         '回到基建首页'
-        return self.backToOneLevel(overviewEntry)
+        return self.backToOneLayer(overviewEntry)
 
     def findAllRooms(self):
         '找到本类所有房间'
@@ -177,28 +186,10 @@ class Room:
                 return len(vacancyCoor)
         return 0
 
-    def dispatchOperator(self):
+    def dispatchOperator(self, roomRule, roomType, needNum):
         self.click((1170, 155))
-
-
-class Manufactory(Room):
-    def __init__(self, adb):
-        super(Manufactory, self).__init__(adb, '制造站', 'LEFT')
-
-    def checkType(self):
-        trans = {'作战记录':'|', '赤金':'$', '源石':'*'}
-        self.getScreen()
-        for i in ['作战记录', '赤金', '源石']:
-            if pictureFind.matchImg_roi(self.screenShot, wordsTemplate.getTemplatePic_CH(i, 28),
-                                        roi = (150, 685, 200, 50), confidencevalue = 0.7) != None:
-                return trans[i]
-        else:
-            return False
-
-    def dispatchOperator(self, manufactoryRule, roomType, needNum):
-        super(Manufactory, self).dispatchOperator()
         unFit = []
-        myRuleList = manufactoryRule.copy()
+        myRuleList = roomRule.copy()
         myRuleList.reverse()
         while needNum != 0:
             try:
@@ -261,7 +252,6 @@ class Manufactory(Room):
                         unFit.append(opFinding)
                         continue
                 opFinding = opFinding.strip('+').strip('|').strip('*').strip('$')
-                print(opFinding)
                 self.swipeToOperatorHead()
                 self.getScreen()
                 opCoor = self.findOpOnScreen(opFinding) #先寻找一次
@@ -287,27 +277,102 @@ class Manufactory(Room):
                 break
         myRuleList.extend(reversed(unFit))
         return list(reversed(myRuleList))
-        
 
 
+class Manufactory(Room):
+    '制造站'
+    def __init__(self, adb):
+        super(Manufactory, self).__init__(adb, '制造站', 'LEFT')
+
+    def checkType(self):
+        trans = {'作战记录':'|', '赤金':'$', '源石':'*'}
+        self.getScreen()
+        for i in ['作战记录', '赤金', '源石']:
+            if pictureFind.matchImg_roi(self.screenShot, wordsTemplate.getTemplatePic_CH(i, 28),
+                                        roi = (150, 685, 200, 50), confidencevalue = 0.7) != None:
+                return trans[i]
+        else:
+            return False
+
+class Trade(Room):
+    '贸易站'
+    def __init__(self, adb):
+        super(Trade, self).__init__(adb, '贸易站', 'LEFT')
+        self.layer1Mark = pictureFind.picRead(getcwd() + '/res/logistic/trade/tradeLayer1Mark.png')
+        self.money = pictureFind.picRead(getcwd() + '/res/logistic/trade/money.png')
+        self.stone = pictureFind.picRead(getcwd() + '/res/logistic/trade/stone.png')
+
+    def checkType(self):
+        ans = False
+        for i in range(5):
+            self.click((80, 700))
+            self.getScreen()
+            isMoney = pictureFind.matchImg_roi(self.screenShot, self.money, roi = (1060, 625, 255, 165),
+                                                confidencevalue = 0.7)
+            isStone = pictureFind.matchImg_roi(self.screenShot, self.stone, roi = (1060, 625, 255, 165),
+                                                confidencevalue = 0.7)
+            if isMoney != None:
+                ans = '$'
+                break
+            if isStone != None:
+                ans = '*'
+                break
+        self.backToOneLayer(self.layer1Mark) #认为不会出错
+        return ans
+
+class PowerRoom(Room):
+    '发电站'
+    def __init__(self, adb):
+        super(PowerRoom, self).__init__(adb, '发电站', 'LEFT')
+
+    def checkType(self):
+        return ''
+
+class OfficeRoom(Room):
+    '办公室'
+    def __init__(self, adb):
+        super(OfficeRoom, self).__init__(adb, '办公室', 'RIGHT')
+
+    def checkType(self):
+        return ''
+
+class ReceptionRoom(Room):
+    '会客室'
+    #不完整，暂未完成自动收发线索功能
+    def __init__(self, adb):
+        super(ReceptionRoom, self).__init__(adb, '会客室', 'RIGHT')
+
+    def checkType(self):
+        return ''
 
 operatorEnter = pictureFind.picRead(getcwd() + '/res/logistic/general/operatorEnter.png') #进驻界面的空位
 overviewEntry = pictureFind.picRead(getcwd() + '/res/logistic/general/overviewEntry.png') #进驻总览按钮
 resting = pictureFind.picRead(getcwd() + '/res/logistic/general/resting.png')
 working = pictureFind.picRead(getcwd() + '/res/logistic/general/working.png')
+submitting = pictureFind.picRead(getcwd() + '/res/logistic/general/submitting.png')
 
 if __name__ == '__main__':
-    rule = ruleEncoder.RuleEncoder(getcwd() + '/logisticRule')
+    rule = ruleEncoder.RuleEncoder(getcwd() + '/logisticRule.ahrule')
     adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')
     adb.connect()
+    '''
     testM = Manufactory(adb)
-    #print(testM.findOpOnScreen('砾'))
-    
     testM.findAllRooms()
-    tempRule = rule.getOneRule('测试配置')['制造站']
+    tempRule = rule.getOneRule('示例配置')['制造站']
     while testM.enterRoom() > 0:
         roomType = testM.checkType()
         vacancyNum = testM.checkRoomVacancy()
         if vacancyNum > 0:
             tempRule = testM.dispatchOperator(tempRule, roomType, vacancyNum)
         testM.backToMain()
+    '''
+    testT = Trade(adb)
+    testT.findAllRooms()
+    tempRule = rule.getOneRule('示例配置')['贸易站']
+    while testT.enterRoom() > 0:
+        roomType = testT.checkType()
+        vacancyNum = testT.checkRoomVacancy()
+        if vacancyNum > 0:
+            tempRule = testT.dispatchOperator(tempRule, roomType, vacancyNum)
+        testT.backToMain()
+

@@ -1,18 +1,18 @@
 from os import getcwd
 from sys import path
-from time import sleep
+from time import sleep, time
 
 path.append(getcwd())
 from foo.adb import adbCtrl
-from foo.pictureR import pictureFind, ocr, wordsTemplate
+from foo.pictureR import pictureFind, ocr
+from foo.logisticDepartment import rooms, ruleEncoder
 
 class Logistic:
-    def __init__(self, adb, cwd):
+    def __init__(self, adb, defaultRuleName, rulePath = None):
         self.adb = adb
-        self.cwd = cwd
+        self.cwd = getcwd()
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
 
-        self.similarChar = {'巧':15}
         self.operatorPosOffset = [757-1355, 885-1355, 1009-1355, 1137-1355, 1264-1355]
         self.moodsPos = [(353, 577, 87, 35), (353, 614, 87, 35), (353, 650, 87, 35), (353, 686, 87, 35), (353, 722, 87, 35)]
         self.relaxPos = [(855, 240), (700, 550), (700, 240), (540, 550), (540, 240)] #宿舍5 4 3 2 1
@@ -20,6 +20,18 @@ class Logistic:
         self.moodThreshold = 0 #撤下阈值
         self.dormThreshold = 24 #上班阈值
         self.enableRooms = ['制造站', '贸易站', '发电站', '办公室', '会客室']
+
+        self.rooms = {  '制造站':rooms.Manufactory(self.adb),
+                        '贸易站':rooms.Trade(self.adb),
+                        '发电站':rooms.PowerRoom(self.adb),
+                        '办公室':rooms.OfficeRoom(self.adb),
+                        '会客室':rooms.ReceptionRoom(self.adb)}
+
+        self.ruleName = defaultRuleName
+        if rulePath == None:
+            self.rule = ruleEncoder.RuleEncoder(self.cwd + '/logisticRule.ahrule')
+        else:
+            self.rule = ruleEncoder.RuleEncoder(rulePath + '/logisticRule.ahrule')
 
         self.resourceInit()
     
@@ -31,6 +43,19 @@ class Logistic:
 
     def clickBack(self):
         self.click((100,50))
+
+    def enterLogisticPanel(self):
+        self.click((1150, 700))
+        startTime = time()
+        while True:
+            if time() - startTime > 10:
+                self.click((1150, 700))
+                startTime = time()
+            self.getScreen()
+            if self.matchPic(self.overviewEntry) != None:
+                break
+            else:
+                sleep(0.5)
 
     def swipe(self, startPoint, endPoint, stopCheck = True):
         self.adb.swipe(startPoint[0], startPoint[1], endPoint[0], endPoint[1], lastTime = 500)
@@ -81,7 +106,7 @@ class Logistic:
                             pictureFind.picRead(self.cwd + '/res/logistic/general/trade_output.png'),
                             pictureFind.picRead(self.cwd + '/res/logistic/general/trust_touch.png')]
 
-        #self.back = pictureFind.picRead(self.cwd + '/res/panel/other/back.png')
+        self.actBtn = pictureFind.picRead(self.cwd + '/res/panel/other/act.png')
 
     def enterOverview(self):
         '进入进驻总览'
@@ -307,19 +332,36 @@ class Logistic:
         else:
             return range(vacancyNum - remaingNum, vacancyNum)
 
+    def returnToWork(self, room, roomRule):
+        room.findAllRooms()
+        while room.enterRoom() > 0:
+            roomType = room.checkType()
+            vacancyNum = room.checkRoomVacancy()
+            if vacancyNum > 0:
+                roomRule = room.dispatchOperator(roomRule, roomType, vacancyNum)
+            room.backToMain()
+
+    def run(self):
+        self.enterLogisticPanel()
+        self.checkToDoList()
+        self.enterOverview()
+        need2relax = self.freeOperator()
+        print(f'需要休息的人数：{need2relax}')
+        if need2relax > 0:
+            restNum = self.relaxOperator(need2relax)
+            if restNum > 0:
+                print(f'仍有{restNum}位干员为安排进宿舍休息')
+        self.rooms['制造站'].backToMain()
+        self.resizeLogisticPanel()
+        for eachRoom in self.enableRooms:
+            self.returnToWork(self.rooms[eachRoom], self.rule.getOneRule(self.ruleName)[eachRoom])
+        self.rooms['制造站'].backToOneLayer(self.actBtn)
+
 if __name__ == '__main__':
     adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')
     adb.connect()
-    test = Logistic(adb, getcwd())
-    '''
-    #test.resizeLogisticPanel()
-    test.checkToDoList()
+    test = Logistic(adb, '示例配置')
+    test.run()
     
-    test.enterOverview()
-    need2relax = test.freeOperator()
-    print(f'需要休息的人数：{need2relax}')
-    if need2relax > 0:
-        test.relaxOperator(need2relax)
-    '''
     
     #print(test.findOpOnScreen('德克萨斯'))
