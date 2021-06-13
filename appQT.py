@@ -24,6 +24,7 @@ from foo.ui.launch import AfterInit, BlackBoard, Launch
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
 from foo.ui.screen import Screen, ScreenRateMonitor
+from foo.ui.UILogistic import UILogistic
 
 
 class App(QWidget):
@@ -86,7 +87,10 @@ class App(QWidget):
 
         self.configPath = self.userDataPath + '/config.ini'  #读
         self.config = ConfigParser()
-        self.config.read(filenames=self.configPath, encoding="UTF-8")
+        try:
+            self.config.read(filenames=self.configPath, encoding="UTF-8")
+        except UnicodeDecodeError:
+            self.config.read(filenames=self.configPath, encoding="gbk")
 
         isNeedWrite = False
         if not self.config.has_section('connect'):
@@ -126,6 +130,9 @@ class App(QWidget):
         if not self.config.has_option('function', 'credit'):
             self.config.set('function','credit','False')
             isNeedWrite = True
+        if not self.config.has_option('function', 'logistic'):
+            self.config.set('function','logistic','False')
+            isNeedWrite = True
         if not self.config.has_option('function', 'shutdown'):
             self.config.set('function','shutdown','False')
             isNeedWrite = True
@@ -156,6 +163,34 @@ class App(QWidget):
             self.config.set('stone','maxnum','0')
             isNeedWrite = True
 
+        if not self.config.has_section('logistic'):
+            self.config.add_section('logistic')
+            isNeedWrite = True
+        if not self.config.has_option('logistic', 'defaultRule'):
+            self.config.set('logistic','defaultRule','示例配置')
+            isNeedWrite = True
+        if not self.config.has_option('logistic', 'manufactory'):
+            self.config.set('logistic','manufactory','True')
+            isNeedWrite = True
+        if not self.config.has_option('logistic', 'trade'):
+            self.config.set('logistic','trade','True')
+            isNeedWrite = True
+        if not self.config.has_option('logistic', 'powerRoom'):
+            self.config.set('logistic','powerRoom','True')
+            isNeedWrite = True
+        if not self.config.has_option('logistic', 'officeRoom'):
+            self.config.set('logistic','officeRoom','True')
+            isNeedWrite = True
+        if not self.config.has_option('logistic', 'receptionRoom'):
+            self.config.set('logistic','receptionRoom','True')
+            isNeedWrite = True
+        if not self.config.has_option('logistic', 'moodThreshold'):
+            self.config.set('logistic','moodThreshold','0')
+            isNeedWrite = True
+        if not self.config.has_option('logistic', 'dormThreshold'):
+            self.config.set('logistic','dormThreshold','24')
+            isNeedWrite = True
+
         if not self.config.has_section('notice'):
             self.config.add_section('notice')
             isNeedWrite = True
@@ -167,9 +202,7 @@ class App(QWidget):
             isNeedWrite = True
 
         if isNeedWrite:
-            configInI = open(self.configPath, 'w')  #写
-            self.config.write(configInI)
-            configInI.close()  #配置文件初始化结束
+            self.configUpdate()  #配置文件初始化结束
 
         if not path.exists(self.userDataPath + '/schedule.json'):
             with open(self.userDataPath + '/schedule.json', 'w', encoding = 'UTF-8') as j:
@@ -193,7 +226,7 @@ class App(QWidget):
         self.btnSetting.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
         self.btnUpdate.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
         self.btnStartAndStop.setMinimumSize(self.getRealSize(180), self.getRealSize(131))
-        self.btnMonitorPublicCall.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
+        #self.btnMonitorPublicCall.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
         self.tbBattle.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
         self.tbSchedule.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
         self.tbAutoPC.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
@@ -275,11 +308,13 @@ class App(QWidget):
         self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
         self.btnStartAndStop.clicked.connect(self.clickBtnStartAndStop)
 
+        '''
         self.btnMonitorPublicCall = QPushButton('公开招募计算器', self)
         self.btnMonitorPublicCall.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
         self.btnMonitorPublicCall.setCheckable(True)
         self.btnMonitorPublicCall.clicked[bool].connect(self.monitorPC)
         self.btnMonitorPublicCall.setToolTip('打开公招计算器，它会自动帮你计算模拟器屏幕上的tag组合')
+        '''
 
         self.tbBattle = QPushButton('战斗:无限', self) #战斗可选按钮
         self.tbBattle.setCheckable(True)
@@ -316,6 +351,9 @@ class App(QWidget):
         self.actSkipStar5.triggered.connect(self.setAutoPCFunc)
         if self.config.getboolean('function','autoPC_skip5Star'):
             self.actSkipStar5.setIcon(QIcon(self.selectedPNG))
+        self.actPcCalculate = QAction('公招计算器')
+        self.actPcCalculate.triggered.connect(self.monitorPC)
+        self.pcCalculateChecked = False
 
         self.actSchJson = QAction('路线规划')
         self.actSchJson.triggered.connect(self.openSchEdit)
@@ -331,6 +369,14 @@ class App(QWidget):
         self.tbCredit.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
         self.tbCredit.clicked[bool].connect(self.functionSel)
         self.tbCredit.setToolTip('自动拜访好友的基建以获取信用点')
+
+        self.tbLogistic = QPushButton('自动基建', self) #战斗可选按钮
+        self.tbLogistic.setCheckable(True)
+        self.tbLogistic.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
+        self.tbLogistic.clicked[bool].connect(self.functionSel)
+        self.tbLogistic.setToolTip('自动进行基建操作，右键以配置')
+
+        self.actLogisticConfig = QAction('配置自动基建')
 
         self.tbShutdown = QPushButton('完成后关机', self)
         self.tbShutdown.setCheckable(True)
@@ -420,7 +466,7 @@ class App(QWidget):
         self.grid.setHorizontalSpacing(5)
         
         self.grid.addWidget(self.btnStartAndStop, 0, 0, 3, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btnMonitorPublicCall, 1, 1, 1, 2, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbLogistic, 1, 1, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbSchedule, 2, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbAutoPC, 1, 3, 1, 1, alignment=Qt.AlignCenter)
@@ -460,8 +506,11 @@ class App(QWidget):
         self.tbShutdown.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tbShutdown.customContextMenuRequested.connect(self.functionSetMeun)
         #公开招募按钮
-        self.btnMonitorPublicCall.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.btnMonitorPublicCall.customContextMenuRequested.connect(self.functionSetMeun)
+        #self.btnMonitorPublicCall.setContextMenuPolicy(Qt.CustomContextMenu)
+        #self.btnMonitorPublicCall.customContextMenuRequested.connect(self.functionSetMeun)
+        #自动基建
+        self.tbLogistic.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tbLogistic.customContextMenuRequested.connect(self.functionSetMeun)
 
     def initVar(self):
         self.ico = self.cwd + '/res/ico.ico'
@@ -485,6 +534,7 @@ class App(QWidget):
         self.shutdownFlag = None
         self.autoPCFlag = None
         self.doctorFlag = False
+        self.logisticFlag = None
 
     def initNormalPicRes(self):
         self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
@@ -610,13 +660,18 @@ class App(QWidget):
         self.creditFlag = self.config.getboolean('function', 'credit')
         self.tbCredit.setChecked(self.creditFlag)
 
+        self.logisticFlag = self.config.getboolean('function', 'logistic')
+        self.tbLogistic.setChecked(self.logisticFlag)
+
         self.shutdownFlag = self.config.getboolean('function', 'shutdown')
         self.tbShutdown.setChecked(self.shutdownFlag) #自动关机
 
+        '''
         self.PCFlag = self.config.getboolean('function', 'publiccall')
         self.btnMonitorPublicCall.setChecked(self.PCFlag)
         if self.PCFlag and self.publicCall != None:
             self.publicCall.turnOn()
+        '''
     
     def initClass(self):
         self.adb = Adb(self.ico, self.cwd + '/bin/adb', self.config)
@@ -631,13 +686,21 @@ class App(QWidget):
         self.task = Task(self.adb, self.cwd, self.ico, self.listGoTo)
         self.credit = Credit(self.adb, self.cwd, self.listGoTo)
 
+        if path.exists(self.userDataPath + '/logisticRule.ahrule'):
+            self.logisticReady()
+        else:
+            self.logistic = None
+            self.tbLogistic.setEnabled(False)
+            self.logisticFlag = False
+            self.tbLogistic.setChecked(self.logisticFlag)
+
         if path.exists(self.cwd + '/data.json'):
             self.initPc()
         else:
             self._data = None
             self.publicCall = None
             self.tbAutoPC.setEnabled(False)
-            self.btnMonitorPublicCall.setEnabled(False)
+            #self.btnMonitorPublicCall.setEnabled(False)
         
         
         self.schJsonEditer = JsonEdit(self.app, self.userDataPath, self.ico)
@@ -646,6 +709,7 @@ class App(QWidget):
         self.afterInit_Q = AfterInit(self, self.cwd)
         self.afterInit_Q.boardNeedShow.connect(self.showMessage)
         self.afterInit_Q.reloadPcModule.connect(self.initPc)
+        self.afterInit_Q.logisticReady.connect(self.logisticReady)
 
         self.rateMonitor = ScreenRateMonitor(self)
         self.rateMonitor.rateChanged.connect(self.resizeUI)
@@ -658,12 +722,12 @@ class App(QWidget):
             with open(self.cwd + '/data.json', 'r', encoding = 'UTF-8') as f:
                 temp = f.read()
         self._data = loads(temp)
-        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, self.btnMonitorPublicCall, 
+        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, #self.btnMonitorPublicCall, 
                     self.listGoTo, self._data['data'][0]['normal'], self._data['data'][0]['high']) #公开招募
         self.publicCall.setStar(1, 1, self.config.getboolean('function', 'autoPC_skip1Star')) #自动公招保留一星设定
         self.publicCall.setStar(5, 1, self.config.getboolean('function', 'autoPC_skip5Star'))
         self.tbAutoPC.setEnabled(True)
-        self.btnMonitorPublicCall.setEnabled(True)
+        #self.btnMonitorPublicCall.setEnabled(True)
 
     def initSlrSel(self):
         '初始化模拟器选择'
@@ -745,6 +809,7 @@ class App(QWidget):
             rightClickMeun.addAction(self.actSkipStar1)
             rightClickMeun.addAction(self.actSkipStar5)
             rightClickMeun.addAction(self.line)
+            rightClickMeun.addAction(self.actPcCalculate)
         elif self.source.text() == '任务交付':
             if self.config.getboolean('function', 'task'):
                 text = '设为默认关闭'
@@ -765,6 +830,13 @@ class App(QWidget):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
+        elif self.source == self.tbLogistic:
+            if self.config.getboolean('function', 'logistic'):
+                text = '设为默认关闭'
+            else:
+                text = '设为默认开启'
+            rightClickMeun.addAction(self.actLogisticConfig)
+            rightClickMeun.addAction(self.line)
         self.actionSetDeafult = rightClickMeun.addAction(text)
         self.actionSetDeafult.triggered.connect(self.setDefault)
         rightClickMeun.exec_(QCursor.pos())
@@ -791,6 +863,9 @@ class App(QWidget):
         elif self.source.text() == '完成后关机':
             key = 'shutdown'
             value = not self.config.getboolean('function', 'shutdown')
+        elif self.source == self.tbLogistic:
+            key = 'logistic'
+            value = not self.config.getboolean('function', 'logistic')
 
         self.changeDefault(key, value)
     
@@ -812,6 +887,8 @@ class App(QWidget):
             self.publicCall.searchFlag = isChecked
         elif source.text() == '自动聘用':
             self.publicCall.employFlag = isChecked
+        elif source == self.tbLogistic:
+            self.logisticFlag = isChecked
 
     def setAutoPCFunc(self):
         source = self.sender()
@@ -847,11 +924,13 @@ class App(QWidget):
     def openSchEdit(self):
         self.schJsonEditer.editerShow()
     
-    def monitorPC(self, isChecked):
-        if isChecked:
-            self.publicCall.turnOn()
-        else:
-            self.publicCall.turnOff()
+    def monitorPC(self):
+        if not self.doctorFlag:
+            self.pcCalculateChecked = not self.pcCalculateChecked
+            if self.pcCalculateChecked:
+                self.publicCall.turnOn()
+            else:
+                self.publicCall.turnOff()
 
     def changeSlr(self, name, port, ip = '127.0.0.1'):
         self.config.set('connect', 'simulator', name)
@@ -865,6 +944,9 @@ class App(QWidget):
 
     def changeDefault(self, func, flag, sec = 'function'):
         self.config.set(sec, func, str(flag))
+        self.configUpdate()
+
+    def configUpdate(self):
         configInI = open(self.configPath, 'w')
         self.config.write(configInI)
         configInI.close()
@@ -995,6 +1077,8 @@ class App(QWidget):
             self.battle.run(self.doctorFlag)
         if (self.publicCall != None) and self.doctorFlag and self.autoPCFlag:
             self.publicCall.autoPCRun(self.doctorFlag)
+        if self.doctorFlag and self.logisticFlag:
+            self.logistic.run(self.doctorFlag)
         if self.doctorFlag and self.taskFlag:
             self.task.run(self.doctorFlag)
         if self.doctorFlag and self.creditFlag:
@@ -1013,6 +1097,8 @@ class App(QWidget):
         self.battle.stop()
         self.task.stop()
         self.credit.stop()
+        if self.logistic != None:
+            self.logistic.stop()
         self.btnMainClicked = False
         self.btnStartAndStop.setText('启动虚拟博士')
 
@@ -1044,6 +1130,15 @@ class App(QWidget):
             self.schedule.isWaitingUser = False
             if reply:
                 self.schedule.isRecovered = True
+
+    def logisticReady(self):
+        self.logistic = UILogistic(self.adb, self.userDataPath + '/logisticRule.ahrule', self.config, self.app, self.ico)
+        self.logistic.configUpdate.connect(self.configUpdate)
+        self.actLogisticConfig.triggered.connect(self.logistic.show)
+        self.tbLogistic.setEnabled(True)
+
+        self.logisticFlag = self.config.getboolean('function', 'logistic')
+        self.tbLogistic.setChecked(self.logisticFlag)
 
 if __name__ == '__main__':
     cgitb.enable(format = 'text')

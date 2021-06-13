@@ -27,14 +27,13 @@ class Console(QDialog):
         sys.stderr = EmittingStr(sgnConsole = self.outputWritten)
 
     def outputWritten(self, text):
-        if not ('KB/s' in text):
-            text = text.strip() + '\n'
-            cursor = self.textBrowser.textCursor()
-            cursor.movePosition(QTextCursor.End)
-            cursor.insertText(text)
-            with open(self.cwd + '/arkhelper.log', 'a') as log:
-                log.write(text)
-            self.textBrowser.setTextCursor(cursor)
+        text = text.strip() + '\n'
+        cursor = self.textBrowser.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        cursor.insertText(text)
+        with open(self.cwd + '/arkhelper.log', 'a') as log:
+            log.write(text)
+        self.textBrowser.setTextCursor(cursor)
 
     def showOrHide(self):
         if not self.isVisible():

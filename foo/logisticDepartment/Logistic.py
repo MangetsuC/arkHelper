@@ -8,10 +8,12 @@ from foo.pictureR import pictureFind, ocr
 from foo.logisticDepartment import rooms, ruleEncoder
 
 class Logistic:
-    def __init__(self, adb, defaultRuleName, rulePath = None):
+    def __init__(self, adb, defaultRuleName, rule):
         self.adb = adb
         self.cwd = getcwd()
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
+
+        self.runFlag = False
 
         self.operatorPosOffset = [757-1355, 885-1355, 1009-1355, 1137-1355, 1264-1355]
         self.moodsPos = [(353, 577, 87, 35), (353, 614, 87, 35), (353, 650, 87, 35), (353, 686, 87, 35), (353, 722, 87, 35)]
@@ -28,13 +30,22 @@ class Logistic:
                         '会客室':rooms.ReceptionRoom(self.adb)}
 
         self.ruleName = defaultRuleName
-        if rulePath == None:
-            self.rule = ruleEncoder.RuleEncoder(self.cwd + '/logisticRule.ahrule')
-        else:
-            self.rule = ruleEncoder.RuleEncoder(rulePath + '/logisticRule.ahrule')
+        self.rule = rule
 
         self.resourceInit()
-    
+
+    def setEnableRooms(self, enableRooms):
+        self.enableRooms = enableRooms
+
+    def setRuleName(self, ruleName):
+        self.ruleName = ruleName
+
+    def setMoodThreshold(self, threshold):
+        self.moodThreshold = threshold
+
+    def setDormThreshold(self, threshold):
+        self.dormThreshold = threshold
+
     def getScreen(self):
         self.adb.screenShot()
 
@@ -45,17 +56,26 @@ class Logistic:
         self.click((100,50))
 
     def enterLogisticPanel(self):
-        self.click((1150, 700))
-        startTime = time()
-        while True:
-            if time() - startTime > 10:
-                self.click((1150, 700))
-                startTime = time()
-            self.getScreen()
-            if self.matchPic(self.overviewEntry) != None:
-                break
-            else:
-                sleep(0.5)
+        self.getScreen()
+        isOverviewEntry = self.matchPic(self.overviewEntry)
+        isActBtn = self.matchPic(self.actBtn)
+        if isOverviewEntry == None and isActBtn != None:
+            self.click((1150, 700))
+            startTime = time()
+            while self.runFlag:
+                if time() - startTime > 10:
+                    self.click((1150, 700))
+                    startTime = time()
+                self.getScreen()
+                if self.matchPic(self.overviewEntry) != None:
+                    break
+                else:
+                    sleep(0.5)
+            return True
+        elif isOverviewEntry != None and isActBtn == None:
+            return True
+        else:
+            return False
 
     def swipe(self, startPoint, endPoint, stopCheck = True):
         self.adb.swipe(startPoint[0], startPoint[1], endPoint[0], endPoint[1], lastTime = 500)
@@ -83,6 +103,19 @@ class Logistic:
         ans = pictureFind.matchMultiImg(self.screenShot, obj, confidencevalue = 0.7)
         return ans[0] if ans != None else None
 
+    def backToHome(self):
+        '回到首页'
+        self.click((300, 40))
+        while True:
+            self.getScreen()
+            homePic = self.matchPic(self.homeBtn)
+            if homePic != None:
+                self.click(homePic['result'])
+                break
+        while True:
+            self.getScreen()
+            if self.matchPic(self.actBtn) != None:
+                break
 
     def resourceInit(self):
         #总览界面
@@ -107,6 +140,7 @@ class Logistic:
                             pictureFind.picRead(self.cwd + '/res/logistic/general/trust_touch.png')]
 
         self.actBtn = pictureFind.picRead(self.cwd + '/res/panel/other/act.png')
+        self.homeBtn = pictureFind.picRead(self.cwd + '/res/panel/other/mainpage.png')
 
     def enterOverview(self):
         '进入进驻总览'
@@ -116,6 +150,8 @@ class Logistic:
             self.click(overviewEntry['result'])
             self.getScreen()
             while self.matchPic(self.freeOperator_unSel) == None:
+                if not self.runFlag:
+                    break
                 sleep(0.5)
                 self.getScreen()
             return 0
@@ -128,6 +164,8 @@ class Logistic:
         tryCount = 0
         while True:
             #进入撤下干员模式
+            if not self.runFlag:
+                return -2
             self.getScreen()
             freeSel = self.matchPic(self.freeOperator_sel)
             freeUnsel = self.matchPic(self.freeOperator_unSel)
@@ -147,6 +185,8 @@ class Logistic:
         trainRoomCount = 0
         isLastTurn = False
         while not isLastTurn:
+            if not self.runFlag:
+                return -2
             self.getScreen()
             roomsOnScreen = self.matchMultPics(self.roomFlag)
             floorUndetect = self.matchPic(self.unDetected) #基建还未开完
@@ -161,6 +201,8 @@ class Logistic:
                     upper = roomsOnScreen[0]
                     lower = roomsOnScreen[-1]
                     for eachRoom in roomsOnScreen:
+                        if not self.runFlag:
+                            return -2
                         isDorm = False
                         roomName = ocr.ocr_roomName(self.screenShot, eachRoom)
                         if roomName not in self.enableRooms:
@@ -202,6 +244,8 @@ class Logistic:
         relaxing = 0 #已进入宿舍干员数
         while True:
             #退出撤下干员模式
+            if not self.runFlag:
+                return -2
             self.getScreen()
             freeSel = self.matchPic(self.freeOperator_sel)
             freeUnsel = self.matchPic(self.freeOperator_unSel)
@@ -219,6 +263,8 @@ class Logistic:
 
         isLastTurn = False
         while not isLastTurn:
+            if not self.runFlag:
+                return -2
             self.getScreen()
             roomsOnScreen = self.matchMultPics(self.roomFlagNormal)
             if roomsOnScreen != None:
@@ -226,6 +272,8 @@ class Logistic:
                 upper = roomsOnScreen[-1]
                 lower = roomsOnScreen[0]
                 for eachRoom in roomsOnScreen:
+                    if not self.runFlag:
+                        return -2
                     self.getScreen()
                     roomName = ocr.ocr_roomName(self.screenShot, eachRoom)
                     if roomName == '宿舍':
@@ -262,7 +310,7 @@ class Logistic:
 
     def checkToDoList(self):
         '收获制造站产出，交付订单，获取信赖'
-        while True:
+        while self.runFlag:
             #避免进入基建的时候右上角弹出提示遮挡提示按钮
             self.getScreen()
             isTodoListExist = self.matchPic(self.todoList_unSel)
@@ -281,13 +329,19 @@ class Logistic:
                         break
             interactTodo = []
             for i in self.todoListPic:
+                if not self.runFlag:
+                    break
                 interactBtn = self.matchPic(i)
                 if interactBtn != None:
                     interactTodo.append(interactBtn['result'])
             interactTodo.sort(key = lambda x:x[0], reverse = True)
             for i in interactTodo:
+                if not self.runFlag:
+                    break
                 self.click(i)
                 while True:
+                    if not self.runFlag:
+                        break
                     self.getScreen()
                     if self.matchPic(self.submitting) == None: #等待提交完成
                         break
@@ -335,32 +389,53 @@ class Logistic:
     def returnToWork(self, room, roomRule):
         room.findAllRooms()
         while room.enterRoom() > 0:
+            if not self.runFlag:
+                break
             roomType = room.checkType()
             vacancyNum = room.checkRoomVacancy()
             if vacancyNum > 0:
                 roomRule = room.dispatchOperator(roomRule, roomType, vacancyNum)
             room.backToMain()
 
-    def run(self):
-        self.enterLogisticPanel()
+    def run(self, flag):
+        self.runFlag = flag
+        self.runFlag = self.enterLogisticPanel()
+        if not self.runFlag:
+            return 0
         self.checkToDoList()
+        if not self.runFlag:
+            return 0
         self.enterOverview()
+        if not self.runFlag:
+            return 0
         need2relax = self.freeOperator()
+        if not self.runFlag:
+            return 0
         print(f'需要休息的人数：{need2relax}')
         if need2relax > 0:
             restNum = self.relaxOperator(need2relax)
             if restNum > 0:
                 print(f'仍有{restNum}位干员为安排进宿舍休息')
         self.rooms['制造站'].backToMain()
+        if not self.runFlag:
+            return 0
         self.resizeLogisticPanel()
+        if not self.runFlag:
+            return 0
         for eachRoom in self.enableRooms:
             self.returnToWork(self.rooms[eachRoom], self.rule.getOneRule(self.ruleName)[eachRoom])
-        self.rooms['制造站'].backToOneLayer(self.actBtn)
+            if not self.runFlag:
+                return 0
+        self.backToHome()
+        return 0
+
+    def stop(self):
+        self.runFlag = False
 
 if __name__ == '__main__':
     adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')
     adb.connect()
-    test = Logistic(adb, '示例配置')
+    test = Logistic(adb, '示例配置', ruleEncoder.RuleEncoder(getcwd() + '/logisticRule.ahrule'))
     test.run()
     
     

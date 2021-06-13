@@ -9,9 +9,9 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QTimer
 
 class UIPublicCall(QDialog):
-    def __init__(self, adb, battle, cwd, btnCheck, listGoTo, normal, high, parent=None, flags=Qt.WindowFlags(1)):
+    def __init__(self, adb, battle, cwd, listGoTo, normal, high, parent=None, flags=Qt.WindowFlags(1)):
         super().__init__(parent=parent, flags=flags)
-        self.initVar(adb, battle, cwd, btnCheck, normal, high)
+        self.initVar(adb, battle, cwd, normal, high)
         self.initAuto(listGoTo)
         self.initUI()
         #self.myTimer()
@@ -19,11 +19,11 @@ class UIPublicCall(QDialog):
     def updateTag(self):
         self.publicCall.updateTag()
     
-    def initVar(self, adb, battle, cwd, btnCheck, normal, high):
+    def initVar(self, adb, battle, cwd, normal, high):
         self.cwd = cwd
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.battle = battle
-        self.btnCheck = btnCheck
+        #self.btnCheck = btnCheck
         self.adb = adb
         
         self.publicCall = PublicCall(adb, self.cwd, normal, high)
@@ -250,7 +250,7 @@ class UIPublicCall(QDialog):
         self.show()
 
     def turnOff(self):
-        self.btnCheck.setChecked(False)
+        #self.btnCheck.setChecked(False)
         if self.isTimerExit:
             self.timer.stop()
         self.totalFlag = False

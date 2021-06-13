@@ -204,7 +204,7 @@ class Room:
                     tempOpList.append(tempOp)
                     if not ('+' in tempOp):
                         break
-                if len(tempOp) > needNum:
+                if len(tempOpList) > needNum:
                     #组合人数大于空位数
                     unFit.extend(tempOpList)
                     continue
@@ -343,6 +343,7 @@ class ReceptionRoom(Room):
         super(ReceptionRoom, self).__init__(adb, '会客室', 'RIGHT')
 
     def checkType(self):
+        sleep(10) #低效，为了不被右上角弹出来的各类通知遮挡，后续调整
         return ''
 
 operatorEnter = pictureFind.picRead(getcwd() + '/res/logistic/general/operatorEnter.png') #进驻界面的空位

@@ -77,16 +77,18 @@ class BlackBoard(QWidget):
 class AfterInit(QThread):
     boardNeedShow = pyqtSignal()
     reloadPcModule = pyqtSignal()
+    logisticReady = pyqtSignal()
     def __init__(self, app, cwd):
         super(AfterInit, self).__init__()
         self.app = app
         self.cwd = cwd
 
     def run(self):
+        self.getLogisticRule()
+        self.checkPublicCallData()
         if self.app.config.getboolean('notice', 'enable'):
             self.checkMessage()
             self.checkUpdate()
-            self.checkPublicCallData()
 
     def getFileMd5(self, fileName):
         m = md5()   #创建md5对象
@@ -162,6 +164,17 @@ class AfterInit(QThread):
                 while self.app._data == None:
                     sleep(0.1)
                 self.app.publicCall.updateTag()
+
+    def getLogisticRule(self):
+        #自动下载基建规则文件
+        if not path.exists(self.app.userDataPath + '/logisticRule.ahrule'):
+            rule = requests.get('http://www.mangetsuc.top/arkhelper/logisticRule.txt')
+            if rule.status_code == 200:
+                rule.encoding = 'UTF-8'
+                temp = rule.text.strip('\ufeff')
+                with open(self.app.userDataPath + '/logisticRule.ahrule', 'w', encoding = 'utf-8') as f:
+                    f.write('\n'.join([s for s in temp.splitlines() if s.strip()]))
+                self.logisticReady.emit()
 
 
 if __name__ == '__main__':
