@@ -1,12 +1,10 @@
-from PyQt5.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
-                             QGridLayout, QInputDialog, QLabel, QLineEdit,
-                             QListView, QMenu, QPushButton, QWidget, QAction, QTextBrowser)
-from PyQt5.QtCore import QStringListModel, Qt, QTimer, pyqtSignal
-from PyQt5.QtGui import QIcon, QCursor
+from PyQt5.QtWidgets import (QComboBox, QDesktopWidget,
+                             QGridLayout, QLabel, QLineEdit,
+                             QListView, QPushButton, QWidget, QTextBrowser)
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QIcon
 from sys import path
-import sys
-from os import getcwd
-from time import sleep
+from os import getcwd, startfile, path as osPath
 from json import dumps
 
 path.append(getcwd())
@@ -19,12 +17,12 @@ class UILogistic(QWidget):
         super(UILogistic, self).__init__()
         self.app = app
 
-        self.setWindowTitle('自动公招配置')
+        self.setWindowTitle('自动公招配置(默认配置由:七十七提供)')
         self.setWindowIcon(QIcon(ico))
 
         self.setStyleSheet('''UILogistic{background:#272626}
         QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
-        QTextBrowser{background-color:#4d4d4d;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:10pt;}
+        QTextBrowser{background-color:#4d4d4d;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}
         QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:11pt;}
         QPushButton:pressed{background:#606162;font:10pt;}
         QPushButton:checked{background:#70bbe4;}
@@ -80,11 +78,14 @@ class UILogistic(QWidget):
         self.btnEnableOfficeRoom = QPushButton('办公室')
         self.btnEnableOfficeRoom.setCheckable(True)
         self.btnEnableOfficeRoom.clicked.connect(self.setEnableRoom)
+        self.btnOpenRuleFolder = QPushButton('打开所在文件夹')
+        self.btnOpenRuleFolder.clicked.connect(self.openRuleFileFolder)
 
         self.labelRooms = QLabel('启用的房间:')
         self.labelRuleInUseName = QLabel('当前使用规则:')
         self.labelMood = QLabel('撤下工作干员理智阈值:')
         self.labelDorm = QLabel('撤出宿舍干员理智阈值:')
+        self.labelRuleFileName = QLabel('配置文件名称:logisticRule.ahrule')
 
         self.browserRule = QTextBrowser()
 
@@ -104,11 +105,14 @@ class UILogistic(QWidget):
         self.grid.addWidget(self.editMoodThreshold, 5, 2)
         self.grid.addWidget(self.labelDorm, 6, 0, 1, 2)
         self.grid.addWidget(self.editDormThreshold, 6, 2)
+        self.grid.addWidget(self.labelRuleFileName, 7, 0, 1, 2)
+        self.grid.addWidget(self.btnOpenRuleFolder, 7, 2)
 
         self.setLayout(self.grid)
         self.resizeUI()
 
         self.config = config
+        self.rulePath = rulePath
         self.ruleEncoder = ruleEncoder.RuleEncoder(rulePath)
         self.logistic = logistic.Logistic(adb, self.config.get('logistic', 'defaultrule'), self.ruleEncoder)
 
@@ -128,15 +132,16 @@ class UILogistic(QWidget):
             rate = 1.75
         else:
             rate = 2
-        self.btnRefresh.setMinimumSize(rate * 75, rate * 40)
-        self.btnEnableManufactory.setMinimumSize(rate * 75, rate * 40)
-        self.btnEnableTrade.setMinimumSize(rate * 75, rate * 40)
-        self.btnEnablePowerRoom.setMinimumSize(rate * 75, rate * 40)
-        self.btnEnableReceptionRoom.setMinimumSize(rate * 75, rate * 40)
-        self.btnEnableOfficeRoom.setMinimumSize(rate * 75, rate * 40)
+        self.btnRefresh.setMinimumSize(rate * 145, rate * 40)
+        self.btnEnableManufactory.setMinimumSize(rate * 110, rate * 40)
+        self.btnEnableTrade.setMinimumSize(rate * 110, rate * 40)
+        self.btnEnablePowerRoom.setMinimumSize(rate * 110, rate * 40)
+        self.btnEnableReceptionRoom.setMinimumSize(rate * 145, rate * 40)
+        self.btnEnableOfficeRoom.setMinimumSize(rate * 145, rate * 40)
         self.comboBoxRuleNames.setMinimumHeight(rate * 40)
-        self.editDormThreshold.setMinimumSize(rate * 75, rate * 40)
-        self.editMoodThreshold.setMinimumSize(rate * 75, rate * 40)
+        self.editDormThreshold.setMinimumSize(rate * 145, rate * 40)
+        self.editMoodThreshold.setMinimumSize(rate * 145, rate * 40)
+        self.btnOpenRuleFolder.setMinimumSize(rate * 145, rate * 40)
 
     def setDefaultState(self):
         self.editDormThreshold.setText(self.config.get('logistic', 'dormthreshold'))
@@ -149,6 +154,9 @@ class UILogistic(QWidget):
 
         self.ruleRelateRefresh()
         self.logistic.setEnableRooms(self.getEnableRooms())
+
+    def openRuleFileFolder(self):
+        startfile(osPath.dirname(self.rulePath))
 
     def refreshRule(self):
         self.ruleEncoder.reloadRule()
