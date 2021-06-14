@@ -94,19 +94,20 @@ class Room:
         picInfo = pictureFind.matchImg(self.screenShot, wordsTemplate.getTemplatePic_CH(operatorName, 30), 
                                         targetSize = (1920, 1080), confidencevalue = 0.65)
         if picInfo != None:
-            return (int(picInfo['result'][0]/1920*1440), int(picInfo['result'][1]/1920*1440))
+            return ((int(picInfo['result'][0]/1920*1440), int(picInfo['result'][1]/1920*1440)), 
+                    (int(picInfo['rectangle'][3][0]/1920*1440), int(picInfo['rectangle'][3][1]/1920*1440)))
         else:
             return False
 
     def checkOpAvailable(self, basePoint):
         workingPic = pictureFind.matchImg_roi(self.screenShot, working,
-                                                roi = (basePoint[0] - 80, basePoint[1] - 144, 115, 60),
-                                                confidencevalue = 0.5)
+                                                roi = (basePoint[0] - 130, basePoint[1] - 162, 135, 85),
+                                                confidencevalue = 0.6)#以干员名称右下角为基准点的偏移量
         if workingPic != None:
             return False
         restingPic = pictureFind.matchImg_roi(self.screenShot, resting,
-                                                roi = (basePoint[0] - 80, basePoint[1] - 144, 115, 60),
-                                                confidencevalue = 0.5)
+                                                roi = (basePoint[0] - 130, basePoint[1] - 162, 135, 85),
+                                                confidencevalue = 0.6)
         if restingPic != None:
             return False
         return True
@@ -219,7 +220,7 @@ class Room:
                         self.getScreen()
                         opCoor = self.findOpOnScreen(realName) #先寻找一次
                         if opCoor:
-                            if self.checkOpAvailable(opCoor):
+                            if self.checkOpAvailable(opCoor[1]):
                                 availableNum += 1
                             else:
                                 break
@@ -229,7 +230,7 @@ class Room:
                                 self.getScreen()
                                 opCoor = self.findOpOnScreen(opFinding)
                                 if opCoor:
-                                    if self.checkOpAvailable(opCoor):
+                                    if self.checkOpAvailable(opCoor[1]):
                                         availableNum += 1
                                         break
                                     else:
@@ -256,8 +257,8 @@ class Room:
                 self.getScreen()
                 opCoor = self.findOpOnScreen(opFinding) #先寻找一次
                 if opCoor:
-                    if self.checkOpAvailable(opCoor):
-                        self.click(opCoor)
+                    if self.checkOpAvailable(opCoor[1]):
+                        self.click(opCoor[0])
                         needNum -= 1
                 else:
                     while self.checkSwipeEnd(myRuleList): #初次找不到再继续右划
@@ -265,8 +266,8 @@ class Room:
                         self.getScreen()
                         opCoor = self.findOpOnScreen(opFinding)
                         if opCoor:
-                            if self.checkOpAvailable(opCoor):
-                                self.click(opCoor)
+                            if self.checkOpAvailable(opCoor[1]):
+                                self.click(opCoor[0])
                                 needNum -= 1
                             break
         while True: #确认
@@ -356,17 +357,6 @@ if __name__ == '__main__':
     rule = ruleEncoder.RuleEncoder(getcwd() + '/logisticRule.ahrule')
     adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')
     adb.connect()
-    '''
-    testM = Manufactory(adb)
-    testM.findAllRooms()
-    tempRule = rule.getOneRule('示例配置')['制造站']
-    while testM.enterRoom() > 0:
-        roomType = testM.checkType()
-        vacancyNum = testM.checkRoomVacancy()
-        if vacancyNum > 0:
-            tempRule = testM.dispatchOperator(tempRule, roomType, vacancyNum)
-        testM.backToMain()
-    '''
     testT = Trade(adb)
     testT.findAllRooms()
     tempRule = rule.getOneRule('示例配置')['贸易站']
