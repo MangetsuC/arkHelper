@@ -437,7 +437,10 @@ class Logistic:
             restNum = self.relaxOperator(need2relax)
             if restNum > 0:
                 print(f'仍有{restNum}位干员为安排进宿舍休息')
+
+        self.rooms['制造站'].startPermission()
         self.rooms['制造站'].backToMain()
+        
         if not self.runFlag:
             return 0
         self.resizeLogisticPanel()

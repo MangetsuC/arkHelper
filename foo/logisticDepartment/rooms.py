@@ -108,7 +108,7 @@ class Room:
         '找到指定干员在屏幕上的位置'
         self.getScreen()
         picInfo = pictureFind.matchImg(self.screenShot, wordsTemplate.getTemplatePic_CH(operatorName, 30), 
-                                        targetSize = (1920, 1080), confidencevalue = 0.65)
+                                        targetSize = (1920, 1080), confidencevalue = 0.6)
         if picInfo != None:
             return ((int(picInfo['result'][0]/1920*1440), int(picInfo['result'][1]/1920*1440)), 
                     (int(picInfo['rectangle'][3][0]/1920*1440), int(picInfo['rectangle'][3][1]/1920*1440)))
