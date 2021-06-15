@@ -37,15 +37,25 @@ class Room:
 
     def checkSubmitting(self):
         while True:
+            if not self.runFlag:
+                break
             self.getScreen()
             if pictureFind.matchImg(self.screenShot, submitting, confidencevalue = 0.7) == None: #等待提交完成
                 break
+
+    def getRealName(self, name):
+        prefixSign = ['+', '*', '|', '$']
+        while name[0] in prefixSign:
+            name = name.strip('+').strip('|').strip('*').strip('$')
+        return name
 
     def swipeToOperatorHead(self):
         '选择干员界面回到最左侧'
         lastScreen = None
         while True:
             #判断滑动已完全停止
+            if not self.runFlag:
+                break
             if lastScreen != None:
                 self.swipe((500, 400), (1300, 400))
                 sleep(2)
@@ -68,6 +78,8 @@ class Room:
         self.swipe((600, 400), (600, 400), lastTime = 200)
         while True:
             #判断滑动已完全停止
+            if not self.runFlag:
+                break
             self.getScreen()
             if lastScreen != None:
                 isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
@@ -84,6 +96,8 @@ class Room:
         '回到某一层'
         startTime = time()
         while pictureFind.matchImg(self.screenShot, layerMark, confidencevalue = 0.7) == None:
+            if not self.runFlag:
+                break
             self.clickBack()
             self.getScreen()
             if time() - startTime > 30:
@@ -128,7 +142,7 @@ class Room:
         thisScreen = pictureFind.imreadCH(self.screenShot)
         thisScreen = resize(thisScreen, (1920, 1080))
         for i in operatorList:
-            i = i.strip('+').strip('|').strip('*').strip('$')
+            i = self.getRealName(i)
             if pictureFind.matchImg(thisScreen, wordsTemplate.getTemplatePic_CH(i, 30),
                                 targetSize = (0, 0), confidencevalue = 0.7) != None:
                 return True
@@ -170,6 +184,8 @@ class Room:
             except IndexError:
                 return 0
             while True:
+                if not self.runFlag:
+                    break
                 self.click(oneRoom)
                 self.getScreen()
                 if pictureFind.matchImg_roi(self.screenShot, wordsTemplate.getTemplatePic_CH(self.roomName, 28), 
@@ -220,7 +236,7 @@ class Room:
                             if not (roomType in eachOp):
                                 availableNum = -1 #组合类型与房间类型不匹配 为什么不能让我方便的跳出双层循环！
                                 break
-                        realName = eachOp.strip('+').strip('|').strip('*').strip('$')
+                        realName = self.getRealName(eachOp)
                         self.swipeToOperatorHead()
                         self.getScreen()
                         opCoor = self.findOpOnScreen(realName) #先寻找一次
@@ -232,6 +248,9 @@ class Room:
                         else:
                             isAvailable = True
                             while self.checkSwipeEnd(myRuleList): #初次找不到再继续右划
+                                if not self.runFlag:
+                                    break
+                                self.swipeToNextOperatorPage()
                                 self.getScreen()
                                 opCoor = self.findOpOnScreen(opFinding)
                                 if opCoor:
@@ -250,14 +269,14 @@ class Room:
                         continue
                     elif availableNum == len(tempOpList):
                         for eachOp in tempOpList:
-                            myRuleList.append(eachOp.strip('+').strip('|').strip('*').strip('$')) 
+                            myRuleList.append(self.getRealName(eachOp)) 
                             #把这几位干员以非组合的方式重新压回规则
             else:
                 if '|' in opFinding or '*' in opFinding or '$' in opFinding:
                     if not (roomType in opFinding):
                         unFit.append(opFinding)
                         continue
-                opFinding = opFinding.strip('+').strip('|').strip('*').strip('$')
+                opFinding = self.getRealName(opFinding)
                 self.swipeToOperatorHead()
                 self.getScreen()
                 opCoor = self.findOpOnScreen(opFinding) #先寻找一次
@@ -267,6 +286,8 @@ class Room:
                         needNum -= 1
                 else:
                     while self.checkSwipeEnd(myRuleList): #初次找不到再继续右划
+                        if not self.runFlag:
+                            break
                         self.swipeToNextOperatorPage()
                         self.getScreen()
                         opCoor = self.findOpOnScreen(opFinding)
