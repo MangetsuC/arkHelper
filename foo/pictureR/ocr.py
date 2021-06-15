@@ -5,7 +5,7 @@ path.append(getcwd())
 from foo.pictureR import pictureFind, wordsTemplate
 
 #实际上并没有真正用到ocr技术
-def ocr_operatorMood(pic, roi = (0, 0, 0, 0)):
+def ocr_operatorMood(pic, roi = (0, 0, 0, 0), isDorm = False):
     ans = []
     maxMood = pictureFind.imreadCH(getcwd() + '/res/logistic/general/maxMood.png')
     if roi != (0, 0, 0, 0):
@@ -14,17 +14,6 @@ def ocr_operatorMood(pic, roi = (0, 0, 0, 0)):
                                                 roi = (roi[0], roi[1] + (roi[3]/5)*i, roi[2], roi[3]/5),
                                                 confidencevalue = 0.7)
             if moodRightPart != None:
-                '''
-                for mood in range(24, -1, -1):
-                    if pictureFind.matchImg_roi(pic, wordsTemplate.getTemplatePic_NUM(mood, 38), 
-                                        roi = (roi[0]*1920/1440, (roi[1] + (roi[3]/5)*i)*1920/1440, 
-                                        moodRightPart['rectangle'][0][0]*1920/1440, roi[3]/5*1920/1440),
-                                            confidencevalue = 0.7, targetSize = (1920, 1080)) != None:
-                        ans.append(mood)
-                        break
-                else:
-                    ans.append(-1)
-                '''
                 moodPerDigit = []
                 for num in range(10):
                     if len(moodPerDigit) == 2:
@@ -32,7 +21,7 @@ def ocr_operatorMood(pic, roi = (0, 0, 0, 0)):
                     numCoor = pictureFind.matchMultiImg_roi(pic, num0_9[num], 
                                         roi = (roi[0]*1920/1440, (roi[1] + (roi[3]/5)*i)*1920/1440, 
                                         moodRightPart['rectangle'][0][0]*1920/1440, roi[3]/5*1920/1440),
-                                        targetSize = (1920, 1080), confidencevalue = 0.7)
+                                        targetSize = (1920, 1080), confidencevalue = 0.8)
                     if numCoor != None:
                         for eachNum in numCoor:
                             moodPerDigit.append([num, eachNum])
@@ -44,6 +33,12 @@ def ocr_operatorMood(pic, roi = (0, 0, 0, 0)):
                     realMood = 0
                     for num in range(numLen):
                         realMood += moodPerDigit[num][0]*(10**(numLen - num - 1))
+                    if isDorm: #避免识别错误
+                        if realMood > 24:
+                            realMood = 0
+                    else:
+                        if realMood > 24:
+                            realMood = 24
                     ans.append(realMood)
             else:
                 ans.append(-2)

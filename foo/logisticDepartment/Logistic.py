@@ -221,7 +221,7 @@ class Logistic:
                                 continue
                         self.click((eachRoom[0] - 785, eachRoom[1] + 6))
                         self.getScreen()
-                        moods = ocr.ocr_operatorMood(self.screenShot, roi = (355, 576.5, 85, 180))
+                        moods = ocr.ocr_operatorMood(self.screenShot, roi = (355, 576.5, 85, 180), isDorm = isDorm)
                         for eachOpMood in range(len(moods)):
                             if moods[eachOpMood] > -1:
                                 #该位置有人
