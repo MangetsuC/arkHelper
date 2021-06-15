@@ -78,6 +78,7 @@ class AfterInit(QThread):
     boardNeedShow = pyqtSignal()
     reloadPcModule = pyqtSignal()
     logisticReady = pyqtSignal()
+    msgLoadFinish = pyqtSignal()
     def __init__(self, app, cwd):
         super(AfterInit, self).__init__()
         self.app = app
@@ -143,9 +144,10 @@ class AfterInit(QThread):
             noticeData.encoding = 'utf-8'
             noticeMd5 = md5()
             noticeMd5.update(noticeData.text.encode("utf8"))
+            self.app.noticeMd5 = noticeMd5.hexdigest()
+            self.app._notice = noticeData.text
+            self.msgLoadFinish.emit()
             if noticeMd5.hexdigest() != self.app.config.get('notice', 'md5'):
-                self.app.noticeMd5 = noticeMd5.hexdigest()
-                self.app._notice = noticeData.text
                 self.boardNeedShow.emit()
                 #self.app.btnShowBoard.show()
 

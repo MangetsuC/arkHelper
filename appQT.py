@@ -303,6 +303,15 @@ class App(QWidget):
         self.btnUpdate.setToolTip('自动更新')
         self.btnUpdate.hide()
 
+        self.btnShowMsg = QPushButton('!',self)
+        self.btnShowMsg.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
+        self.btnShowMsg.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:14pt;}
+                                    QPushButton:pressed{background:#272626;font-family:SimHei, SimSun;font:12pt;}
+                                    ''')
+        self.btnShowMsg.clicked.connect(self.showMessage)
+        self.btnShowMsg.setToolTip('查看公告')
+        self.btnShowMsg.hide()
+
         self.btnStartAndStop = QPushButton('启动虚拟博士', self) #启动/停止按钮
         self.btnStartAndStop.setMinimumSize(self.getRealSize(180), self.getRealSize(131))
         self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
@@ -456,6 +465,7 @@ class App(QWidget):
         self.HBox.addWidget(self.lTitle)
         self.HBox.addWidget(self.lVer)
         self.HBox.addStretch(1)
+        self.HBox.addWidget(self.btnShowMsg)
         self.HBox.addWidget(self.btnUpdate)
         self.HBox.addWidget(self.btnSetting)
         self.HBox.addWidget(self.btnMinimize)
@@ -710,6 +720,7 @@ class App(QWidget):
         self.afterInit_Q.boardNeedShow.connect(self.showMessage)
         self.afterInit_Q.reloadPcModule.connect(self.initPc)
         self.afterInit_Q.logisticReady.connect(self.logisticReady)
+        self.afterInit_Q.msgLoadFinish.connect(self.msgLoadReady)
 
         self.rateMonitor = ScreenRateMonitor(self)
         self.rateMonitor.rateChanged.connect(self.resizeUI)
@@ -1139,6 +1150,9 @@ class App(QWidget):
 
         self.logisticFlag = self.config.getboolean('function', 'logistic')
         self.tbLogistic.setChecked(self.logisticFlag)
+
+    def msgLoadReady(self):
+        self.btnShowMsg.show()
 
 if __name__ == '__main__':
     cgitb.enable(format = 'text')
