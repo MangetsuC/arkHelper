@@ -84,9 +84,11 @@ class Logistic:
             lastScreen = None
             while True:
                 #判断滑动已完全停止
+                if not self.runFlag:
+                    return -2
                 self.getScreen()
                 if lastScreen != None:
-                    isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.999)
+                    isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
                     if isScreenStop != None:
                         break
                     else:
@@ -208,6 +210,8 @@ class Logistic:
                         if roomName not in self.enableRooms:
                             if roomName == '宿舍':
                                 isDorm = True
+                            elif roomName == '控制中枢':
+                                pass
                             elif roomName == '训练室':
                                 trainRoomCount += 1
                                 if trainRoomCount >= 2: #为了保证检查到B4的宿舍
@@ -225,6 +229,15 @@ class Logistic:
                                     ((not isDorm) and moods[eachOpMood] <= self.moodThreshold):
                                     #已降到阈值以下 或 宿舍满心情
                                     self.click((eachRoom[0] + self.operatorPosOffset[eachOpMood], eachRoom[1]))
+                                    submitCount = 0
+                                    while True:
+                                        if not self.runFlag:
+                                            break
+                                        self.getScreen()
+                                        if self.matchPic(self.submitting) == None: #等待提交完成
+                                            submitCount += 1
+                                            if submitCount > 1:
+                                                break
                                     if not isDorm:
                                         freeCount += 1
                     if not isLastTurn:
@@ -292,6 +305,8 @@ class Logistic:
                             self.click((1325, 760)) #确认按钮的坐标
                             #此处应当判断有无回到总览界面
                             while True:
+                                if not self.runFlag:
+                                    return -2
                                 self.getScreen()
                                 if self.matchPic(self.freeOperator_unSel) != None:
                                     break
@@ -392,9 +407,15 @@ class Logistic:
             if not self.runFlag:
                 break
             roomType = room.checkType()
+            if not self.runFlag:
+                break
             vacancyNum = room.checkRoomVacancy()
+            if not self.runFlag:
+                break
             if vacancyNum > 0:
                 roomRule = room.dispatchOperator(roomRule, roomType, vacancyNum)
+            if not self.runFlag:
+                break
             room.backToMain()
 
     def run(self, flag):
@@ -423,14 +444,18 @@ class Logistic:
         if not self.runFlag:
             return 0
         for eachRoom in self.enableRooms:
+            self.rooms[eachRoom].startPermission()
             self.returnToWork(self.rooms[eachRoom], self.rule.getOneRule(self.ruleName)[eachRoom])
             if not self.runFlag:
                 return 0
         self.backToHome()
+        self.stop()
         return 0
 
     def stop(self):
         self.runFlag = False
+        for eachRoom in self.enableRooms:
+            self.rooms[eachRoom].stop()
 
 if __name__ == '__main__':
     adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')

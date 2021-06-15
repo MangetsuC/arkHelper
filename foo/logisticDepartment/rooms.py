@@ -18,6 +18,8 @@ class Room:
         self.roomDirect = roomDirect
         self.roomCoor = []
 
+        self.runFlag = False
+
     def getScreen(self):
         self.adb.screenShot()
 
@@ -48,7 +50,7 @@ class Room:
                 self.swipe((500, 400), (1300, 400))
                 sleep(2)
                 self.getScreen()
-                isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.999)
+                isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
                 if isScreenStop != None:
                     break
                 else:
@@ -68,7 +70,7 @@ class Room:
             #判断滑动已完全停止
             self.getScreen()
             if lastScreen != None:
-                isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.999)
+                isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
                 if isScreenStop != None:
                     break
                 else:
@@ -193,8 +195,11 @@ class Room:
         myRuleList = roomRule.copy()
         myRuleList.reverse()
         while needNum != 0:
+            if not self.runFlag:
+                break
             try:
                 opFinding = myRuleList.pop()
+                print(f'正在寻找干员{opFinding}')
             except IndexError:
                 break
             if '+' in opFinding:
@@ -270,7 +275,7 @@ class Room:
                                 self.click(opCoor[0])
                                 needNum -= 1
                             break
-        while True: #确认
+        while self.runFlag: #确认
             self.click((1325, 760))
             self.getScreen()
             if pictureFind.matchImg_roi(self.screenShot, wordsTemplate.getTemplatePic_CH(self.roomName, 28), 
@@ -278,6 +283,12 @@ class Room:
                 break
         myRuleList.extend(reversed(unFit))
         return list(reversed(myRuleList))
+
+    def stop(self):
+        self.runFlag = False
+
+    def startPermission(self):
+        self.runFlag = True
 
 
 class Manufactory(Room):

@@ -2,7 +2,7 @@ from os import getcwd, listdir, path, remove
 from re import split as resplit
 
 from cv2 import (COLOR_BGR2GRAY, TM_CCOEFF_NORMED, Canny, copyTo, cvtColor,
-                 fillConvexPoly, imdecode, imshow, matchTemplate, minMaxLoc, resize)
+                 fillConvexPoly, imdecode, imshow, matchTemplate, minMaxLoc, resize, imshow, waitKey)
 from cv2 import split as cvsplit
 from cv2 import waitKey
 from numpy import array, fromfile, zeros
