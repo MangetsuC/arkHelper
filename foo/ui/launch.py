@@ -78,7 +78,7 @@ class AfterInit(QThread):
     boardNeedShow = pyqtSignal()
     reloadPcModule = pyqtSignal()
     logisticReady = pyqtSignal()
-    msgLoadFinish = pyqtSignal()
+    widgetShow = pyqtSignal(int) #0:公告按钮 1:升级按钮
     def __init__(self, app, cwd):
         super(AfterInit, self).__init__()
         self.app = app
@@ -135,8 +135,7 @@ class AfterInit(QThread):
                     if int(newVersion[0]) > int(tempSelfVersion[0]):
                         isNeedUpdate = True
                 if isNeedUpdate:
-                    self.app.lVer.setText('*有新版本*')
-                    self.app.btnUpdate.show()
+                    self.widgetShow.emit(1)
 
     def checkMessage(self):
         noticeData = requests.get('http://www.mangetsuc.top/arkhelper/notice.html')
@@ -146,10 +145,9 @@ class AfterInit(QThread):
             noticeMd5.update(noticeData.text.encode("utf8"))
             self.app.noticeMd5 = noticeMd5.hexdigest()
             self.app._notice = noticeData.text
-            self.msgLoadFinish.emit()
+            self.widgetShow.emit(0)
             if noticeMd5.hexdigest() != self.app.config.get('notice', 'md5'):
                 self.boardNeedShow.emit()
-                #self.app.btnShowBoard.show()
 
     def checkPublicCallData(self):
         pcData = requests.get('http://www.mangetsuc.top/arkhelper/pcData.json')

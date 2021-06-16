@@ -118,10 +118,6 @@ class UILogistic(QWidget):
 
         self.setDefaultState()
 
-        self.rateMonitor = ScreenRateMonitor(self)
-        self.rateMonitor.rateChanged.connect(self.resizeUI)
-        self.rateMonitor.start()
-
     def resizeUI(self):
         rate = self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
         if rate < 1.1:

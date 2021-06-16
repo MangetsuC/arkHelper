@@ -190,21 +190,30 @@ class Screen:
         return newPos
 
 class ScreenRateMonitor(QThread):
-    rateChanged = pyqtSignal()
-    def __init__(self, window):
+    rateChanged = pyqtSignal(object)
+    def __init__(self, windows):
         super(ScreenRateMonitor, self).__init__()
-        self.window = window
-        self.lastScreen = None
+        self.windows = windows
+        self.lastScreen = []
+        for i in self.windows:
+            self.rateChanged.connect(i.resizeUI)
+            self.lastScreen.append(None)
         self.runFlag = False
+
+    def addWidget(self, window):
+        self.rateChanged.connect(window.resizeUI)
+        self.windows.append(window)
+        self.lastScreen.append(None)
 
     def run(self):
         self.runFlag = True
         while self.runFlag:
-            if self.lastScreen == None:
-                self.lastScreen = QDesktopWidget().screenNumber(self.window)
-            elif QDesktopWidget().screenNumber(self.window) != self.lastScreen:
-                self.lastScreen = QDesktopWidget().screenNumber(self.window)
-                self.rateChanged.emit()
+            for i in range(len(self.windows)):
+                if self.lastScreen[i] == None:
+                    self.lastScreen[i] = QDesktopWidget().screenNumber(self.windows[i])
+                elif QDesktopWidget().screenNumber(self.windows[i]) != self.lastScreen[i]:
+                    self.lastScreen[i] = QDesktopWidget().screenNumber(self.windows[i])
+                    self.rateChanged.emit(self.windows[i])
             sleep(0.05)
 
     def stop(self):

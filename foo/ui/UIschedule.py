@@ -198,11 +198,6 @@ class JsonEdit(QWidget):
 
         self.setMaximumHeight(self.getRealSize(200))
 
-        self.rateMonitor = ScreenRateMonitor(self)
-        self.rateMonitor.rateChanged.connect(self.resizeUI)
-        self.rateMonitor.start()
-        #self.show()
-
     def getRealSize(self, size):
         rate = self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
         if rate < 1.1:

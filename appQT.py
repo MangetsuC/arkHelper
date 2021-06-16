@@ -219,20 +219,21 @@ class App(QWidget):
                     j.write(newJson)
                 #计划json初始化结束
     
-    def resizeUI(self):
-        self.setMaximumSize(self.getRealSize(420), self.getRealSize(150))
-        self.btnExit.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnMinimize.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnSetting.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnUpdate.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnStartAndStop.setMinimumSize(self.getRealSize(180), self.getRealSize(131))
-        #self.btnMonitorPublicCall.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
-        self.tbBattle.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
-        self.tbSchedule.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
-        self.tbAutoPC.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
-        self.tbTask.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
-        self.tbCredit.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
-        self.tbShutdown.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
+    def resizeUI(self, windowChangedScreen):
+        if windowChangedScreen == self:
+            self.setMaximumSize(self.getRealSize(420), self.getRealSize(150))
+            self.btnExit.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
+            self.btnMinimize.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
+            self.btnSetting.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
+            self.btnUpdate.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
+            self.btnStartAndStop.setMinimumSize(self.getRealSize(180), self.getRealSize(131))
+            self.tbLogistic.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
+            self.tbBattle.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
+            self.tbSchedule.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
+            self.tbAutoPC.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
+            self.tbTask.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
+            self.tbCredit.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
+            self.tbShutdown.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
 
     def initUI(self): 
         self.setWindowIcon(QIcon(self.ico))
@@ -684,6 +685,9 @@ class App(QWidget):
         '''
     
     def initClass(self):
+        self.rateMonitor = ScreenRateMonitor([self])
+
+
         self.adb = Adb(self.ico, self.cwd + '/bin/adb', self.config)
 
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
@@ -714,16 +718,16 @@ class App(QWidget):
         
         
         self.schJsonEditer = JsonEdit(self.app, self.userDataPath, self.ico)
+        self.rateMonitor.addWidget(self.schJsonEditer)
+
         self.board = BlackBoard()
 
         self.afterInit_Q = AfterInit(self, self.cwd)
         self.afterInit_Q.boardNeedShow.connect(self.showMessage)
         self.afterInit_Q.reloadPcModule.connect(self.initPc)
         self.afterInit_Q.logisticReady.connect(self.logisticReady)
-        self.afterInit_Q.msgLoadFinish.connect(self.msgLoadReady)
+        self.afterInit_Q.widgetShow.connect(self.widgetShow)
 
-        self.rateMonitor = ScreenRateMonitor(self)
-        self.rateMonitor.rateChanged.connect(self.resizeUI)
 
     def initPc(self):
         try:
@@ -1032,7 +1036,7 @@ class App(QWidget):
         self.adb.killAdb()
 
         #退出两个窗口的放大倍率检测线程
-        self.schJsonEditer.rateMonitor.stop()
+        #self.schJsonEditer.rateMonitor.stop()
         self.rateMonitor.stop()
 
         sys.exit() #为了解决Error in atexit._run_exitfuncs:的问题，实际上我完全不知道这为什么出现
@@ -1150,9 +1154,14 @@ class App(QWidget):
 
         self.logisticFlag = self.config.getboolean('function', 'logistic')
         self.tbLogistic.setChecked(self.logisticFlag)
+        self.rateMonitor.addWidget(self.logistic)
 
-    def msgLoadReady(self):
-        self.btnShowMsg.show()
+    def widgetShow(self, widgetNo):
+        if widgetNo == 0:
+            self.btnShowMsg.show()
+        elif widgetNo == 1:
+            self.lVer.setText('*有新版本*')
+            self.btnUpdate.show()
 
 if __name__ == '__main__':
     cgitb.enable(format = 'text')
