@@ -118,6 +118,9 @@ class Logistic:
             self.getScreen()
             if self.matchPic(self.actBtn) != None:
                 break
+            confrimPic = self.matchPic(self.exitComfirm)
+            if confrimPic != None:
+                self.click(confrimPic['result'])
 
     def resourceInit(self):
         #总览界面
@@ -143,6 +146,7 @@ class Logistic:
 
         self.actBtn = pictureFind.picRead(self.cwd + '/res/panel/other/act.png')
         self.homeBtn = pictureFind.picRead(self.cwd + '/res/panel/other/mainpage.png')
+        self.exitComfirm = pictureFind.picRead(self.cwd + '/res/panel/other/confirm.png')
 
     def enterOverview(self):
         '进入进驻总览'
@@ -440,7 +444,7 @@ class Logistic:
 
         self.rooms['制造站'].startPermission()
         self.rooms['制造站'].backToMain()
-        
+
         if not self.runFlag:
             return 0
         self.resizeLogisticPanel()
