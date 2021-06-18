@@ -17,7 +17,11 @@ class Console(QDialog):
         self.resize(600,400)
         self.textBrowser = QTextBrowser(self)
         
-        self.setStyleSheet('''Console{background-color:#272626;}QTextBrowser{background-color:#4d4d4d;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:10pt;}''')
+        self.setStyleSheet('''Console{background-color:#272626;}
+                              QTextBrowser{background-color:#4d4d4d;
+                                           color:#ffffff;
+                                           font-family:"Microsoft YaHei", SimHei, SimSun;
+                                           font:10pt;}''')
 
         self.grid = QGridLayout()
         self.grid.addWidget(self.textBrowser, 0, 0, 1, 1)
@@ -27,13 +31,15 @@ class Console(QDialog):
         sys.stderr = EmittingStr(sgnConsole = self.outputWritten)
 
     def outputWritten(self, text):
-        text = text.strip() + '\n'
-        cursor = self.textBrowser.textCursor()
-        cursor.movePosition(QTextCursor.End)
-        cursor.insertText(text)
-        with open(self.cwd + '/arkhelper.log', 'a') as log:
-            log.write(text)
-        self.textBrowser.setTextCursor(cursor)
+        text = text.strip()
+        if text != '':
+            text = text + '\n'
+            cursor = self.textBrowser.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            cursor.insertText(text)
+            with open(self.cwd + '/arkhelper.log', 'a') as log:
+                log.write(text)
+            self.textBrowser.setTextCursor(cursor)
 
     def showOrHide(self):
         if not self.isVisible():
