@@ -9,9 +9,9 @@ from webbrowser import open as openUrl
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor, QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
-                             QGridLayout, QHBoxLayout, QInputDialog, QLabel,
-                             QMenu, QMessageBox, QPushButton, QVBoxLayout,
-                             QWidget, QFileDialog)
+                             QFileDialog, QGridLayout, QHBoxLayout,
+                             QInputDialog, QLabel, QMenu, QMessageBox,
+                             QPushButton, QVBoxLayout, QWidget)
 
 from foo.adb.adbCtrl import Adb, Cmd
 from foo.arknight.Battle import BattleLoop
@@ -21,10 +21,12 @@ from foo.arknight.task import Task
 from foo.pictureR import pictureFind
 from foo.ui.console import Console
 from foo.ui.launch import AfterInit, BlackBoard, Launch
+from foo.ui.screen import Screen, ScreenRateMonitor
+from foo.ui.theme import Theme
+from foo.ui.UItheme import ThemeEditor
+from foo.ui.UILogistic import UILogistic
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
-from foo.ui.screen import Screen, ScreenRateMonitor
-from foo.ui.UILogistic import UILogistic
 
 
 class App(QWidget):
@@ -201,6 +203,34 @@ class App(QWidget):
             self.config.set('notice','md5','0')
             isNeedWrite = True
 
+        if not self.config.has_section('theme'):
+            self.config.add_section('theme')
+            isNeedWrite = True
+        if not self.config.has_option('theme', 'themecolor'):
+            self.config.set('theme','themeColor','auto')
+            isNeedWrite = True
+        if not self.config.has_option('theme', 'fontcolor'):
+            self.config.set('theme','fontcolor','auto')
+            isNeedWrite = True
+        if not self.config.has_option('theme', 'checkedfontcolor'):
+            self.config.set('theme','checkedfontcolor','auto')
+            isNeedWrite = True
+        if not self.config.has_option('theme', 'bordercolor'):
+            self.config.set('theme','bordercolor','auto')
+            isNeedWrite = True
+        if not self.config.has_option('theme', 'fgcolor'):
+            self.config.set('theme','fgcolor','auto')
+            isNeedWrite = True
+        if not self.config.has_option('theme', 'bgcolor'):
+            self.config.set('theme','bgcolor','auto')
+            isNeedWrite = True
+        if not self.config.has_option('theme', 'pressedcolor'):
+            self.config.set('theme','pressedcolor','auto')
+            isNeedWrite = True
+        if not self.config.has_option('theme', 'selectedcolor'):
+            self.config.set('theme','selectedcolor','auto')
+            isNeedWrite = True
+
         if isNeedWrite:
             self.configUpdate()  #配置文件初始化结束
 
@@ -236,6 +266,8 @@ class App(QWidget):
             self.tbShutdown.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
 
     def initUI(self): 
+        self.theme = Theme(self.config) #在UI初始化前加载主题
+
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
 
@@ -246,59 +278,63 @@ class App(QWidget):
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
 
-        self.setStyleSheet('''App{background:#272626}QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:9pt;}
-                                QPushButton{border:0px;background:#4d4d4d;
-                                color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}
-                                QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
-                                QPushButton:pressed{background:#606162;font:9pt;}
-                                QPushButton:checked{background:#70bbe4;}
-                                QInputDialog{background-color:#4d4d4d;}
-                                QMessageBox{background-color:#4d4d4d;}
-                                QToolTip {font-family:"Microsoft YaHei", SimHei, SimSun; font-size:10pt; color:#ffffff;
+        self.setStyleSheet(f'''App{{background:{self.theme.getBgColor()}}}
+                                QLabel{{color:{self.theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:9pt;}}
+                                QPushButton{{border:0px;background:{self.theme.getFgColor()};
+                                color:{self.theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}}
+                                QPushButton:hover{{border-style:solid;border-width:1px;border-color:{self.theme.getBorderColor()};}}
+                                QPushButton:pressed{{background:{self.theme.getPressedColor()};font:9pt;}}
+                                QPushButton:checked{{background:{self.theme.getThemeColor()};color:{self.theme.getCheckedFontColor()}}}
+                                QInputDialog{{background-color:{self.theme.getFgColor()};}}
+                                QMessageBox{{background-color:{self.theme.getFgColor()};}}
+                                QToolTip {{font-family:"Microsoft YaHei", SimHei, SimSun; font-size:10pt; 
+                                        color:{self.theme.getFontColor()};
                                         padding:5px;
                                         border-style:solid; border-width:1px; border-color:gray;
-                                        background-color:#272626;}
+                                        background-color:{self.theme.getBgColor()};}}
                             ''')
 
         self.lTitle = QLabel('明日方舟小助手')
-        self.lTitle.setStyleSheet('''
-                                    QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
-                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}
+        self.lTitle.setStyleSheet(f'''
+                                    QLabel{{color:{self.theme.getFontColor()};
+                                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
+                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}}
                                     ''')
         self.lVer = QLabel(f'v{self.ver}')
-        self.lVer.setStyleSheet('''
-                                    QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
-                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}
+        self.lVer.setStyleSheet(f'''
+                                    QLabel{{color:{self.theme.getFontColor()};
+                                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
+                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}}
                                     ''')
 
         self.btnExit = QPushButton('×',self)
         self.btnExit.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnExit.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:20pt;}
-                                    QPushButton:pressed{background:#272626;font:16pt;}
+        self.btnExit.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:20pt;}}
+                                    QPushButton:pressed{{background:{self.theme.getBgColor()};font:16pt;}}
                                     ''')
         self.btnExit.clicked.connect(self.exit)
         self.btnExit.setToolTip('关闭')
 
         self.btnMinimize = QPushButton('-',self)
         self.btnMinimize.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnMinimize.setStyleSheet('''QPushButton{background:#272626;font-family:SimSun;font:normal 28pt;}
-                                    QPushButton:pressed{background:#272626;font-family:SimSun;font:20pt;}
+        self.btnMinimize.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimSun;font:normal 28pt;}}
+                                    QPushButton:pressed{{background:{self.theme.getBgColor()};font-family:SimSun;font:20pt;}}
                                     ''')
         self.btnMinimize.clicked.connect(self.minimize)
         self.btnMinimize.setToolTip('最小化')
 
         self.btnSetting = QPushButton('≡',self)
         self.btnSetting.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnSetting.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:16pt;}
-                                    QPushButton:pressed{background:#272626;font-family:SimHei, SimSun;font:14pt;}
-                                    QPushButton:menu-indicator{image:none;width:0px;}
+        self.btnSetting.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:16pt;}}
+                                    QPushButton:pressed{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:14pt;}}
+                                    QPushButton:menu-indicator{{image:none;width:0px;}}
                                     ''')
         self.btnSetting.setToolTip('设置')
 
         self.btnUpdate = QPushButton('∧',self)
         self.btnUpdate.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnUpdate.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:14pt;}
-                                    QPushButton:pressed{background:#272626;font-family:SimHei, SimSun;font:12pt;}
+        self.btnUpdate.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:14pt;}}
+                                    QPushButton:pressed{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:12pt;}}
                                     ''')
         self.btnUpdate.clicked.connect(self.startUpdate)
         self.btnUpdate.setToolTip('自动更新')
@@ -306,8 +342,8 @@ class App(QWidget):
 
         self.btnShowMsg = QPushButton('!',self)
         self.btnShowMsg.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnShowMsg.setStyleSheet('''QPushButton{background:#272626;font-family:SimHei, SimSun;font:14pt;}
-                                    QPushButton:pressed{background:#272626;font-family:SimHei, SimSun;font:12pt;}
+        self.btnShowMsg.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:14pt;}}
+                                    QPushButton:pressed{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:12pt;}}
                                     ''')
         self.btnShowMsg.clicked.connect(self.showMessage)
         self.btnShowMsg.setToolTip('查看公告')
@@ -317,14 +353,6 @@ class App(QWidget):
         self.btnStartAndStop.setMinimumSize(self.getRealSize(180), self.getRealSize(131))
         self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
         self.btnStartAndStop.clicked.connect(self.clickBtnStartAndStop)
-
-        '''
-        self.btnMonitorPublicCall = QPushButton('公开招募计算器', self)
-        self.btnMonitorPublicCall.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
-        self.btnMonitorPublicCall.setCheckable(True)
-        self.btnMonitorPublicCall.clicked[bool].connect(self.monitorPC)
-        self.btnMonitorPublicCall.setToolTip('打开公招计算器，它会自动帮你计算模拟器屏幕上的tag组合')
-        '''
 
         self.tbBattle = QPushButton('战斗:无限', self) #战斗可选按钮
         self.tbBattle.setCheckable(True)
@@ -349,18 +377,18 @@ class App(QWidget):
 
         self.actAutoSearch = QAction('自动招募')
         self.actAutoSearch.triggered.connect(self.setAutoPCFunc)
-        self.actAutoSearch.setIcon(QIcon(self.selectedPNG))
+        self.actAutoSearch.setIcon(self.theme.getSelectedIcon())
         self.actAutoEmploy = QAction('自动聘用')
         self.actAutoEmploy.triggered.connect(self.setAutoPCFunc)
-        self.actAutoEmploy.setIcon(QIcon(self.selectedPNG))
+        self.actAutoEmploy.setIcon(self.theme.getSelectedIcon())
         self.actSkipStar1 = QAction('保留1星')
         self.actSkipStar1.triggered.connect(self.setAutoPCFunc)
         if self.config.getboolean('function','autoPC_skip1Star'):
-            self.actSkipStar1.setIcon(QIcon(self.selectedPNG))
+            self.actSkipStar1.setIcon(self.theme.getSelectedIcon())
         self.actSkipStar5 = QAction('保留5星')
         self.actSkipStar5.triggered.connect(self.setAutoPCFunc)
         if self.config.getboolean('function','autoPC_skip5Star'):
-            self.actSkipStar5.setIcon(QIcon(self.selectedPNG))
+            self.actSkipStar5.setIcon(self.theme.getSelectedIcon())
         self.actPcCalculate = QAction('公招计算器')
         self.actPcCalculate.triggered.connect(self.monitorPC)
         self.pcCalculateChecked = False
@@ -397,11 +425,12 @@ class App(QWidget):
         #self.btnSet.setFixedSize(75, 40)
 
         self.settingMenu = QMenu() #创建设置按钮菜单
-        self.settingMenu.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
-                                        background-color:#272626; margin:3px;}
-                                        QMenu:item {padding:8px 32px;}
-                                        QMenu:item:selected { background-color: #3f4140;}
-                                        QMenu:icon{padding: 8px 20px;}''')
+        self.settingMenu.setStyleSheet(f'''QMenu {{color:{self.theme.getFontColor()};
+                                        font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
+                                        background-color:{self.theme.getBgColor()}; margin:3px;}}
+                                        QMenu:item {{padding:8px 32px;}}
+                                        QMenu:item:selected {{background-color: {self.theme.getFgColor()};}}
+                                        QMenu:icon{{padding: 8px 20px;}}''')
         self.actSimulator = QMenu('模拟器', parent=self.settingMenu) #模拟器二级菜单
         self.actSlrBlueStacks = QAction('蓝叠模拟器', parent=self.actSimulator)
         self.actSlrMumu = QAction('Mumu模拟器', parent=self.actSimulator)
@@ -424,6 +453,7 @@ class App(QWidget):
         self.actMaxNumber = QAction('设置上限', self.actStone)
         self.actMaxNumber.triggered.connect(self.changeMaxNum)
 
+        self.actTheme = QAction('主题设置', parent=self.settingMenu)
         self.actConsole = QAction('控制台', parent=self.settingMenu)
         self.actCheckUpdate = QAction('前往下载', parent=self.settingMenu)
         self.actIndex = QAction('访问主页', parent=self.settingMenu)
@@ -448,6 +478,9 @@ class App(QWidget):
 
         self.settingMenu.addAction(self.actConsole) #控制台
         self.actConsole.triggered.connect(self.console.showOrHide)
+
+        self.settingMenu.addAction(self.actTheme) 
+        self.actTheme.triggered.connect(self.openThemeEditor)
 
         self.settingMenu.addAction(self.actCheckUpdate) #蓝奏云地址
         self.actCheckUpdate.triggered.connect(self.openUpdate)
@@ -559,7 +592,7 @@ class App(QWidget):
             self.actAtuoMedicament.setIcon(QIcon(self.unSelPNG))
             self.battle.recChange(0, False)
         else:
-            self.actAtuoMedicament.setIcon(QIcon(self.selectedPNG))
+            self.actAtuoMedicament.setIcon(self.theme.getSelectedIcon())
             self.battle.recChange(0, True)
         self.autoMediFlag = not self.autoMediFlag
         self.changeDefault('loop', self.autoMediFlag, 'medicament')
@@ -569,7 +602,7 @@ class App(QWidget):
             self.actAtuoMedicamentSch.setIcon(QIcon(self.unSelPNG))
             self.schedule.recChange(0, False)
         else:
-            self.actAtuoMedicamentSch.setIcon(QIcon(self.selectedPNG))
+            self.actAtuoMedicamentSch.setIcon(self.theme.getSelectedIcon())
             self.schedule.recChange(0, True)
         self.autoMediScheFlag = not self.autoMediScheFlag
         self.changeDefault('schedule', self.autoMediScheFlag, 'medicament')
@@ -579,7 +612,7 @@ class App(QWidget):
             self.actAutoStone.setIcon(QIcon(self.unSelPNG))
             self.battle.recChange(1, False)
         else:
-            self.actAutoStone.setIcon(QIcon(self.selectedPNG))
+            self.actAutoStone.setIcon(self.theme.getSelectedIcon())
             self.battle.recChange(1, True)
         self.autoStoneFlag = not self.autoStoneFlag
         self.changeDefault('loop', self.autoStoneFlag, 'stone')
@@ -589,7 +622,7 @@ class App(QWidget):
             self.actAutoStoneSche.setIcon(QIcon(self.unSelPNG))
             self.schedule.recChange(1, False)
         else:
-            self.actAutoStoneSche.setIcon(QIcon(self.selectedPNG))
+            self.actAutoStoneSche.setIcon(self.theme.getSelectedIcon())
             self.schedule.recChange(1, True)
         self.autoStoneScheFlag = not self.autoStoneScheFlag
         self.changeDefault('schedule', self.autoStoneScheFlag, 'stone')
@@ -627,28 +660,28 @@ class App(QWidget):
         #额外理智恢复设置初始化
         self.autoMediFlag = self.config.getboolean('medicament', 'loop')
         if self.autoMediFlag:
-            self.actAtuoMedicament.setIcon(QIcon(self.selectedPNG))
+            self.actAtuoMedicament.setIcon(self.theme.getSelectedIcon())
             self.battle.recChange(0, True)
         else:
             self.actAtuoMedicament.setIcon(QIcon(self.unSelPNG))
             self.battle.recChange(0, False)
         self.autoMediScheFlag = self.config.getboolean('medicament', 'schedule')
         if self.autoMediScheFlag:
-            self.actAtuoMedicamentSch.setIcon(QIcon(self.selectedPNG))
+            self.actAtuoMedicamentSch.setIcon(self.theme.getSelectedIcon())
             self.schedule.recChange(0, True)
         else:
             self.actAtuoMedicamentSch.setIcon(QIcon(self.unSelPNG))
             self.schedule.recChange(0, False)
         self.autoStoneFlag = self.config.getboolean('stone', 'loop')
         if self.autoStoneFlag:
-            self.actAutoStone.setIcon(QIcon(self.selectedPNG))
+            self.actAutoStone.setIcon(self.theme.getSelectedIcon())
             self.battle.recChange(1, True)
         else:
             self.actAutoStone.setIcon(QIcon(self.unSelPNG))
             self.battle.recChange(1, False)
         self.autoStoneScheFlag = self.config.getboolean('stone', 'schedule')
         if self.autoStoneScheFlag:
-            self.actAutoStoneSche.setIcon(QIcon(self.selectedPNG))
+            self.actAutoStoneSche.setIcon(self.theme.getSelectedIcon())
             self.schedule.recChange(1, True)
         else:
             self.actAutoStoneSche.setIcon(QIcon(self.unSelPNG))
@@ -687,6 +720,8 @@ class App(QWidget):
     def initClass(self):
         self.rateMonitor = ScreenRateMonitor([self])
 
+        self.themeEditor = ThemeEditor(self.config, self.app, theme = self.theme, ico = self.ico)
+        self.themeEditor.configUpdate.connect(self.configUpdate)
 
         self.adb = Adb(self.ico, self.cwd + '/bin/adb', self.config)
 
@@ -748,17 +783,17 @@ class App(QWidget):
         '初始化模拟器选择'
         slrName = self.config.get('connect', 'simulator')
         if slrName == 'bluestacks':
-            self.actSlrBlueStacks.setIcon(QIcon(self.selectedPNG))
+            self.actSlrBlueStacks.setIcon(self.theme.getSelectedIcon())
         elif slrName == 'mumu':
-            self.actSlrMumu.setIcon(QIcon(self.selectedPNG))
+            self.actSlrMumu.setIcon(self.theme.getSelectedIcon())
         elif slrName == 'yeshen':
-            self.actSlrYeshen.setIcon(QIcon(self.selectedPNG))
+            self.actSlrYeshen.setIcon(self.theme.getSelectedIcon())
         elif slrName == 'xiaoyao':
-            self.actSlrXiaoyao.setIcon(QIcon(self.selectedPNG))
+            self.actSlrXiaoyao.setIcon(self.theme.getSelectedIcon())
         elif slrName == 'leidian':
-            self.actSlrLeidian.setIcon(QIcon(self.selectedPNG))
+            self.actSlrLeidian.setIcon(self.theme.getSelectedIcon())
         elif slrName == 'custom':
-            self.actSlrCustom.setIcon(QIcon(self.selectedPNG))
+            self.actSlrCustom.setIcon(self.theme.getSelectedIcon())
 
 
     def center(self):
@@ -793,12 +828,14 @@ class App(QWidget):
     def functionSetMeun(self):
         self.source = self.sender()
         rightClickMeun = QMenu()
-        rightClickMeun.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
-                                        background-color:#272626; margin:3px;}
-                                        QMenu:item {padding:8px 32px;}
-                                        QMenu:item:selected { background-color: #3f4140;}
-                                        QMenu:icon{padding: 8px 20px;}
-                                        QMenu:separator{background-color: #7C7C7C; height:1px; margin-left:2px; margin-right:2px;}''')
+        rightClickMeun.setStyleSheet(f'''QMenu {{color:{self.theme.getFontColor()};
+                                            font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
+                                            background-color:{self.theme.getBgColor()}; margin:3px;}}
+                                        QMenu:item {{padding:8px 32px;}}
+                                        QMenu:item:selected {{ background-color: {self.theme.getFgColor()};}}
+                                        QMenu:icon{{padding: 8px 20px;}}
+                                        QMenu:separator{{background-color: #7C7C7C; 
+                                            height:1px; margin-left:2px; margin-right:2px;}}''')
         if self.source == self.tbBattle:
             if self.config.getboolean('function', 'battle'):
                 text = '设为默认关闭'
@@ -910,19 +947,19 @@ class App(QWidget):
         if source.text() == '自动招募':
             self.publicCall.searchFlag = not self.publicCall.searchFlag
             if self.publicCall.searchFlag:
-                source.setIcon(QIcon(self.selectedPNG))
+                source.setIcon(self.theme.getSelectedIcon())
             else:
                 source.setIcon(QIcon(''))
         elif source.text() == '自动聘用':
             self.publicCall.employFlag = not self.publicCall.employFlag
             if self.publicCall.employFlag:
-                source.setIcon(QIcon(self.selectedPNG))
+                source.setIcon(self.theme.getSelectedIcon())
             else:
                 source.setIcon(QIcon(''))
         elif source.text() == '保留1星':
             self.publicCall.setStar(1, 1, not self.publicCall.setStar(1, 0))
             if self.publicCall.setStar(1,0):
-                source.setIcon(QIcon(self.selectedPNG))
+                source.setIcon(self.theme.getSelectedIcon())
                 self.changeDefault('autopc_skip1star', True)
             else:
                 source.setIcon(QIcon(''))
@@ -930,7 +967,7 @@ class App(QWidget):
         elif source.text() == '保留5星':
             self.publicCall.setStar(5, 1, not self.publicCall.setStar(5, 0))
             if self.publicCall.setStar(5,0):
-                source.setIcon(QIcon(self.selectedPNG))
+                source.setIcon(self.theme.getSelectedIcon())
                 self.changeDefault('autopc_skip5star', True)
             else:
                 source.setIcon(QIcon(''))
@@ -1056,6 +1093,9 @@ class App(QWidget):
         self.board.updateText(self._notice)
         self.board.show()
         #弹出公告
+
+    def openThemeEditor(self):
+        self.themeEditor.show()
 
     def startUpdate(self):
         if path.exists(self.cwd + '/update.exe'):
