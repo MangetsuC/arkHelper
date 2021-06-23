@@ -53,6 +53,7 @@ class Task:
         self.adb.screenShot()
         cInfo = pictureFind.matchImg(self.screenShot, self.task)
         if cInfo == None:
+            print('无法检测到任务交付入口，中断任务交付后续')
             return False
         else:
             while self.switch:

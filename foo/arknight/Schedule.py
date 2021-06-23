@@ -451,7 +451,9 @@ class BattleSchedule(QObject):
     def run(self, switchI):
         self.switch = switchI
         self.restStone = self.stoneMaxNum
+        print('正在获取用户配置的计划')
         self.levelSchedule = self.readJson()
+        print('用户配置读取成功')
         levelList = self.levelSchedule['main'][0]['sel']
         for eachLevel in levelList:
             if not self.switch:
@@ -459,6 +461,10 @@ class BattleSchedule(QObject):
             if eachLevel['part'] == 'THIS':
                 self.switchB = True
             else:
+                targetLevel = eachLevel['objLevel']
+                if targetLevel[0] == 'S':
+                    targetLevel = 'L' + targetLevel
+                print(f'正在前往指定关卡{targetLevel}')
                 self.switchB = self.goLevel(eachLevel)
             if self.switchB and self.switch:
                 levelCondition = self.runTimes(times=eachLevel['times'])

@@ -6,7 +6,7 @@ from os import getcwd, getlogin, mkdir, path, startfile
 from threading import Thread
 from webbrowser import open as openUrl
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QCursor, QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
                              QFileDialog, QGridLayout, QHBoxLayout,
@@ -30,6 +30,7 @@ from foo.ui.UIschedule import JsonEdit
 
 
 class App(QWidget):
+    exitBeforeShutdown = pyqtSignal()
     def __init__(self, app):
         super(App, self).__init__()
         self.app = app
@@ -56,6 +57,7 @@ class App(QWidget):
         self.initRightClickMeun()
         self.initState()
         self.applyStyleSheet()
+        self.exitBeforeShutdown.connect(self.exit)
         self.isRun = False
         self.center()
         self.show()
@@ -1151,7 +1153,7 @@ class App(QWidget):
             self.credit.run(self.doctorFlag)
         if self.shutdownFlag and self.doctorFlag:
             self.adb.cmd.shutdown(time=120)
-            self.exit()
+            self.exitBeforeShutdown.emit()
         else:
             self.stop()
 

@@ -59,16 +59,20 @@ class BattleLoop(QObject):
     def connect(self, broadcast = True):
         self.connectSwitch = True
         for times in range(10):
+            print(f'正在连接adb...第{times}次')
             if self.connectSwitch:
                 if self.adb.connect():
                     return True
+                else:
+                    print(f'第{times}次连接尝试失败')
             else:
+                print('收到用户指令，中断')
                 return False
         
         else:
             if broadcast:
                 toast.broadcastMsg("ArkHelper", "连接模拟器失败，请检查设置和模拟器", self.ico)
-                print('unable to connect simulator')
+                print('连接adb失败')
             else:
                 print("INIT:adb connect failed")
             return False

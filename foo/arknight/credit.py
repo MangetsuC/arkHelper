@@ -61,6 +61,7 @@ class Credit:
                 if fInfo != None:
                     return fInfo
                 elif tryTime > 10:
+                    print('无法找到好友入口，中断信用获取后续操作')
                     return False
                 tryTime += 1
 

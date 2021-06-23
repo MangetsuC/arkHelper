@@ -56,6 +56,7 @@ class Logistic:
         self.click((100,50))
 
     def enterLogisticPanel(self):
+        print('正在进入基建界面...')
         self.getScreen()
         isOverviewEntry = self.matchPic(self.overviewEntry)
         isActBtn = self.matchPic(self.actBtn)
@@ -68,13 +69,16 @@ class Logistic:
                     startTime = time()
                 self.getScreen()
                 if self.matchPic(self.overviewEntry) != None:
+                    print('已进入基建界面')
                     break
                 else:
                     sleep(0.5)
             return True
         elif isOverviewEntry != None and isActBtn == None:
+            print('已处在基建界面')
             return True
         else:
+            print('基建进入错误，中断后续操作')
             return False
 
     def swipe(self, startPoint, endPoint, stopCheck = True):
@@ -150,6 +154,7 @@ class Logistic:
 
     def enterOverview(self):
         '进入进驻总览'
+        print('正在进入进驻总览...')
         self.getScreen()
         overviewEntry = self.matchPic(self.overviewEntry)
         if overviewEntry != None:
@@ -160,16 +165,20 @@ class Logistic:
                     break
                 sleep(0.5)
                 self.getScreen()
+            print('已进入进驻总览')
             return 0
         else:
+            print('进入进驻总览失败')
             return -1
 
     def freeOperator(self):
         '撤下心情低于设定值的工作中干员以及心情高于设定值的宿舍中的干员'
+        print('开始撤出干员')
         freeCount = 0
         tryCount = 0
         while True:
             #进入撤下干员模式
+            print('正在进入撤下干员模式...')
             if not self.runFlag:
                 return -2
             self.getScreen()
@@ -220,6 +229,7 @@ class Logistic:
                                 trainRoomCount += 1
                                 if trainRoomCount >= 2: #为了保证检查到B4的宿舍
                                     isLastTurn = True
+                                    print('已到达基建尾部')
                                 continue
                             else:
                                 continue
@@ -256,11 +266,13 @@ class Logistic:
     def relaxOperator(self, num):
         '安排指定数量的干员进入宿舍，num需大于0'
         #要求num > 0
+        print('开始安排干员休息...')
         tryCount = 0
         need2relax = num #需进入宿舍干员数
         relaxing = 0 #已进入宿舍干员数
         while True:
             #退出撤下干员模式
+            print('正在退出撤出干员模式...')
             if not self.runFlag:
                 return -2
             self.getScreen()
@@ -317,10 +329,12 @@ class Logistic:
                                 else:
                                     sleep(0.5)
                             if relaxing >= need2relax:
+                                print('所有干员已安排进入宿舍')
                                 isLastTurn = True
                                 break
                     elif roomName == '控制中枢':
                         isLastTurn = True
+                        print('已回到基建头部')
                 if not isLastTurn:
                     self.swipe((550, upper[1] + 70), (550, lower[1]))
             else:
@@ -329,6 +343,7 @@ class Logistic:
 
     def checkToDoList(self):
         '收获制造站产出，交付订单，获取信赖'
+        print('开始收获制造站产出，交付订单，获取信赖')
         while self.runFlag:
             #避免进入基建的时候右上角弹出提示遮挡提示按钮
             self.getScreen()
@@ -358,11 +373,13 @@ class Logistic:
                 if not self.runFlag:
                     break
                 self.click(i)
+                print('等待操作提交...')
                 while True:
                     if not self.runFlag:
                         break
                     self.getScreen()
                     if self.matchPic(self.submitting) == None: #等待提交完成
+                        print('提交成功！')
                         break
             self.click((20, 800))
         return 0
@@ -440,7 +457,7 @@ class Logistic:
         if need2relax > 0:
             restNum = self.relaxOperator(need2relax)
             if restNum > 0:
-                print(f'仍有{restNum}位干员为安排进宿舍休息')
+                print(f'仍有{restNum}位干员为安排进宿舍休息，后续可能出现将这些干员重新安排进工作的情况')
 
         self.rooms['制造站'].startPermission()
         self.rooms['制造站'].backToMain()
@@ -451,6 +468,7 @@ class Logistic:
         if not self.runFlag:
             return 0
         for eachRoom in self.enableRooms:
+            print(f'开始检查{eachRoom}...')
             self.rooms[eachRoom].startPermission()
             self.returnToWork(self.rooms[eachRoom], self.rule.getOneRule(self.ruleName)[eachRoom])
             if not self.runFlag:

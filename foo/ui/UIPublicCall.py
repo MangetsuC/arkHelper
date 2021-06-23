@@ -273,6 +273,7 @@ class UIPublicCall(QDialog):
         event.accept()
 
     def goToMainpage(self):
+        print('正在返回首页')
         listGoToTemp = self.listGoTo.copy()
         tryCount = 0
         while self.autoSwitch:
@@ -290,6 +291,7 @@ class UIPublicCall(QDialog):
 
             if bInfo != None:
                 if bInfo['obj'] == 'act.png': #self.mainpageMark
+                    print('已返回首页')
                     return True
                 else:
                     self.adb.click(bInfo['result'][0], bInfo['result'][1])
@@ -333,6 +335,7 @@ class UIPublicCall(QDialog):
             return False
 
     def enterPC(self):
+        print('正在进入公开招募界面...')
         for i in range(5):
             if not self.autoSwitch:
                 return False
@@ -343,9 +346,10 @@ class UIPublicCall(QDialog):
                 while pictureFind.matchImg(self.screenShot, self.pcMark) == None:
                     sleep(1)
                     self.adb.screenShot()
+                print('已经进入公开招募界面')
                 return True
-                pass
         else:
+            print('无法进入公开招募界面，后续操作中断')
             return False
     
     def employ(self):
@@ -401,8 +405,10 @@ class UIPublicCall(QDialog):
         self.goToMainpage()
         if self.enterPC():
             if self.employFlag:
+                print('开始聘用干员')
                 self.employ()
             if self.searchFlag:
+                print('开始招募干员')
                 self.search()
         self.goToMainpage()
 

@@ -51,6 +51,7 @@ class Room:
 
     def swipeToOperatorHead(self):
         '选择干员界面回到最左侧'
+        print('正在回到选择干员界面回到最左侧...')
         lastScreen = None
         while True:
             #判断滑动已完全停止
@@ -150,6 +151,7 @@ class Room:
 
     def backToMain(self):
         '回到基建首页'
+        print('正在回到基建首页...')
         return self.backToOneLayer(overviewEntry)
 
     def findAllRooms(self):
@@ -178,6 +180,7 @@ class Room:
 
     def enterRoom(self):
         '进入房间'
+        print('正在进入房间...')
         if self.swipeScreen() != -1:
             try:
                 oneRoom = self.roomCoor.pop()
@@ -208,6 +211,7 @@ class Room:
     def dispatchOperator(self, roomRule, roomType, needNum):
         self.click((1170, 155))
         unFit = []
+        searched = []
         myRuleList = roomRule.copy()
         myRuleList.reverse()
         while needNum != 0:
@@ -272,6 +276,9 @@ class Room:
                             myRuleList.append(self.getRealName(eachOp)) 
                             #把这几位干员以非组合的方式重新压回规则
             else:
+                if opFinding in searched:
+                    continue
+                searched.append(opFinding)
                 if '|' in opFinding or '*' in opFinding or '$' in opFinding:
                     if not (roomType in opFinding):
                         unFit.append(opFinding)
