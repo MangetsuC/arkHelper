@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
                              QFileDialog, QGridLayout, QHBoxLayout,
                              QInputDialog, QLabel, QMenu, QMessageBox,
-                             QPushButton, QVBoxLayout, QWidget, QLineEdit)
+                             QPushButton, QVBoxLayout, QWidget, QLineEdit, QColorDialog)
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QColor
 
 class ThemeEditor(QWidget):
     configUpdate = pyqtSignal()
@@ -12,6 +12,13 @@ class ThemeEditor(QWidget):
 
         self.config = config
         self.app = app
+        self.theme = theme
+
+        self.colorSelector = QColorDialog()
+        self.colorSelector.colorSelected.connect(self.colorOK)
+
+        self.source = None
+
         if theme != None:
             self.setStyleSheet(f'''
                                 ThemeEditor{{background:{theme.getBgColor()}}}
@@ -27,7 +34,7 @@ class ThemeEditor(QWidget):
             ''')
 
 
-        self.setWindowTitle('颜色格式#rrggbb(自动:auto)')
+        self.setWindowTitle('重启后生效')
         self.setWindowIcon(QIcon(ico))
         self.labelThemeColor = QLabel('打开的开关的颜色')
         self.labelFontColor = QLabel('字体颜色')
@@ -38,35 +45,42 @@ class ThemeEditor(QWidget):
         self.labelPressedColor = QLabel('按下按钮时的颜色')
         self.labelSelectedColor = QLabel('√的颜色')
 
-        self.saveThemeColor = QPushButton('保存')
-        self.saveFontColor = QPushButton('保存')
-        self.saveCheckedFontColor = QPushButton('保存')
-        self.saveBorderColor = QPushButton('保存')
-        self.saveFgColor = QPushButton('保存')
-        self.saveBgColor = QPushButton('保存')
-        self.savePressedColor = QPushButton('保存')
+        self.setAutoThemeColor = QPushButton('自动')
+        self.setAutoFontColor = QPushButton('自动')
+        self.setAutoCheckedFontColor = QPushButton('自动')
+        self.setAutoBorderColor = QPushButton('自动')
+        self.setAutoFgColor = QPushButton('自动')
+        self.setAutoBgColor = QPushButton('自动')
+        self.setAutoPressedColor = QPushButton('自动')
+        self.setAutoThemeColor.clicked.connect(self.setAuto)
+        self.setAutoFontColor.clicked.connect(self.setAuto)
+        self.setAutoCheckedFontColor.clicked.connect(self.setAuto)
+        self.setAutoBorderColor.clicked.connect(self.setAuto)
+        self.setAutoFgColor.clicked.connect(self.setAuto)
+        self.setAutoBgColor.clicked.connect(self.setAuto)
+        self.setAutoPressedColor.clicked.connect(self.setAuto)
 
-        self.editorThemeColor = QLineEdit()
-        self.editorThemeColor.setText(self.config.get('theme', 'themecolor'))
-        self.editorThemeColor.setAlignment(Qt.AlignHCenter)
-        self.editorFontColor = QLineEdit()
-        self.editorFontColor.setText(self.config.get('theme', 'fontcolor'))
-        self.editorFontColor.setAlignment(Qt.AlignHCenter)
-        self.editorCheckedFontColor = QLineEdit()
-        self.editorCheckedFontColor.setText(self.config.get('theme', 'checkedfontcolor'))
-        self.editorCheckedFontColor.setAlignment(Qt.AlignHCenter)
-        self.editorBorderColor = QLineEdit()
-        self.editorBorderColor.setText(self.config.get('theme', 'bordercolor'))
-        self.editorBorderColor.setAlignment(Qt.AlignHCenter)
-        self.editorFgColor = QLineEdit()
-        self.editorFgColor.setText(self.config.get('theme', 'fgcolor'))
-        self.editorFgColor.setAlignment(Qt.AlignHCenter)
-        self.editorBgColor = QLineEdit()
-        self.editorBgColor.setText(self.config.get('theme', 'bgcolor'))
-        self.editorBgColor.setAlignment(Qt.AlignHCenter)
-        self.editorPressedColor = QLineEdit()
-        self.editorPressedColor.setText(self.config.get('theme', 'pressedcolor'))
-        self.editorPressedColor.setAlignment(Qt.AlignHCenter)
+        self.editorThemeColor = QPushButton()
+        self.setColorBtnState(self.editorThemeColor, self.config.get('theme', 'themecolor'))
+        self.editorThemeColor.clicked.connect(self.chooseColor)
+        self.editorFontColor = QPushButton()
+        self.setColorBtnState(self.editorFontColor, self.config.get('theme', 'fontcolor'))
+        self.editorFontColor.clicked.connect(self.chooseColor)
+        self.editorCheckedFontColor = QPushButton()
+        self.setColorBtnState(self.editorCheckedFontColor, self.config.get('theme', 'checkedfontcolor'))
+        self.editorCheckedFontColor.clicked.connect(self.chooseColor)
+        self.editorBorderColor = QPushButton()
+        self.setColorBtnState(self.editorBorderColor, self.config.get('theme', 'bordercolor'))
+        self.editorBorderColor.clicked.connect(self.chooseColor)
+        self.editorFgColor = QPushButton()
+        self.setColorBtnState(self.editorFgColor, self.config.get('theme', 'fgcolor'))
+        self.editorFgColor.clicked.connect(self.chooseColor)
+        self.editorBgColor = QPushButton()
+        self.setColorBtnState(self.editorBgColor, self.config.get('theme', 'bgcolor'))
+        self.editorBgColor.clicked.connect(self.chooseColor)
+        self.editorPressedColor = QPushButton()
+        self.setColorBtnState(self.editorPressedColor, self.config.get('theme', 'pressedcolor'))
+        self.editorPressedColor.clicked.connect(self.chooseColor)
         
         self.darkSelectedIcon = QPushButton('深色')
         self.darkSelectedIcon.setCheckable(True)
@@ -104,18 +118,26 @@ class ThemeEditor(QWidget):
         self.grid.addWidget(self.editorFontColor, 4, 1, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.editorBorderColor, 5, 1, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.editorPressedColor, 6, 1, 1, 2, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.saveThemeColor, 0, 3, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.saveCheckedFontColor, 1, 3, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.saveFgColor, 2, 3, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.saveBgColor, 3, 3, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.saveFontColor, 4, 3, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.saveBorderColor, 5, 3, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.savePressedColor, 6, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.setAutoThemeColor, 0, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.setAutoCheckedFontColor, 1, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.setAutoFgColor, 2, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.setAutoBgColor, 3, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.setAutoFontColor, 4, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.setAutoBorderColor, 5, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.setAutoPressedColor, 6, 3, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.darkSelectedIcon, 7, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.lightSelectedIcon, 7, 2, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.autoSelectedIcon, 7, 3, 1, 1, alignment=Qt.AlignCenter)
 
         self.resizeUI()
+
+    def setColorBtnState(self, btn, colorText):
+        btn.setText(colorText)
+        if colorText != 'auto':
+            btn.setStyleSheet(f'''
+                                QPushButton{{background:{colorText};}}
+                                QPushButton:pressed{{background:{colorText};font:9pt;}}
+                                ''')
 
     def resizeUI(self):
         rate = self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
@@ -134,18 +156,19 @@ class ThemeEditor(QWidget):
         self.editorBgColor.setMinimumSize(rate * 150, rate * 40)
         self.editorCheckedFontColor.setMinimumSize(rate * 150, rate * 40)
         self.editorFontColor.setMinimumSize(rate * 150, rate * 40)
-        self.saveThemeColor.setMinimumSize(rate * 70, rate * 40)
-        self.saveBorderColor.setMinimumSize(rate * 70, rate * 40)
-        self.savePressedColor.setMinimumSize(rate * 70, rate * 40)
-        self.saveFgColor.setMinimumSize(rate * 70, rate * 40)
-        self.saveBgColor.setMinimumSize(rate * 70, rate * 40)
-        self.saveCheckedFontColor.setMinimumSize(rate * 70, rate * 40)
-        self.saveFontColor.setMinimumSize(rate * 70, rate * 40)
+        self.setAutoThemeColor.setMinimumSize(rate * 70, rate * 40)
+        self.setAutoBorderColor.setMinimumSize(rate * 70, rate * 40)
+        self.setAutoPressedColor.setMinimumSize(rate * 70, rate * 40)
+        self.setAutoFgColor.setMinimumSize(rate * 70, rate * 40)
+        self.setAutoBgColor.setMinimumSize(rate * 70, rate * 40)
+        self.setAutoCheckedFontColor.setMinimumSize(rate * 70, rate * 40)
+        self.setAutoFontColor.setMinimumSize(rate * 70, rate * 40)
         self.darkSelectedIcon.setMinimumSize(rate * 70, rate * 40)
         self.lightSelectedIcon.setMinimumSize(rate * 70, rate * 40)
         self.autoSelectedIcon.setMinimumSize(rate * 70, rate * 40)
 
     def selectedIconSet(self):
+        #设定√符号的素材
         source = self.sender()
         if source == self.darkSelectedIcon:
             if self.darkSelectedIcon.isChecked():
@@ -169,3 +192,74 @@ class ThemeEditor(QWidget):
             else:
                 self.autoSelectedIcon.setChecked(True)
         self.configUpdate.emit()
+
+    def test(self):
+        self.colorSelector.show()
+
+    def chooseColor(self):
+        #点下颜色设置按钮后保存来源并打开颜色选择器
+        self.source = self.sender()
+        if self.source.text() != 'auto':
+            currentColor = QColor(self.source.text())
+            self.colorSelector.setCurrentColor(currentColor)
+            self.colorSelector.show()
+        else:
+            self.colorSelector.show()
+
+    def setAuto(self):
+        #设为自动
+        source = self.sender()
+        if source == self.setAutoFontColor:
+            target = self.editorFontColor
+            key = 'fontcolor'
+        elif source == self.setAutoFgColor:
+            target = self.editorFgColor
+            key = 'fgcolor'
+        elif source == self.setAutoBgColor:
+            target = self.editorBgColor
+            key = 'bgcolor'
+        elif source == self.setAutoThemeColor:
+            target = self.editorThemeColor
+            key = 'themecolor'
+        elif source == self.setAutoBorderColor:
+            target = self.editorBorderColor
+            key = 'bordercolor'
+        elif source == self.setAutoCheckedFontColor:
+            target = self.editorCheckedFontColor
+            key = 'checkedfontcolor'
+        elif source == self.setAutoPressedColor:
+            target = self.editorPressedColor
+            key = 'pressedcolor'
+        target.setText('auto')
+        target.setStyleSheet(f'''
+                                QPushButton{{border:0px;background:{self.theme.getFgColor()};}}
+                                QPushButton:pressed{{background:{self.theme.getPressedColor()};}}
+                                ''')
+        self.config.set('theme', key, 'auto')
+        self.configUpdate.emit()
+
+    def colorOK(self):
+        #点下确认后进行颜色处理
+        color = self.colorSelector.currentColor().name(0)
+        self.source.setText(color)
+        if self.source == self.editorFontColor:
+            key = 'fontcolor'
+        elif self.source == self.editorFgColor:
+            key = 'fgcolor'
+        elif self.source == self.editorBgColor:
+            key = 'bgcolor'
+        elif self.source == self.editorThemeColor:
+            key = 'themecolor'
+        elif self.source == self.editorBorderColor:
+            key = 'bordercolor'
+        elif self.source == self.editorCheckedFontColor:
+            key = 'checkedfontcolor'
+        elif self.source == self.editorPressedColor:
+            key = 'pressedcolor'
+        self.source.setStyleSheet(f'''
+                                QPushButton{{border:0px;background:{color};}}
+                                QPushButton:pressed{{background:{color};}}
+                                ''')
+        self.config.set('theme', key, color)
+        self.configUpdate.emit()
+

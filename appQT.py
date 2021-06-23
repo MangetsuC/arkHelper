@@ -710,18 +710,13 @@ class App(QWidget):
         self.shutdownFlag = self.config.getboolean('function', 'shutdown')
         self.tbShutdown.setChecked(self.shutdownFlag) #自动关机
 
-        '''
-        self.PCFlag = self.config.getboolean('function', 'publiccall')
-        self.btnMonitorPublicCall.setChecked(self.PCFlag)
-        if self.PCFlag and self.publicCall != None:
-            self.publicCall.turnOn()
-        '''
     
     def initClass(self):
         self.rateMonitor = ScreenRateMonitor([self])
 
         self.themeEditor = ThemeEditor(self.config, self.app, theme = self.theme, ico = self.ico)
         self.themeEditor.configUpdate.connect(self.configUpdate)
+        self.rateMonitor.addWidget(self.themeEditor)
 
         self.adb = Adb(self.ico, self.cwd + '/bin/adb', self.config)
 

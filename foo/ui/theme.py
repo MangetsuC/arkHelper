@@ -63,7 +63,7 @@ class Theme:
         if config.get('theme', 'fgcolor') != 'auto':
             self.fgColor = config.get('theme', 'fgcolor')
         if config.get('theme', 'bgcolor') != 'auto':
-            self.bgcolor = config.get('theme', 'bgcolor')
+            self.bgColor = config.get('theme', 'bgcolor')
         if config.get('theme', 'pressedcolor') != 'auto':
             self.pressedColor = config.get('theme', 'pressedcolor')
 
