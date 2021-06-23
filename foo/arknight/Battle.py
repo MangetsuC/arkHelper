@@ -59,12 +59,12 @@ class BattleLoop(QObject):
     def connect(self, broadcast = True):
         self.connectSwitch = True
         for times in range(10):
-            print(f'正在连接adb...第{times}次')
+            print(f'正在连接adb...第{times+1}次')
             if self.connectSwitch:
                 if self.adb.connect():
                     return True
                 else:
-                    print(f'第{times}次连接尝试失败')
+                    print(f'第{times+1}次连接尝试失败')
             else:
                 print('收到用户指令，中断')
                 return False

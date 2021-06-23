@@ -174,11 +174,11 @@ class Logistic:
     def freeOperator(self):
         '撤下心情低于设定值的工作中干员以及心情高于设定值的宿舍中的干员'
         print('开始撤出干员')
+        print('正在进入撤下干员模式...')
         freeCount = 0
         tryCount = 0
         while True:
             #进入撤下干员模式
-            print('正在进入撤下干员模式...')
             if not self.runFlag:
                 return -2
             self.getScreen()
@@ -236,6 +236,18 @@ class Logistic:
                         self.click((eachRoom[0] - 785, eachRoom[1] + 6))
                         self.getScreen()
                         moods = ocr.ocr_operatorMood(self.screenShot, roi = (355, 576.5, 85, 180), isDorm = isDorm)
+
+                        moodsForPrint = []
+                        for printMood in range(len(moods)):
+                            if moods[printMood] > -1:
+                                moodsForPrint.append(str(moods[printMood]))
+                            else:
+                                moodsForPrint.append('-')
+                            if printMood != len(moods) - 1:
+                                moodsForPrint.append('|')
+                        moodsForPrint = ''.join(moodsForPrint)
+                        print(f'(有重复){roomName}各干员心情为:{moodsForPrint}')
+                        
                         for eachOpMood in range(len(moods)):
                             if moods[eachOpMood] > -1:
                                 #该位置有人
@@ -267,12 +279,12 @@ class Logistic:
         '安排指定数量的干员进入宿舍，num需大于0'
         #要求num > 0
         print('开始安排干员休息...')
+        print('正在退出撤出干员模式...')
         tryCount = 0
         need2relax = num #需进入宿舍干员数
         relaxing = 0 #已进入宿舍干员数
         while True:
             #退出撤下干员模式
-            print('正在退出撤出干员模式...')
             if not self.runFlag:
                 return -2
             self.getScreen()

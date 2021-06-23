@@ -44,9 +44,9 @@ class Room:
                 break
 
     def getRealName(self, name):
-        prefixSign = ['+', '*', '|', '$']
+        prefixSign = ['+', '*', '|', '$', '.']
         while name[0] in prefixSign:
-            name = name.strip('+').strip('|').strip('*').strip('$')
+            name = name.strip('+').strip('|').strip('*').strip('$').strip('.')
         return name
 
     def swipeToOperatorHead(self):
@@ -219,7 +219,6 @@ class Room:
                 break
             try:
                 opFinding = myRuleList.pop()
-                print(f'正在寻找干员{opFinding}')
             except IndexError:
                 break
             if '+' in opFinding:
@@ -241,6 +240,7 @@ class Room:
                                 availableNum = -1 #组合类型与房间类型不匹配 为什么不能让我方便的跳出双层循环！
                                 break
                         realName = self.getRealName(eachOp)
+                        print(f'正在检查干员{realName}的可用状态...')
                         self.swipeToOperatorHead()
                         self.getScreen()
                         opCoor = self.findOpOnScreen(realName) #先寻找一次
@@ -248,6 +248,7 @@ class Room:
                             if self.checkOpAvailable(opCoor[1]):
                                 availableNum += 1
                             else:
+                                print(f'干员{realName}的暂不可用，组合{tempOpList}不可用')
                                 break
                         else:
                             isAvailable = True
@@ -263,8 +264,10 @@ class Room:
                                         break
                                     else:
                                         isAvailable = False
+                                        print(f'干员{realName}的暂不可用，组合{tempOpList}不可用')
                                         break
                             else:
+                                print(f'干员{realName}的暂不可用，组合{tempOpList}不可用')
                                 break
                             if not isAvailable:
                                 break #有组合内的干员不可选取 不再检查其它角色
@@ -273,7 +276,7 @@ class Room:
                         continue
                     elif availableNum == len(tempOpList):
                         for eachOp in tempOpList:
-                            myRuleList.append(self.getRealName(eachOp)) 
+                            myRuleList.append('.' + self.getRealName(eachOp)) 
                             #把这几位干员以非组合的方式重新压回规则
             else:
                 if opFinding in searched:
@@ -284,6 +287,7 @@ class Room:
                         unFit.append(opFinding)
                         continue
                 opFinding = self.getRealName(opFinding)
+                print(f'正在寻找干员{opFinding}...')
                 self.swipeToOperatorHead()
                 self.getScreen()
                 opCoor = self.findOpOnScreen(opFinding) #先寻找一次
