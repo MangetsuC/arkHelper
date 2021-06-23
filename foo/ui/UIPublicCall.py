@@ -9,11 +9,12 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QTimer
 
 class UIPublicCall(QDialog):
-    def __init__(self, adb, battle, cwd, listGoTo, normal, high, parent=None, flags=Qt.WindowFlags(1)):
+    def __init__(self, adb, battle, cwd, listGoTo, normal, high, theme = None, parent=None, flags=Qt.WindowFlags(1)):
         super().__init__(parent=parent, flags=flags)
         self.initVar(adb, battle, cwd, normal, high)
         self.initAuto(listGoTo)
-        self.initUI()
+        self.initUI(theme)
+        self.theme = theme
         #self.myTimer()
         
     def updateTag(self):
@@ -63,7 +64,7 @@ class UIPublicCall(QDialog):
         self.employFlag = True
         self.searchFlag = True
     
-    def initUI(self):
+    def initUI(self, theme):
         self.setWindowTitle('公开招募计算器')
         self.setWindowIcon(QIcon(self.cwd + '/res/ico.ico'))
         self.grid = QGridLayout()
@@ -74,7 +75,8 @@ class UIPublicCall(QDialog):
         self.combFiller.setLayout(self.combGrid)
         self.combFiller.setMinimumSize(400, 2000)#######设置滚动条的尺寸
         self.scroll = QScrollArea()
-        self.scroll.viewport().setStyleSheet("background-color:#4d4d4d;")
+        if theme != None:
+            self.scroll.viewport().setStyleSheet(f"background-color:{theme.getFgColor()};")
         self.scroll.setWidget(self.combFiller)
         
         self.lbText = QLabel('现有标签', self)
@@ -86,8 +88,10 @@ class UIPublicCall(QDialog):
         self.tag4 = QLabel('', self)
         self.tagsLabelList = [self.tag0, self.tag1, self.tag2, self.tag3, self.tag4]
         for eachLabel in self.tagsLabelList:
-            eachLabel.setStyleSheet('''QLabel {border-style: solid;border-left-width: 5px;border-right-width: 5px;border-top-width: 2px;border-bottom-width: 2px;
-            border-color: #4d4d4d;border-radius: 0px;background-color: #4d4d4d;}''')
+            if theme != None:
+                eachLabel.setStyleSheet(f'''QLabel {{border-style: solid;
+                                border-left-width: 5px;border-right-width: 5px;border-top-width: 2px;border-bottom-width: 2px;
+                                border-color: {theme.getFgColor()};border-radius: 0px;background-color: {theme.getFgColor()};}}''')
             eachLabel.setFixedHeight(35)
             eachLabel.setAlignment(Qt.AlignCenter)
 
@@ -112,26 +116,27 @@ class UIPublicCall(QDialog):
         self.setLayout(self.grid)
         self.resize(445,800)
         #self.setFixedWidth(430)
-        
-        self.setStyleSheet('''UIPublicCall{background-color:#272626;}
-        QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}
-                                QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
-                                QPushButton:pressed{background:#606162;font:9pt;}
-                                QPushButton:checked{background:#70bbe4;}
-        QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}
-        QScrollArea{background-color:#4d4d4d;}
-        QScrollBar:vertical{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:2px;padding-bottom:2px;}
-        QScrollBar:handle:vertical{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}
-        QScrollBar:handle:vertical:hover{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}
-        QScrollBar:add-line:vertical{height:0px;width:0px;subcontrol-position:bottom;}
-        QScrollBar:sub-line:vertical{height:0px;width:0px;subcontrol-position:top;}
-        QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{background:rgba(0,0,0,10%);border-radius:0px;}
-        QScrollBar:horizontal{height:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}
-        QScrollBar:handle:horizontal{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}
-        QScrollBar:handle:horizontal:hover{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}
-        QScrollBar:add-line:horizontal{height:0px;width:0px;subcontrol-position:bottom;}
-        QScrollBar:sub-line:horizontal{height:0px;width:0px;subcontrol-position:top;}
-        QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{background:rgba(0,0,0,10%);border-radius:0px;}''')
+        if theme != None:
+            self.setStyleSheet(f'''UIPublicCall{{background-color:{theme.getBgColor()};}}
+            QPushButton{{border:0px;background:{theme.getFgColor()};color:{theme.getFontColor()};
+                        font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}}
+                        QPushButton:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};}}
+                        QPushButton:pressed{{background:{theme.getPressedColor()};font:9pt;}}
+                        QPushButton:checked{{background:{theme.getThemeColor()};color:{theme.getCheckedFontColor()};}}
+            QLabel{{color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}}
+            QScrollArea{{background-color:{theme.getFgColor()};}}
+            QScrollBar:vertical{{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:2px;padding-bottom:2px;}}
+            QScrollBar:handle:vertical{{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}}
+            QScrollBar:handle:vertical:hover{{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}}
+            QScrollBar:add-line:vertical{{height:0px;width:0px;subcontrol-position:bottom;}}
+            QScrollBar:sub-line:vertical{{height:0px;width:0px;subcontrol-position:top;}}
+            QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{{background:rgba(0,0,0,10%);border-radius:0px;}}
+            QScrollBar:horizontal{{height:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}}
+            QScrollBar:handle:horizontal{{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}}
+            QScrollBar:handle:horizontal:hover{{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}}
+            QScrollBar:add-line:horizontal{{height:0px;width:0px;subcontrol-position:bottom;}}
+            QScrollBar:sub-line:horizontal{{height:0px;width:0px;subcontrol-position:top;}}
+            QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{{background:rgba(0,0,0,10%);border-radius:0px;}}''')
 
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
     
@@ -194,8 +199,10 @@ class UIPublicCall(QDialog):
                     tempTagsComb = eachCombination[0].split('+')
                     for eachTag in tempTagsComb:
                         tempTagLabel = QLabel(eachTag)
-                        tempTagLabel.setStyleSheet('''QLabel {border-style: solid;border-left-width: 5px;border-right-width: 5px;border-top-width: 2px;border-bottom-width: 2px;
-                                            border-color: #808080;border-radius: 8px;background-color: #808080;}''')
+                        tempTagLabel.setStyleSheet(f'''QLabel {{border-style: solid;
+                                            border-left-width: 5px;border-right-width: 5px;border-top-width: 2px;border-bottom-width: 2px;
+                                            border-color: {self.theme.getThemeColor()};border-radius: 8px;
+                                            background-color: {self.theme.getThemeColor()};color:{self.theme.getCheckedFontColor()}}}''')
                         tempTagLabel.setFixedHeight(35)
                         tempTagLabel.setAlignment(Qt.AlignCenter)
                         self.allTempLabel.append(tempTagLabel)
@@ -244,10 +251,11 @@ class UIPublicCall(QDialog):
 
 
     def turnOn(self):
-        self.myTimer()
-        self.totalFlag = True
-        self.updateUI()
-        self.show()
+        if not self.isVisible():
+            self.myTimer()
+            self.totalFlag = True
+            self.updateUI()
+            self.show()
 
     def turnOff(self):
         #self.btnCheck.setChecked(False)

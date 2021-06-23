@@ -12,37 +12,37 @@ from foo.ui.screen import ScreenRateMonitor
 
 
 class JsonEdit(QWidget):
-    def __init__(self, app, dataPath, ico, parent = None, flags = Qt.WindowCloseButtonHint):
+    def __init__(self, app, dataPath, ico, theme = None, parent = None, flags = Qt.WindowCloseButtonHint):
         super(JsonEdit, self).__init__(parent, flags)
-
-        self.setStyleSheet('''JsonEdit{background:#272626}QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
-                                QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:11pt;}
-                                QPushButton:pressed{background:#606162;font:10pt;}
-                                QPushButton:checked{background:#70bbe4;}
-                                QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
-                                QLineEdit{background-color:#4d4d4d;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;border:0px;padding-left:5px}
-                                QLineEdit:hover{border-style:solid;border-width:1px;border-color:#ffffff;padding-left:4px;}
-                                QListView{background-color:#4d4d4d;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}
-                                QComboBox:hover{border-style:solid;border-width:1px;border-color:#ffffff;padding-left:4px;}
-                                QComboBox{background-color:#4d4d4d;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;padding-left:5px;border:0px;}
-                                QComboBox:drop-down{width:0px;}
-                                QComboBox:down-arrow{width:0px}
-                                QComboBox:selected{background-color:#606162;}
-                                QComboBox:QAbstractItemView::item{font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
-                                QComboBox:QAbstractItemView::item:selected{background-color:#606162;}
-                                QInputDialog{background-color:#272626;}
-                                QScrollBar:vertical{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}
-                                QScrollBar:handle:vertical{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}
-                                QScrollBar:handle:vertical:hover{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}
-                                QScrollBar:add-line:vertical{height:0px;width:0px;subcontrol-position:bottom;}
-                                QScrollBar:sub-line:vertical{height:0px;width:0px;subcontrol-position:top;}
-                                QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{background:rgba(0,0,0,10%);border-radius:0px;}
-                                QScrollBar:horizontal{height:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}
-                                QScrollBar:handle:horizontal{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}
-                                QScrollBar:handle:horizontal:hover{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}
-                                QScrollBar:add-line:horizontal{height:0px;width:0px;subcontrol-position:bottom;}
-                                QScrollBar:sub-line:horizontal{height:0px;width:0px;subcontrol-position:top;}
-                                QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{background:rgba(0,0,0,10%);border-radius:0px;}''')
+        if theme != None:
+            self.setStyleSheet(f'''QWidget{{background:{theme.getBgColor()}}}QLabel{{color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}}
+                                QPushButton{{border:0px;background:{theme.getFgColor()};color:{theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:11pt;}}
+                                QPushButton:pressed{{background:{theme.getPressedColor()};font:10pt;}}
+                                QPushButton:checked{{background:{theme.getThemeColor()};color:{theme.getCheckedFontColor()};}}
+                                QPushButton:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};}}
+                                QLineEdit{{background-color:{theme.getFgColor()};color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;border:0px;padding-left:5px}}
+                                QLineEdit:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};padding-left:4px;}}
+                                QListView{{background-color:{theme.getFgColor()};color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}}
+                                QComboBox:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};padding-left:4px;}}
+                                QComboBox{{background-color:{theme.getFgColor()};color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;padding-left:5px;border:0px;}}
+                                QComboBox:drop-down{{width:0px;}}
+                                QComboBox:down-arrow{{width:0px}}
+                                QComboBox:selected{{background-color:{theme.getPressedColor()};}}
+                                QComboBox:QAbstractItemView::item{{font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}}
+                                QComboBox:QAbstractItemView::item:selected{{background-color:{theme.getPressedColor()};}}
+                                QInputDialog{{background-color:{theme.getBgColor()};}}
+                                QScrollBar:vertical{{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}}
+                                QScrollBar:handle:vertical{{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}}
+                                QScrollBar:handle:vertical:hover{{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}}
+                                QScrollBar:add-line:vertical{{height:0px;width:0px;subcontrol-position:bottom;}}
+                                QScrollBar:sub-line:vertical{{height:0px;width:0px;subcontrol-position:top;}}
+                                QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{{background:rgba(0,0,0,10%);border-radius:0px;}}
+                                QScrollBar:horizontal{{height:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}}
+                                QScrollBar:handle:horizontal{{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}}
+                                QScrollBar:handle:horizontal:hover{{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}}
+                                QScrollBar:add-line:horizontal{{height:0px;width:0px;subcontrol-position:bottom;}}
+                                QScrollBar:sub-line:horizontal{{height:0px;width:0px;subcontrol-position:top;}}
+                                QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{{background:rgba(0,0,0,10%);border-radius:0px;}}''')
 
         self.app = app
 
@@ -52,7 +52,7 @@ class JsonEdit(QWidget):
         self.isBootyMode = False
         self.bootyName = '固源岩'
 
-        self.selPanel = BootyChoice(self, ico)
+        self.selPanel = BootyChoice(self, ico, theme = theme)
 
         self.json = dataPath + '/schedule.json'
         self.scheduleAdd = {'part':'MAIN', 'chap':'', 'objLevel':'', 'times':''}
@@ -248,12 +248,12 @@ class JsonEdit(QWidget):
     def lsvRearrange(self):
         self.selIndex = self.lsv.currentIndex().row()
         rightClickMeun = QMenu()
-        rightClickMeun.setStyleSheet('''QMenu {color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
-                                        background-color:#272626; margin:3px;}
-                                        QMenu:item {padding:8px 32px;}
-                                        QMenu:item:selected { background-color: #3f4140;}
-                                        QMenu:icon{padding: 8px 20px;}
-                                        QMenu:separator{background-color: #7C7C7C; height:1px; margin-left:2px; margin-right:2px;}''')
+        rightClickMeun.setStyleSheet(f'''QMenu {{color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
+                                        background-color:#272626; margin:3px;}}
+                                        QMenu:item {{padding:8px 32px;}}
+                                        QMenu:item:selected {{ background-color: #3f4140;}}
+                                        QMenu:icon{{padding: 8px 20px;}}
+                                        QMenu:separator{{background-color: #7C7C7C; height:1px; margin-left:2px; margin-right:2px;}}''')
         rightClickMeun.addAction(self.actMoveUp)
         rightClickMeun.addAction(self.actMoveDown)
         rightClickMeun.addAction(self.actEdit)
@@ -498,15 +498,17 @@ class JsonEdit(QWidget):
         print(self.listSchedule)
 
 class BootyChoice(QWidget):
-    def __init__(self, scheduleEdit, ico):
+    def __init__(self, scheduleEdit, ico, theme):
         super().__init__()
         self.scheduleEdit = scheduleEdit
         self.setWindowIcon(QIcon(ico))
-
-        self.setStyleSheet('''BootyChoice{background:#272626}
-                                QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:15pt;qproperty-iconSize:60px 60px;}
-                                QPushButton:pressed{background:#606162;font:14pt;}
-                                QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}''')
+        if theme != None:
+            self.setStyleSheet(f'''BootyChoice{{background:{theme.getBgColor()}}}
+                                QPushButton{{border:0px;background:{theme.getFgColor()};
+                                            color:{theme.getFontColor()};
+                                            font-family: "Microsoft YaHei", SimHei, SimSun;font:15pt;qproperty-iconSize:60px 60px;}}
+                                QPushButton:pressed{{background:{theme.getThemeColor()};font:14pt;color:{theme.getCheckedFontColor()}}}
+                                QPushButton:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};}}''')
 
         self.resPath = getcwd() + '/res/booty/btn/'
         self.RMA70L1 = QPushButton(icon=QIcon(self.resPath + 'RMA70-24.png'), text='RMA70-24')

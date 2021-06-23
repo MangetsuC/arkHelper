@@ -15,27 +15,30 @@ class Launch(QSplashScreen):
         self.show()
 
 class BlackBoard(QWidget):
-    def __init__(self):
+    def __init__(self, theme = None):
         super().__init__()
-        self.setStyleSheet('''BlackBoard{background:#272626}
-                                QPushButton{border:0px;background:#272626;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:12pt;}
-                                QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
-                                QPushButton:pressed{background:#606162;font:11pt;}
-                                QTextBrowser{background-color:#292A2A;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:14pt;
-                                border-width:0px;border-style:outset;}
-                                QScrollBar:vertical{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:2px;padding-bottom:2px;}
-                                QScrollBar:handle:vertical{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}
-                                QScrollBar:handle:vertical:hover{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}
-                                QScrollBar:add-line:vertical{height:0px;width:0px;subcontrol-position:bottom;}
-                                QScrollBar:sub-line:vertical{height:0px;width:0px;subcontrol-position:top;}
-                                QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{background:rgba(0,0,0,10%);border-radius:0px;}
-                                QScrollBar:horizontal{height:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}
-                                QScrollBar:handle:horizontal{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}
-                                QScrollBar:handle:horizontal:hover{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}
-                                QScrollBar:add-line:horizontal{height:0px;width:0px;subcontrol-position:bottom;}
-                                QScrollBar:sub-line:horizontal{height:0px;width:0px;subcontrol-position:top;}
-                                QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{background:rgba(0,0,0,10%);border-radius:0px;}
-                                ''')
+        if theme != None:
+            self.setStyleSheet(f'''BlackBoard{{background:{theme.getBgColor()}}}
+            QPushButton{{border:0px;background:{theme.getBgColor()};color:{theme.getFontColor()};
+                        font-family: "Microsoft YaHei", SimHei, SimSun;font:12pt;}}
+            QPushButton:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};}}
+            QPushButton:pressed{{background:{theme.getPressedColor()};font:11pt;}}
+            QTextBrowser{{background-color:{theme.getFgColor()};color:{theme.getFontColor()};
+                        font-family:"Microsoft YaHei", SimHei, SimSun;font:14pt;
+            border-width:0px;border-style:outset;}}
+            QScrollBar:vertical{{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:2px;padding-bottom:2px;}}
+            QScrollBar:handle:vertical{{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}}
+            QScrollBar:handle:vertical:hover{{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}}
+            QScrollBar:add-line:vertical{{height:0px;width:0px;subcontrol-position:bottom;}}
+            QScrollBar:sub-line:vertical{{height:0px;width:0px;subcontrol-position:top;}}
+            QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{{background:rgba(0,0,0,10%);border-radius:0px;}}
+            QScrollBar:horizontal{{height:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}}
+            QScrollBar:handle:horizontal{{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}}
+            QScrollBar:handle:horizontal:hover{{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}}
+            QScrollBar:add-line:horizontal{{height:0px;width:0px;subcontrol-position:bottom;}}
+            QScrollBar:sub-line:horizontal{{height:0px;width:0px;subcontrol-position:top;}}
+            QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{{background:rgba(0,0,0,10%);border-radius:0px;}}
+            ''')
 
         self.setWindowTitle('公告栏')
         self.setWindowFlag(Qt.FramelessWindowHint)

@@ -13,45 +13,45 @@ from foo.ui.screen import ScreenRateMonitor
 
 class UILogistic(QWidget):
     configUpdate = pyqtSignal()
-    def __init__(self, adb, rulePath, config, app, ico = ''):
+    def __init__(self, adb, rulePath, config, app, theme = None, ico = ''):
         super(UILogistic, self).__init__()
         self.app = app
 
         self.setWindowTitle('自动公招配置(默认配置由:七十七提供)')
         self.setWindowIcon(QIcon(ico))
-
-        self.setStyleSheet('''UILogistic{background:#272626}
-        QLabel{color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
-        QTextBrowser{background-color:#4d4d4d;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}
-        QPushButton{border:0px;background:#4d4d4d;color:#ffffff;font-family: "Microsoft YaHei", SimHei, SimSun;font:11pt;}
-        QPushButton:pressed{background:#606162;font:10pt;}
-        QPushButton:checked{background:#70bbe4;}
-        QPushButton:hover{border-style:solid;border-width:1px;border-color:#ffffff;}
-        QLineEdit{background-color:#4d4d4d;color:#ffffff;
-                  font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;border:0px;padding-left:5px}
-        QLineEdit:hover{border-style:solid;border-width:1px;border-color:#ffffff;padding-left:4px;}
-        QListView{background-color:#4d4d4d;color:#ffffff;font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}
-        QComboBox:hover{border-style:solid;border-width:1px;border-color:#ffffff;padding-left:4px;}
-        QComboBox{background-color:#4d4d4d;color:#ffffff;
-                  font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;padding-left:5px;border:0px;}
-        QComboBox:drop-down{width:0px;}
-        QComboBox:down-arrow{width:0px}
-        QComboBox:selected{background-color:#606162;}
-        QComboBox:QAbstractItemView::item{font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}
-        QComboBox:QAbstractItemView::item:selected{background-color:#606162;}
-        QInputDialog{background-color:#272626;}
-        QScrollBar:vertical{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}
-        QScrollBar:handle:vertical{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}
-        QScrollBar:handle:vertical:hover{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}
-        QScrollBar:add-line:vertical{height:0px;width:0px;subcontrol-position:bottom;}
-        QScrollBar:sub-line:vertical{height:0px;width:0px;subcontrol-position:top;}
-        QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{background:rgba(0,0,0,10%);border-radius:0px;}
-        QScrollBar:horizontal{height:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}
-        QScrollBar:handle:horizontal{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}
-        QScrollBar:handle:horizontal:hover{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}
-        QScrollBar:add-line:horizontal{height:0px;width:0px;subcontrol-position:bottom;}
-        QScrollBar:sub-line:horizontal{height:0px;width:0px;subcontrol-position:top;}
-        QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{background:rgba(0,0,0,10%);border-radius:0px;}''')
+        if theme != None:
+            self.setStyleSheet(f'''QWidget{{background:{theme.getBgColor()}}}
+            QLabel{{color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}}
+            QTextBrowser{{background-color:{theme.getFgColor()};color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}}
+            QPushButton{{border:0px;background:{theme.getFgColor()};color:{theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:11pt;}}
+            QPushButton:pressed{{background:{theme.getPressedColor()};font:10pt;}}
+            QPushButton:checked{{background:{theme.getThemeColor()};color:{theme.getCheckedFontColor()};}}
+            QPushButton:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};}}
+            QLineEdit{{background-color:{theme.getFgColor()};color:{theme.getFontColor()};
+                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;border:0px;padding-left:5px}}
+            QLineEdit:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};padding-left:4px;}}
+            QListView{{background-color:{theme.getFgColor()};color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}}
+            QComboBox:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};padding-left:4px;}}
+            QComboBox{{background-color:{theme.getFgColor()};color:{theme.getFontColor()};
+                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;padding-left:5px;border:0px;}}
+            QComboBox:drop-down{{width:0px;}}
+            QComboBox:down-arrow{{width:0px}}
+            QComboBox:selected{{background-color:{theme.getPressedColor()};}}
+            QComboBox:QAbstractItemView::item{{font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}}
+            QComboBox:QAbstractItemView::item:selected{{background-color:{theme.getPressedColor()};}}
+            QInputDialog{{background-color:{theme.getBgColor()};}}
+            QScrollBar:vertical{{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}}
+            QScrollBar:handle:vertical{{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}}
+            QScrollBar:handle:vertical:hover{{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}}
+            QScrollBar:add-line:vertical{{height:0px;width:0px;subcontrol-position:bottom;}}
+            QScrollBar:sub-line:vertical{{height:0px;width:0px;subcontrol-position:top;}}
+            QScrollBar:add-page:vertical,QScrollBar:sub-page:vertical{{background:rgba(0,0,0,10%);border-radius:0px;}}
+            QScrollBar:horizontal{{height:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:0px;padding-bottom:0px;}}
+            QScrollBar:handle:horizontal{{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}}
+            QScrollBar:handle:horizontal:hover{{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}}
+            QScrollBar:add-line:horizontal{{height:0px;width:0px;subcontrol-position:bottom;}}
+            QScrollBar:sub-line:horizontal{{height:0px;width:0px;subcontrol-position:top;}}
+            QScrollBar:add-page:horizontal,QScrollBar:sub-page:horizontal{{background:rgba(0,0,0,10%);border-radius:0px;}}''')
 
         self.comboBoxRuleNames = QComboBox()
         self.comboBoxRuleNames.setView(QListView())

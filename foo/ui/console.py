@@ -16,12 +16,6 @@ class Console(QDialog):
         self.setWindowTitle('控制台')
         self.resize(600,400)
         self.textBrowser = QTextBrowser(self)
-        
-        self.setStyleSheet('''Console{background-color:#272626;}
-                              QTextBrowser{background-color:#4d4d4d;
-                                           color:#ffffff;
-                                           font-family:"Microsoft YaHei", SimHei, SimSun;
-                                           font:10pt;}''')
 
         self.grid = QGridLayout()
         self.grid.addWidget(self.textBrowser, 0, 0, 1, 1)
@@ -29,6 +23,13 @@ class Console(QDialog):
 
         sys.stdout = EmittingStr(sgnConsole = self.outputWritten)
         sys.stderr = EmittingStr(sgnConsole = self.outputWritten)
+
+    def applyStyleSheet(self, theme):
+        self.setStyleSheet(f'''Console{{background-color:{theme.getBgColor()};}}
+                              QTextBrowser{{background-color:{theme.getFgColor()};
+                                           color:{theme.getFontColor()};
+                                           font-family:"Microsoft YaHei", SimHei, SimSun;
+                                           font:10pt;}}''')
 
     def outputWritten(self, text):
         text = text.strip()

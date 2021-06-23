@@ -55,6 +55,7 @@ class App(QWidget):
         self.initClass()
         self.initRightClickMeun()
         self.initState()
+        self.applyStyleSheet()
         self.isRun = False
         self.center()
         self.show()
@@ -278,80 +279,47 @@ class App(QWidget):
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
 
-        self.setStyleSheet(f'''App{{background:{self.theme.getBgColor()}}}
-                                QLabel{{color:{self.theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:9pt;}}
-                                QPushButton{{border:0px;background:{self.theme.getFgColor()};
-                                color:{self.theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}}
-                                QPushButton:hover{{border-style:solid;border-width:1px;border-color:{self.theme.getBorderColor()};}}
-                                QPushButton:pressed{{background:{self.theme.getPressedColor()};font:9pt;}}
-                                QPushButton:checked{{background:{self.theme.getThemeColor()};color:{self.theme.getCheckedFontColor()}}}
-                                QInputDialog{{background-color:{self.theme.getFgColor()};}}
-                                QMessageBox{{background-color:{self.theme.getFgColor()};}}
-                                QToolTip {{font-family:"Microsoft YaHei", SimHei, SimSun; font-size:10pt; 
-                                        color:{self.theme.getFontColor()};
-                                        padding:5px;
-                                        border-style:solid; border-width:1px; border-color:gray;
-                                        background-color:{self.theme.getBgColor()};}}
-                            ''')
+        self.rightClickMenu = QMenu()#右键菜单
 
         self.lTitle = QLabel('明日方舟小助手')
-        self.lTitle.setStyleSheet(f'''
-                                    QLabel{{color:{self.theme.getFontColor()};
-                                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
-                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}}
-                                    ''')
+        
         self.lVer = QLabel(f'v{self.ver}')
-        self.lVer.setStyleSheet(f'''
-                                    QLabel{{color:{self.theme.getFontColor()};
-                                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
-                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}}
-                                    ''')
+        
 
         self.btnExit = QPushButton('×',self)
         self.btnExit.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnExit.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:20pt;}}
-                                    QPushButton:pressed{{background:{self.theme.getBgColor()};font:16pt;}}
-                                    ''')
+        
         self.btnExit.clicked.connect(self.exit)
         self.btnExit.setToolTip('关闭')
 
         self.btnMinimize = QPushButton('-',self)
         self.btnMinimize.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnMinimize.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimSun;font:normal 28pt;}}
-                                    QPushButton:pressed{{background:{self.theme.getBgColor()};font-family:SimSun;font:20pt;}}
-                                    ''')
+        
         self.btnMinimize.clicked.connect(self.minimize)
         self.btnMinimize.setToolTip('最小化')
 
         self.btnSetting = QPushButton('≡',self)
         self.btnSetting.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnSetting.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:16pt;}}
-                                    QPushButton:pressed{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:14pt;}}
-                                    QPushButton:menu-indicator{{image:none;width:0px;}}
-                                    ''')
+        
         self.btnSetting.setToolTip('设置')
 
         self.btnUpdate = QPushButton('∧',self)
         self.btnUpdate.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnUpdate.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:14pt;}}
-                                    QPushButton:pressed{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:12pt;}}
-                                    ''')
+        
         self.btnUpdate.clicked.connect(self.startUpdate)
         self.btnUpdate.setToolTip('自动更新')
         self.btnUpdate.hide()
 
         self.btnShowMsg = QPushButton('!',self)
         self.btnShowMsg.setMinimumSize(self.getRealSize(30), self.getRealSize(30))
-        self.btnShowMsg.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:14pt;}}
-                                    QPushButton:pressed{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:12pt;}}
-                                    ''')
+        
         self.btnShowMsg.clicked.connect(self.showMessage)
         self.btnShowMsg.setToolTip('查看公告')
         self.btnShowMsg.hide()
 
         self.btnStartAndStop = QPushButton('启动虚拟博士', self) #启动/停止按钮
         self.btnStartAndStop.setMinimumSize(self.getRealSize(180), self.getRealSize(131))
-        self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
+        
         self.btnStartAndStop.clicked.connect(self.clickBtnStartAndStop)
 
         self.tbBattle = QPushButton('战斗:无限', self) #战斗可选按钮
@@ -425,12 +393,7 @@ class App(QWidget):
         #self.btnSet.setFixedSize(75, 40)
 
         self.settingMenu = QMenu() #创建设置按钮菜单
-        self.settingMenu.setStyleSheet(f'''QMenu {{color:{self.theme.getFontColor()};
-                                        font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
-                                        background-color:{self.theme.getBgColor()}; margin:3px;}}
-                                        QMenu:item {{padding:8px 32px;}}
-                                        QMenu:item:selected {{background-color: {self.theme.getFgColor()};}}
-                                        QMenu:icon{{padding: 8px 20px;}}''')
+        
         self.actSimulator = QMenu('模拟器', parent=self.settingMenu) #模拟器二级菜单
         self.actSlrBlueStacks = QAction('蓝叠模拟器', parent=self.actSimulator)
         self.actSlrMumu = QAction('Mumu模拟器', parent=self.actSimulator)
@@ -529,6 +492,70 @@ class App(QWidget):
         self.topLayout.addLayout(self.grid)
 
         #self.show()
+
+    def applyStyleSheet(self):
+        self.setStyleSheet(f'''QWidget{{background:{self.theme.getBgColor()}}}
+                                QLabel{{color:{self.theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:9pt;}}
+                                QPushButton{{border:0px;background:{self.theme.getFgColor()};
+                                color:{self.theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}}
+                                QPushButton:hover{{border-style:solid;border-width:1px;border-color:{self.theme.getBorderColor()};}}
+                                QPushButton:pressed{{background:{self.theme.getPressedColor()};font:9pt;}}
+                                QPushButton:checked{{background:{self.theme.getThemeColor()};color:{self.theme.getCheckedFontColor()}}}
+                                QInputDialog{{background-color:{self.theme.getFgColor()};}}
+                                QMessageBox{{background-color:{self.theme.getFgColor()};}}
+                                QToolTip {{font-family:"Microsoft YaHei", SimHei, SimSun; font-size:10pt; 
+                                        color:{self.theme.getFontColor()};
+                                        padding:5px;
+                                        border-style:solid; border-width:1px; border-color:gray;
+                                        background-color:{self.theme.getBgColor()};}}
+                            ''')
+        self.lTitle.setStyleSheet(f'''
+                                    QLabel{{color:{self.theme.getFontColor()};
+                                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
+                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}}
+                                    ''')
+        self.lVer.setStyleSheet(f'''
+                                    QLabel{{color:{self.theme.getFontColor()};
+                                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
+                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}}
+                                    ''')
+        self.btnExit.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:20pt;}}
+                                            QPushButton:pressed{{background:{self.theme.getBgColor()};font:16pt;}}
+                                            ''')
+        self.btnMinimize.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimSun;font:normal 28pt;}}
+                                            QPushButton:pressed{{background:{self.theme.getBgColor()};
+                                            font-family:SimSun;font:20pt;}}
+                                            ''')
+        self.btnSetting.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:16pt;}}
+                                            QPushButton:pressed{{background:{self.theme.getBgColor()};
+                                            font-family:SimHei, SimSun;font:14pt;}}
+                                            QPushButton:menu-indicator{{image:none;width:0px;}}
+                                            ''')
+        self.btnUpdate.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:14pt;}}
+                                            QPushButton:pressed{{background:{self.theme.getBgColor()};
+                                            font-family:SimHei, SimSun;font:12pt;}}
+                                            ''')
+        self.btnShowMsg.setStyleSheet(f'''QPushButton{{background:{self.theme.getBgColor()};font-family:SimHei, SimSun;font:14pt;}}
+                                            QPushButton:pressed{{background:{self.theme.getBgColor()};
+                                            font-family:SimHei, SimSun;font:12pt;}}
+                                            ''')
+        self.btnStartAndStop.setStyleSheet('''QPushButton{font:13pt;}''')
+        self.settingMenu.setStyleSheet(f'''QMenu {{color:{self.theme.getFontColor()};
+                                                font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
+                                                background-color:{self.theme.getBgColor()}; margin:3px;}}
+                                                QMenu:item {{padding:8px 32px;}}
+                                                QMenu:item:selected {{background-color: {self.theme.getFgColor()};}}
+                                                QMenu:icon{{padding: 8px 20px;}}''')
+        self.rightClickMenu.setStyleSheet(f'''QMenu {{color:{self.theme.getFontColor()};
+                                                    font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
+                                                    background-color:{self.theme.getBgColor()}; margin:3px;}}
+                                                QMenu:item {{padding:8px 32px;}}
+                                                QMenu:item:selected {{ background-color: {self.theme.getFgColor()};}}
+                                                QMenu:icon{{padding: 8px 20px;}}
+                                                QMenu:separator{{background-color: #7C7C7C; 
+                                                    height:1px; margin-left:2px; margin-right:2px;}}''')
+
+        self.console.applyStyleSheet(self.theme)
 
     def initRightClickMeun(self):
         #战斗按钮
@@ -747,10 +774,10 @@ class App(QWidget):
             #self.btnMonitorPublicCall.setEnabled(False)
         
         
-        self.schJsonEditer = JsonEdit(self.app, self.userDataPath, self.ico)
+        self.schJsonEditer = JsonEdit(self.app, self.userDataPath, self.ico, theme = self.theme)
         self.rateMonitor.addWidget(self.schJsonEditer)
 
-        self.board = BlackBoard()
+        self.board = BlackBoard(theme = self.theme)
 
         self.afterInit_Q = AfterInit(self, self.cwd)
         self.afterInit_Q.boardNeedShow.connect(self.showMessage)
@@ -768,7 +795,7 @@ class App(QWidget):
                 temp = f.read()
         self._data = loads(temp)
         self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, #self.btnMonitorPublicCall, 
-                    self.listGoTo, self._data['data'][0]['normal'], self._data['data'][0]['high']) #公开招募
+                    self.listGoTo, self._data['data'][0]['normal'], self._data['data'][0]['high'], theme = self.theme) #公开招募
         self.publicCall.setStar(1, 1, self.config.getboolean('function', 'autoPC_skip1Star')) #自动公招保留一星设定
         self.publicCall.setStar(5, 1, self.config.getboolean('function', 'autoPC_skip5Star'))
         self.tbAutoPC.setEnabled(True)
@@ -822,41 +849,34 @@ class App(QWidget):
     
     def functionSetMeun(self):
         self.source = self.sender()
-        rightClickMeun = QMenu()
-        rightClickMeun.setStyleSheet(f'''QMenu {{color:{self.theme.getFontColor()};
-                                            font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
-                                            background-color:{self.theme.getBgColor()}; margin:3px;}}
-                                        QMenu:item {{padding:8px 32px;}}
-                                        QMenu:item:selected {{ background-color: {self.theme.getFgColor()};}}
-                                        QMenu:icon{{padding: 8px 20px;}}
-                                        QMenu:separator{{background-color: #7C7C7C; 
-                                            height:1px; margin-left:2px; margin-right:2px;}}''')
+        self.rightClickMenu.clear()
+        
         if self.source == self.tbBattle:
             if self.config.getboolean('function', 'battle'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
-            rightClickMeun.addAction(self.actBattleTimes)
-            rightClickMeun.addAction(self.line)
+            self.rightClickMenu.addAction(self.actBattleTimes)
+            self.rightClickMenu.addAction(self.line)
         elif self.source.text() == '计划战斗':
             if self.config.getboolean('function', 'schedule'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
-            rightClickMeun.addAction(self.actSchJson)
-            rightClickMeun.addAction(self.line)
+            self.rightClickMenu.addAction(self.actSchJson)
+            self.rightClickMenu.addAction(self.line)
         elif self.source.text() == '自动公招':
             if self.config.getboolean('function', 'autoPC'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
             #自动招募和自动聘用
-            rightClickMeun.addAction(self.actAutoSearch)
-            rightClickMeun.addAction(self.actAutoEmploy)
-            rightClickMeun.addAction(self.actSkipStar1)
-            rightClickMeun.addAction(self.actSkipStar5)
-            rightClickMeun.addAction(self.line)
-            rightClickMeun.addAction(self.actPcCalculate)
+            self.rightClickMenu.addAction(self.actAutoSearch)
+            self.rightClickMenu.addAction(self.actAutoEmploy)
+            self.rightClickMenu.addAction(self.actSkipStar1)
+            self.rightClickMenu.addAction(self.actSkipStar5)
+            self.rightClickMenu.addAction(self.line)
+            self.rightClickMenu.addAction(self.actPcCalculate)
         elif self.source.text() == '任务交付':
             if self.config.getboolean('function', 'task'):
                 text = '设为默认关闭'
@@ -882,11 +902,11 @@ class App(QWidget):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
-            rightClickMeun.addAction(self.actLogisticConfig)
-            rightClickMeun.addAction(self.line)
-        self.actionSetDeafult = rightClickMeun.addAction(text)
+            self.rightClickMenu.addAction(self.actLogisticConfig)
+            self.rightClickMenu.addAction(self.line)
+        self.actionSetDeafult = self.rightClickMenu.addAction(text)
         self.actionSetDeafult.triggered.connect(self.setDefault)
-        rightClickMeun.exec_(QCursor.pos())
+        self.rightClickMenu.exec_(QCursor.pos())
     
     def setDefault(self):
         if self.source.text() == '战斗':
@@ -973,11 +993,7 @@ class App(QWidget):
     
     def monitorPC(self):
         if not self.doctorFlag:
-            self.pcCalculateChecked = not self.pcCalculateChecked
-            if self.pcCalculateChecked:
-                self.publicCall.turnOn()
-            else:
-                self.publicCall.turnOff()
+            self.publicCall.turnOn()
 
     def changeSlr(self, name, port, ip = '127.0.0.1'):
         self.config.set('connect', 'simulator', name)
@@ -1182,7 +1198,8 @@ class App(QWidget):
                 self.schedule.isRecovered = True
 
     def logisticReady(self):
-        self.logistic = UILogistic(self.adb, self.userDataPath + '/logisticRule.ahrule', self.config, self.app, self.ico)
+        self.logistic = UILogistic(self.adb, self.userDataPath + '/logisticRule.ahrule', self.config, self.app, 
+                                    theme = self.theme, ico = self.ico)
         self.logistic.configUpdate.connect(self.configUpdate)
         self.actLogisticConfig.triggered.connect(self.logistic.show)
         self.tbLogistic.setEnabled(True)
