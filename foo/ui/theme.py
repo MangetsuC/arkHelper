@@ -16,41 +16,43 @@ class Theme:
         self.selectedIcon = QIcon(getcwd() + '/res/gui/selected.png')
         print(f'操作系统：{platform()}')
         if 'Windows-10' in platform():
-            keyDwm = OpenKey(HKEY_CURRENT_USER, 'SOFTWARE\\Microsoft\\Windows\\DWM')
-            keyPersonalize = OpenKey(HKEY_CURRENT_USER, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize')
-
             try:
-                themeColor = QueryValueEx(keyDwm, 'ColorizationColor')[0]
-                themeColor = hex(themeColor)
-                self.themeColor = '#' + themeColor[4:]
-            except:
-                self.themeColor = '#70bbe4'
-            CloseKey(keyDwm)
+                keyDwm = OpenKey(HKEY_CURRENT_USER, 'SOFTWARE\\Microsoft\\Windows\\DWM')
+                keyPersonalize = OpenKey(HKEY_CURRENT_USER, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize')
 
-            try:
-                systemColor = QueryValueEx(keyPersonalize, 'SystemUsesLightTheme')[0] #0为深色，1为浅色SystemUsesLightTheme
-            except:
-                systemColor = QueryValueEx(keyPersonalize, 'AppsUseLightTheme')[0] #0为深色，1为浅色
-            if systemColor:
-                #系统为浅色
-                self.fontColor = '#000000'
-                self.checkedFontColor = '#ffffff'
-                self.borderColor = '#949495'
-                self.fgColor = '#D1D1D5'
-                self.bgColor = '#BFBFC3'
-                self.pressedColor = '#D8D8D9'
-                self.selectedIcon = QIcon(getcwd() + '/res/gui/selectedLightMode.png')
-            else:
-                #系统为深色
-                self.fontColor = '#ffffff'
-                self.checkedFontColor = '#ffffff'
-                self.borderColor = '#ffffff'
-                self.fgColor = '#4d4d4d'
-                self.bgColor = '#272626'
-                self.pressedColor = '#606162'
-                self.selectedIcon = QIcon(getcwd() + '/res/gui/selected.png')
+                try:
+                    themeColor = QueryValueEx(keyDwm, 'ColorizationColor')[0]
+                    themeColor = hex(themeColor)
+                    self.themeColor = '#' + themeColor[4:]
+                except:
+                    self.themeColor = '#70bbe4'
+                CloseKey(keyDwm)
+                try:
+                    systemColor = QueryValueEx(keyPersonalize, 'SystemUsesLightTheme')[0] #0为深色，1为浅色SystemUsesLightTheme
+                except FileNotFoundError:
+                    systemColor = QueryValueEx(keyPersonalize, 'AppsUseLightTheme')[0] #0为深色，1为浅色
+                if systemColor:
+                    #系统为浅色
+                    self.fontColor = '#000000'
+                    self.checkedFontColor = '#ffffff'
+                    self.borderColor = '#949495'
+                    self.fgColor = '#D1D1D5'
+                    self.bgColor = '#BFBFC3'
+                    self.pressedColor = '#D8D8D9'
+                    self.selectedIcon = QIcon(getcwd() + '/res/gui/selectedLightMode.png')
+                else:
+                    #系统为深色
+                    self.fontColor = '#ffffff'
+                    self.checkedFontColor = '#ffffff'
+                    self.borderColor = '#ffffff'
+                    self.fgColor = '#4d4d4d'
+                    self.bgColor = '#272626'
+                    self.pressedColor = '#606162'
+                    self.selectedIcon = QIcon(getcwd() + '/res/gui/selected.png')
 
-            CloseKey(keyPersonalize)
+                CloseKey(keyPersonalize)
+            except Exception:
+                pass
         #此处用配置文件的设置覆盖自动设置
         if config.get('theme', 'themecolor') != 'auto':
             self.themeColor = config.get('theme', 'themecolor')
