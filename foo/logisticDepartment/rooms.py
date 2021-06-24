@@ -51,7 +51,6 @@ class Room:
 
     def swipeToOperatorHead(self):
         '选择干员界面回到最左侧'
-        print('正在回到选择干员界面回到最左侧...')
         lastScreen = None
         while True:
             #判断滑动已完全停止
@@ -295,6 +294,9 @@ class Room:
                     if self.checkOpAvailable(opCoor[1]):
                         self.click(opCoor[0])
                         needNum -= 1
+                        print(f'干员{opFinding}可用，已选定')
+                    else:
+                        print(f'发现干员{opFinding}正在工作或休息，跳过')
                 else:
                     while self.checkSwipeEnd(myRuleList): #初次找不到再继续右划
                         if not self.runFlag:
@@ -306,7 +308,12 @@ class Room:
                             if self.checkOpAvailable(opCoor[1]):
                                 self.click(opCoor[0])
                                 needNum -= 1
+                                print(f'干员{opFinding}可用，已选定')
+                            else:
+                                print(f'发现干员{opFinding}正在工作或休息，跳过')
                             break
+                    else:
+                        print(f'干员{opFinding}不可用')
         while self.runFlag: #确认
             self.click((1325, 760))
             self.getScreen()

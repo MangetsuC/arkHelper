@@ -503,7 +503,8 @@ class App(QWidget):
                                 QPushButton:hover{{border-style:solid;border-width:1px;border-color:{self.theme.getBorderColor()};}}
                                 QPushButton:pressed{{background:{self.theme.getPressedColor()};font:9pt;}}
                                 QPushButton:checked{{background:{self.theme.getThemeColor()};color:{self.theme.getCheckedFontColor()}}}
-                                QInputDialog{{background-color:{self.theme.getFgColor()};}}
+                                QInputDialog{{background-color:{self.theme.getBgColor()};}}
+                                QLineEdit{{color:{self.theme.getFontColor()};}}
                                 QMessageBox{{background-color:{self.theme.getFgColor()};}}
                                 QToolTip {{font-family:"Microsoft YaHei", SimHei, SimSun; font-size:10pt; 
                                         color:{self.theme.getFontColor()};
