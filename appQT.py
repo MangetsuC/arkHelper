@@ -1116,6 +1116,7 @@ class App(QWidget):
             selfPidList = self.adb.cmd.getTaskList('arkhelper.exe')
             updateJson = {'localPath': self.cwd, 
                             'onlinePath': self._updateData['onlinePath'] + '/v' +self._updateData['version'],
+                            'commonPath': self._updateData['commonPath'],
                             'Pid': ','.join(selfPidList),
                             'exceptionFile': self._updateData['exception']}
             with open('updateData.json', 'w', encoding='UTF-8') as f:
