@@ -55,7 +55,7 @@ class Logistic:
     def clickBack(self):
         self.click((100,50))
 
-    def enterLogisticPanel(self):
+    def enterLogisticPanel(self, isFirstTry = False):
         print('正在进入基建界面...')
         self.getScreen()
         isOverviewEntry = self.matchPic(self.overviewEntry)
@@ -78,7 +78,10 @@ class Logistic:
             print('已处在基建界面')
             return True
         else:
-            print('基建进入错误，中断后续操作')
+            if isFirstTry:
+                print('未处在基建界面，尝试返回首页')
+            else:
+                print('基建进入错误，中断后续操作')
             return False
 
     def swipe(self, startPoint, endPoint, stopCheck = True):
@@ -373,6 +376,8 @@ class Logistic:
                     self.getScreen()
                     if self.matchPic(self.todoList_sel) != None:
                         break
+                    else:
+                        self.click(isTodoListExist['result'])
             interactTodo = []
             for i in self.todoListPic:
                 if not self.runFlag:
@@ -453,7 +458,10 @@ class Logistic:
 
     def run(self, flag):
         self.runFlag = flag
-        self.runFlag = self.enterLogisticPanel()
+        self.runFlag = self.enterLogisticPanel(True)
+        if not self.runFlag:
+            self.backToHome()
+            self.runFlag = self.enterLogisticPanel()
         if not self.runFlag:
             return 0
         self.checkToDoList()
