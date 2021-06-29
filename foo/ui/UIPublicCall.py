@@ -63,6 +63,7 @@ class UIPublicCall(QDialog):
 
         self.employFlag = True
         self.searchFlag = True
+        self.advCredOnly = True
     
     def initUI(self, theme):
         self.setWindowTitle('公开招募计算器')
@@ -309,6 +310,13 @@ class UIPublicCall(QDialog):
                     self.adb.click(picInfo[0], picInfo[1])
                     break
         else:
+            if self.advCredOnly and tagState < 4:
+                self.adb.screenShot()
+                cancelBtn = pictureFind.matchImg(self.screenShot, self.pcCancel)
+                if cancelBtn != None:
+                    cancelBtn = cancelBtn["result"]
+                    self.adb.click(cancelBtn[0],cancelBtn[1])
+                return False
             for i in range(5):
                 self.adb.screenShot()
                 addBtn = pictureFind.matchMultiImg(self.screenShot, self.pcDecreaseTime)[0]

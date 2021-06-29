@@ -351,6 +351,9 @@ class App(QWidget):
         self.actAutoEmploy = QAction('自动聘用')
         self.actAutoEmploy.triggered.connect(self.setAutoPCFunc)
         self.actAutoEmploy.setIcon(self.theme.getSelectedIcon())
+        self.actAdvCredOnly = QAction('不抽4星以下')
+        self.actAdvCredOnly.triggered.connect(self.setAutoPCFunc)
+        self.actAdvCredOnly.setIcon(self.theme.getSelectedIcon())
         self.actSkipStar1 = QAction('保留1星')
         self.actSkipStar1.triggered.connect(self.setAutoPCFunc)
         if self.config.getboolean('function','autoPC_skip1Star'):
@@ -876,6 +879,7 @@ class App(QWidget):
             #自动招募和自动聘用
             self.rightClickMenu.addAction(self.actAutoSearch)
             self.rightClickMenu.addAction(self.actAutoEmploy)
+            self.rightClickMenu.addAction(self.actAdvCredOnly)
             self.rightClickMenu.addAction(self.actSkipStar1)
             self.rightClickMenu.addAction(self.actSkipStar5)
             self.rightClickMenu.addAction(self.line)
@@ -912,7 +916,7 @@ class App(QWidget):
         self.rightClickMenu.exec_(QCursor.pos())
     
     def setDefault(self):
-        if self.source.text() == '战斗':
+        if self.source == self.tbBattle:
             key = 'battle'
             value = not self.config.getboolean('function', 'battle')
         elif self.source.text() == '计划战斗':
@@ -971,6 +975,12 @@ class App(QWidget):
         elif source.text() == '自动聘用':
             self.publicCall.employFlag = not self.publicCall.employFlag
             if self.publicCall.employFlag:
+                source.setIcon(self.theme.getSelectedIcon())
+            else:
+                source.setIcon(QIcon(''))
+        elif source.text() == '不抽4星以下':
+            self.publicCall.advCredOnly = not self.publicCall.advCredOnly
+            if self.publicCall.advCredOnly:
                 source.setIcon(self.theme.getSelectedIcon())
             else:
                 source.setIcon(QIcon(''))

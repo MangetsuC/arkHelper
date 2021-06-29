@@ -323,4 +323,4 @@ class PublicCall:
                             self.adb.screenShot(pngName='autoPC')
                         else:
                             return 100
-        return 0
+        return minStar
