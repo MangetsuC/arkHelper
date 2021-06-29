@@ -194,7 +194,7 @@ class BattleSchedule(QObject):
         if chap == 'external' or chap == 'tempE':
             picChap = pictureFind.matchImg(self.screenShot, self.III['ex'])
             if picChap != None:
-                self.adb.click(325, 600)
+                self.adb.click(picChap['result'][0], picChap['result'][1])
                 return True
         elif chap.isdigit():
             #主线

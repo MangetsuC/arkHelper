@@ -17,7 +17,7 @@ class Logistic:
 
         self.operatorPosOffset = [757-1355, 885-1355, 1009-1355, 1137-1355, 1264-1355]
         self.moodsPos = [(353, 577, 87, 35), (353, 614, 87, 35), (353, 650, 87, 35), (353, 686, 87, 35), (353, 722, 87, 35)]
-        self.relaxPos = [(855, 240), (700, 550), (700, 240), (540, 550), (540, 240)] #宿舍5 4 3 2 1
+        self.relaxPos = self.getOpPos(12)
 
         self.moodThreshold = 0 #撤下阈值
         self.dormThreshold = 24 #上班阈值
@@ -33,6 +33,28 @@ class Logistic:
         self.rule = rule
 
         self.resourceInit()
+
+    def getOpPos(self, num):
+        baseX = 540
+        baseY = [240, 550]
+        pos = []
+        for i in range(num-1, -1, -1):
+            pos.append((baseX + int(i/2)*160, baseY[i%2]))
+        return pos
+
+    def getRealDormPos(self, workingPos):
+        '去除按心情排序界面工作中的干员'
+        ans = self.relaxPos.copy()
+        if workingPos != None:
+            for i in workingPos:
+                for j in self.relaxPos:
+                    if ((i[0] - j[0])**2 + (i[1] - j[1])**2) < 1000:
+                        ans.remove(j)
+        ans.reverse()
+        if len(ans) >= 5:
+            ans = ans[0:5]
+        ans.reverse()
+        return ans
 
     def setEnableRooms(self, enableRooms):
         self.enableRooms = enableRooms
@@ -150,6 +172,8 @@ class Logistic:
         self.todoListPic = [pictureFind.picRead(self.cwd + '/res/logistic/general/manufactory_output.png'),
                             pictureFind.picRead(self.cwd + '/res/logistic/general/trade_output.png'),
                             pictureFind.picRead(self.cwd + '/res/logistic/general/trust_touch.png')]
+
+        self.working = pictureFind.picRead(getcwd() + '/res/logistic/general/working.png')
 
         self.actBtn = pictureFind.picRead(self.cwd + '/res/panel/other/act.png')
         self.homeBtn = pictureFind.picRead(self.cwd + '/res/panel/other/mainpage.png')
@@ -315,7 +339,11 @@ class Logistic:
                 roomsOnScreen.sort(key = lambda x:x[1], reverse = True)
                 upper = roomsOnScreen[-1]
                 lower = roomsOnScreen[0]
-                for eachRoom in roomsOnScreen:
+                while True:
+                    if len(roomsOnScreen) > 0:
+                        eachRoom = roomsOnScreen.pop()
+                    else:
+                        break
                     if not self.runFlag:
                         return -2
                     self.getScreen()
@@ -329,10 +357,22 @@ class Logistic:
                                 self.getScreen()
                                 if self.matchPic(self.confirmInDorm) != None:
                                     break
+
+                            workingOnScreen = pictureFind.matchMultiImg(self.screenShot, self.working, confidencevalue = 0.7)
                             
-                            for i in self.dormRange(need2relax - relaxing, vacancyNum[0]):
-                                self.click(self.relaxPos[i])
-                                relaxing += 1
+                            if workingOnScreen != None: #排除屏幕上工作中的干员
+                                workingOnScreen = workingOnScreen[0]
+                                relaxPosThisDorm = self.getRealDormPos(workingOnScreen)
+                            else:
+                                relaxPosThisDorm = self.getRealDormPos(None)
+
+                            try:
+                                for i in self.dormRange(need2relax - relaxing, vacancyNum[0]):
+                                    self.click(relaxPosThisDorm[i])
+                                    relaxing += 1
+                            except IndexError:
+                                if vacancyNum[0] > (i + 1): #进驻数比空房间数少，再进驻一次
+                                    roomsOnScreen.append(eachRoom)
                             self.click((1325, 760)) #确认按钮的坐标
                             #此处应当判断有无回到总览界面
                             while True:
