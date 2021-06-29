@@ -110,6 +110,8 @@ class AfterInit(QThread):
         if updateData.status_code == 200:
             updateData.encoding = 'utf-8'
             self.app._updateData = loads(updateData.text)
+            '''
+            update.exe可以替换自身
             updateEXE = self.app._updateData.get('updateEXE', 'update.exe')
             if updateEXE != 'update.exe' and path.exists(self.cwd + '/update.exe') and path.exists(self.cwd + '/' + updateEXE):
                 remove(self.cwd + '/update.exe')
@@ -118,7 +120,7 @@ class AfterInit(QThread):
                 myUpdateMd5 = self.getFileMd5(self.cwd + '/update.exe')
                 if myUpdateMd5 == updateEXE.split('.')[0]:
                     self.app._updateData['exception'] = self.app._updateData['exception'] + f',{updateEXE}'
-
+            '''
             newVersion =self.app._updateData['version'].split('.')
             if self.app.ver != 'DEV' and self.app.ver != 'ERR':
                 tempSelfVersion = self.app.ver.split('.')

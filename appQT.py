@@ -1130,6 +1130,10 @@ class App(QWidget):
     def startUpdate(self):
         if path.exists(self.cwd + '/update.exe'):
             selfPidList = self.adb.cmd.getTaskList('arkhelper.exe')
+            exceptions = self._updateData['exception'].split(',') #不再排除update.exe自身
+            if 'update.exe' in exceptions:
+                exceptions.remove('update.exe')
+            self._updateData['exception'] = ','.join(exceptions)
             updateJson = {'localPath': self.cwd, 
                             'onlinePath': self._updateData['onlinePath'] + '/v' +self._updateData['version'],
                             'commonPath': self._updateData['commonPath'],
