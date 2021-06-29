@@ -323,4 +323,4 @@ class PublicCall:
                             self.adb.screenShot(pngName='autoPC')
                         else:
                             return 100
-        return minStar
+        return 0 #返回0代表不保留1星且未发现4，5，6星且已无法刷新
