@@ -23,9 +23,9 @@ class BlackBoard(QWidget):
                         font-family: "Microsoft YaHei", SimHei, SimSun;font:12pt;}}
             QPushButton:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};}}
             QPushButton:pressed{{background:{theme.getPressedColor()};font:11pt;}}
-            QTextBrowser{{background-color:{theme.getFgColor()};color:{theme.getFontColor()};
+            QTextBrowser{{background-color:{theme.getBgColor()};color:{theme.getFontColor()};
                         font-family:"Microsoft YaHei", SimHei, SimSun;font:14pt;
-            border-width:0px;border-style:outset;}}
+            border-width:2px;border-style:solid;border-color:{theme.getFgColor()}}}
             QScrollBar:vertical{{width:8px;background:rgba(0,0,0,0%);margin:0px,0px,0px,0px;padding-top:2px;padding-bottom:2px;}}
             QScrollBar:handle:vertical{{width:8px;background:rgba(0,0,0,25%);border-radius:0px;min-height:20;}}
             QScrollBar:handle:vertical:hover{{width:8px;background:rgba(0,0,0,50%);border-radius:0px;min-height:20;}}
