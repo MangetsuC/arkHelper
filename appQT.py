@@ -808,6 +808,7 @@ class App(QWidget):
                     self.listGoTo, self._data['data'][0]['normal'], self._data['data'][0]['high'], theme = self.theme) #公开招募
         self.publicCall.setStar(1, 1, self.config.getboolean('function', 'autoPC_skip1Star')) #自动公招保留一星设定
         self.publicCall.setStar(5, 1, self.config.getboolean('function', 'autoPC_skip5Star'))
+        self.publicCall.skip23Star = self.config.getboolean('function', 'autoPC_skip23Star')
         self.tbAutoPC.setEnabled(True)
         #self.btnMonitorPublicCall.setEnabled(True)
 
