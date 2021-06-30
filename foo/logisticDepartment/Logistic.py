@@ -365,14 +365,15 @@ class Logistic:
                                 relaxPosThisDorm = self.getRealDormPos(workingOnScreen)
                             else:
                                 relaxPosThisDorm = self.getRealDormPos(None)
-
-                            try:
-                                for i in self.dormRange(need2relax - relaxing, vacancyNum[0]):
-                                    self.click(relaxPosThisDorm[i])
-                                    relaxing += 1
-                            except IndexError:
-                                if vacancyNum[0] > (i + 1): #进驻数比空房间数少，再进驻一次
-                                    roomsOnScreen.append(eachRoom)
+                                
+                            if len(relaxPosThisDorm) != 0:
+                                try:
+                                    for i in self.dormRange(need2relax - relaxing, vacancyNum[0]):
+                                        self.click(relaxPosThisDorm[i])
+                                        relaxing += 1
+                                except IndexError:
+                                    if vacancyNum[0] > (i + 1): #进驻数比空房间数少，再进驻一次
+                                        roomsOnScreen.append(eachRoom)
                             self.click((1325, 760)) #确认按钮的坐标
                             #此处应当判断有无回到总览界面
                             while True:
