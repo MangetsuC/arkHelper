@@ -114,7 +114,9 @@ class UILogistic(QWidget):
         self.config = config
         self.rulePath = rulePath
         self.ruleEncoder = ruleEncoder.RuleEncoder(rulePath)
-        self.logistic = logistic.Logistic(adb, self.config.get('logistic', 'defaultrule'), self.ruleEncoder)
+        self.logistic = logistic.Logistic(adb, self.config.get('logistic', 'defaultrule'), self.ruleEncoder,
+                                          moodThreshold = int(self.config.get('logistic', 'moodThreshold')),
+                                          dormThreshold = int(self.config.get('logistic', 'dormThreshold')))
 
         self.setDefaultState()
 

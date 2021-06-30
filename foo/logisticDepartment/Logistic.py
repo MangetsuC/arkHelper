@@ -8,7 +8,7 @@ from foo.pictureR import pictureFind, ocr
 from foo.logisticDepartment import rooms, ruleEncoder
 
 class Logistic:
-    def __init__(self, adb, defaultRuleName, rule):
+    def __init__(self, adb, defaultRuleName, rule, moodThreshold = 0, dormThreshold = 24):
         self.adb = adb
         self.cwd = getcwd()
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
@@ -19,8 +19,8 @@ class Logistic:
         self.moodsPos = [(353, 577, 87, 35), (353, 614, 87, 35), (353, 650, 87, 35), (353, 686, 87, 35), (353, 722, 87, 35)]
         self.relaxPos = self.getOpPos(12)
 
-        self.moodThreshold = 0 #撤下阈值
-        self.dormThreshold = 24 #上班阈值
+        self.moodThreshold = moodThreshold #撤下阈值
+        self.dormThreshold = dormThreshold #上班阈值
         self.enableRooms = ['制造站', '贸易站', '发电站', '办公室', '会客室']
 
         self.rooms = {  '制造站':rooms.Manufactory(self.adb),
@@ -365,10 +365,10 @@ class Logistic:
                                 relaxPosThisDorm = self.getRealDormPos(workingOnScreen)
                             else:
                                 relaxPosThisDorm = self.getRealDormPos(None)
-                                
+
                             if len(relaxPosThisDorm) != 0:
                                 try:
-                                    for i in self.dormRange(need2relax - relaxing, vacancyNum[0]):
+                                    for i in self.dormRange(need2relax - relaxing, vacancyNum[0], len(relaxPosThisDorm)):
                                         self.click(relaxPosThisDorm[i])
                                         relaxing += 1
                                 except IndexError:
@@ -473,12 +473,17 @@ class Logistic:
         else:
             return [0, None]
 
-    def dormRange(self, remaingNum, vacancyNum):
+    def dormRange(self, remaingNum, vacancyNum, freeNumOnScreen):
         '适用于填充宿舍时的range函数'
         if remaingNum >= vacancyNum:
-            return range(vacancyNum)
+            return range(5 - vacancyNum, 5)
         else:
-            return range(vacancyNum - remaingNum, vacancyNum)
+            if freeNumOnScreen - 1 < 4:
+                if freeNumOnScreen > remaingNum:
+                    return range(freeNumOnScreen - remaingNum, freeNumOnScreen)
+                else:
+                    return range(remaingNum)
+            return range(5 - remaingNum, 5)
 
     def returnToWork(self, room, roomRule):
         room.findAllRooms()
