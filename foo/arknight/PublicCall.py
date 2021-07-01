@@ -22,7 +22,6 @@ class PublicCall:
         self.adb = adb
         self.regAns = None
         self.cwd = cwd
-        self.screenShot = self.cwd + '/bin/adb/PCScreenshot.png'
         self.tag = pictureFind.picRead([self.cwd + '/res/publicCall/' + i for i in listdir(self.cwd + '/res/publicCall')])
         self.tag.sort(key = lambda x:len(x['obj']), reverse = True)
         self.tagOnScreenList = []
@@ -231,11 +230,8 @@ class PublicCall:
         return (ans, tagOnScreenList)
 
     def run(self):
-        #self.srcBefore = {'pic':src,'obj':'tags'}
         while True:
-            self.adb.screenShot(pngName='PCScreenshot')
-            src = pictureFind.imreadCH(self.screenShot)
-            tempTagList = self.getTag(src)
+            tempTagList = self.getTag(self.adb.getScreen_std())
             if tempTagList == [] or len(tempTagList) == 5:
                 break
             elif '资深干员' in tempTagList and '高级资深干员' in tempTagList:
@@ -250,8 +246,7 @@ class PublicCall:
         return self.regAns
 
     def chooseTag(self):
-        self.adb.screenShot(pngName='autoPC')
-        src = pictureFind.imreadCH(self.cwd + '/bin/adb/autoPC.png')
+        src = self.adb.getScreen_std()
         tempTagList = self.getTag(src, isAutoMode=True)
         if tempTagList == []:
             return 6 #出现错误，跳过此组
@@ -311,16 +306,14 @@ class PublicCall:
                 for i in range(3):
                     self.adb.click(refreshPic['result'][0], refreshPic['result'][1])
                     sleep(1)
-                    self.adb.screenShot(pngName='autoPC')
                     startTime = perf_counter()
                     while True:
                         if perf_counter() - startTime > 20:
                             break
-                        confirmPic = pictureFind.matchImg(self.cwd + '/bin/adb/autoPC.png', self.confirm)
+                        confirmPic = pictureFind.matchImg(self.adb.getScreen_std(), self.confirm)
                         if confirmPic != None:
                             self.adb.click(confirmPic['result'][0], confirmPic['result'][1])
                             sleep(1)
-                            self.adb.screenShot(pngName='autoPC')
                         else:
                             return 100
         return 0 #返回0代表不保留1星且未发现4，5，6星且已无法刷新

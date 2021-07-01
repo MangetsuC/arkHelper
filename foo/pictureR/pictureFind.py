@@ -5,11 +5,14 @@ from cv2 import (COLOR_BGR2GRAY, TM_CCOEFF_NORMED, Canny, copyTo, cvtColor,
                  fillConvexPoly, imdecode, imshow, matchTemplate, minMaxLoc, resize, imshow, waitKey)
 from cv2 import split as cvsplit
 from cv2 import waitKey
-from numpy import array, fromfile, zeros
+from numpy import array, fromfile, zeros, ndarray
 
 
 def imreadCH(filename):
-    return imdecode(fromfile(filename,dtype="uint8"),-1)
+    if isinstance(filename, str):
+        return imdecode(fromfile(filename,dtype="uint8"),-1)
+    elif isinstance(filename, ndarray):
+        return filename
 
 def find_template(im_source, im_search, threshold=0.5, rgb=False, bgremove=False):
     '''

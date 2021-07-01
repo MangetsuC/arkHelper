@@ -1,9 +1,14 @@
 from os import path, remove
-from time import sleep
-from subprocess import Popen, PIPE, call
-from re import split as resplit
 from re import findall as refind
+from re import split as resplit
+from subprocess import PIPE, Popen, call
+from time import sleep
+
+from cv2 import imdecode, merge
 from foo.win import toast
+from numpy import frombuffer, zeros, ones
+from PyQt5.QtCore import QObject, pyqtSignal
+
 
 def delImg(dir):
     if path.exists(dir):
@@ -16,24 +21,26 @@ def delImg(dir):
 
 
 
-class Cmd():
+class Cmd:
     def __init__(self, path):
         self.path = path
-        self.p = None
         self.path 
 
-    def run(self, code, waitTime = 60):
-        self.p = Popen(code, shell = True, stdout = PIPE, stderr = PIPE, bufsize = -1, cwd = self.path)
-        cmdReturn = self.p.communicate()
-        try:
-            strout = cmdReturn[0].decode('gbk').replace('\r\n', '\n')
-            strerr = cmdReturn[1].decode('gbk').replace('\r\n', '\n')
-        except UnicodeDecodeError:
-            strout = cmdReturn[0].decode('UTF-8').replace('\r\n', '\n')
-            strerr = cmdReturn[1].decode('UTF-8').replace('\r\n', '\n')
+    def run(self, code, needDecode = True):
+        p = Popen(code, shell = True, stdout = PIPE, stderr = PIPE, bufsize = -1, cwd = self.path)
+        cmdReturn = p.communicate()
+        if needDecode:
+            try:
+                strout = cmdReturn[0].decode('gbk').replace('\r\n', '\n')
+                strerr = cmdReturn[1].decode('gbk').replace('\r\n', '\n')
+            except UnicodeDecodeError:
+                strout = cmdReturn[0].decode('UTF-8').replace('\r\n', '\n')
+                strerr = cmdReturn[1].decode('UTF-8').replace('\r\n', '\n')
+        else:
+            strout = cmdReturn[0]
+            strerr = cmdReturn[1]
         if len(strerr) > 0:
             print(strerr)
-        #self.p.wait(timeout = waitTime)
         return strout
 
     def getVersion(self):
@@ -77,8 +84,10 @@ class Cmd():
         self.run(f'shutdown /s /t {time}')
         
 
-class Adb:
+class Adb(QObject):
+    adbErr = pyqtSignal(bool)
     def __init__(self, ico, adbPath, config = None):
+        super(Adb, self).__init__()
         self.adbPath = adbPath
         self.cmd = Cmd(self.adbPath)
         self.ip = None
@@ -201,6 +210,20 @@ class Adb:
 
         return True
 
+    def getScreen_std(self):
+        pic = self.cmd.run(f'adb -s {self.ip} shell screencap -p', needDecode = False)
+        pic = pic.replace(b'\r\r\n', b'\n')
+        try:
+            pic = imdecode(frombuffer(pic, dtype="uint8"), -1)
+            #pic = imdecode(frombuffer(b'', dtype="uint8"), -1)
+        except Exception as e:
+            self.adbErr.emit(True)
+            print('截取屏幕失败')
+            print(e)
+            tempPicChannel = zeros((810, 1440), dtype = 'uint8')
+            return merge((tempPicChannel, tempPicChannel, tempPicChannel)) #返回一张纯黑图片，便于后续程序执行，正常退出
+        return pic
+
     def click(self, x, y, isSleep = True):
         x = int((x / 1440) * self.screenX)
         y = int((y / 810) * self.screenY)
@@ -239,3 +262,6 @@ class Adb:
 
     def mainToNextChap(self):
         self.swipe(1050, 400, 650, 400, 500)
+
+class AdbError(Exception):
+    pass

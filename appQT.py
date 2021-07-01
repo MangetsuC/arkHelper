@@ -756,6 +756,7 @@ class App(QWidget):
         self.rateMonitor.addWidget(self.themeEditor)
 
         self.adb = Adb(self.ico, self.cwd + '/bin/adb', self.config)
+        self.adb.adbErr.connect(self.stop)
 
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
         self.battle.noBootySignal.connect(self.battleWarning)
@@ -1180,7 +1181,7 @@ class App(QWidget):
         else:
             self.stop()
 
-    def stop(self):
+    def stop(self, isErrStop = False):
         self.doctorFlag = False
         if self.publicCall != None:
             self.publicCall.autoPCStop()
@@ -1192,6 +1193,8 @@ class App(QWidget):
             self.logistic.stop()
         self.btnMainClicked = False
         self.btnStartAndStop.setText('启动虚拟博士')
+        if isErrStop:
+            self.lTitle.setText('出现错误 请检查控制台')
 
     def clickBtnStartAndStop(self):
         self.btnMainClicked = not self.btnMainClicked

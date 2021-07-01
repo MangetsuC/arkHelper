@@ -12,7 +12,7 @@ from foo.logisticDepartment import ruleEncoder
 class Room:
     def __init__(self, adb, roomName, roomDirect):
         self.adb = adb
-        self.screenShot = getcwd() + '/bin/adb/arktemp.png'
+        self.screenShot = getcwd() + '/res/gui/launchWindow.png'
 
         self.roomName = roomName
         self.roomDirect = roomDirect
@@ -21,7 +21,7 @@ class Room:
         self.runFlag = False
 
     def getScreen(self):
-        self.adb.screenShot()
+        self.screenShot = self.adb.getScreen_std()
 
     def click(self, picResult):
         self.adb.click(picResult[0], picResult[1])
@@ -56,7 +56,7 @@ class Room:
             #判断滑动已完全停止
             if not self.runFlag:
                 break
-            if lastScreen != None:
+            if not isinstance(lastScreen, type(None)):
                 self.swipe((500, 400), (1300, 400))
                 sleep(2)
                 self.getScreen()
@@ -64,11 +64,11 @@ class Room:
                 if isScreenStop != None:
                     break
                 else:
-                    lastScreen = pictureFind.picRead(self.screenShot)
+                    lastScreen = self.screenShot
                     sleep(0.5)
             else:
                 self.getScreen()
-                lastScreen = pictureFind.picRead(self.screenShot)
+                lastScreen = self.screenShot
         return 0
 
     def swipeToNextOperatorPage(self):
@@ -81,15 +81,15 @@ class Room:
             if not self.runFlag:
                 break
             self.getScreen()
-            if lastScreen != None:
+            if not isinstance(lastScreen, type(None)):
                 isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
                 if isScreenStop != None:
                     break
                 else:
-                    lastScreen = pictureFind.picRead(self.screenShot)
+                    lastScreen = self.screenShot
                     sleep(0.5)
             else:
-                lastScreen = pictureFind.picRead(self.screenShot)
+                lastScreen = self.screenShot
         return 0
 
     def backToOneLayer(self, layerMark):

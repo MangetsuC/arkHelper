@@ -12,7 +12,7 @@ class Credit:
         self.icon = self.cwd + "/res/ico.ico"
         #self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
         #self.mainpage = pictureFind.picRead(self.cwd + "/res/panel/other/mainpage.png")
-        self.screenShot = self.cwd + '/bin/adb/arktemp.png'
+        #self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         #self.mainpageMark = pictureFind.picRead(self.cwd + "/res/panel/other/act.png")
         self.frendList = pictureFind.picRead(self.cwd + '/res/panel/other/friendList.png')
         self.visitNext = pictureFind.picRead(self.cwd + '/res/panel/other/visitNext.png')
@@ -31,9 +31,9 @@ class Credit:
         listGoToTemp = self.listGoTo.copy()
         tryCount = 0
         while self.switch:
-            self.adb.screenShot()
+            screenshot = self.adb.getScreen_std()
             for eachStep in listGoToTemp:
-                bInfo = pictureFind.matchImg(self.screenShot, eachStep)
+                bInfo = pictureFind.matchImg(screenshot, eachStep)
                 if bInfo != None:
                     listGoToTemp.remove(eachStep)
                     break
@@ -52,12 +52,12 @@ class Credit:
     def openCard(self):
         tryTime = 0
         while self.switch:
-            fInfo = pictureFind.matchImg(self.screenShot, self.friends)
+            screenshot = self.adb.getScreen_std()
+            fInfo = pictureFind.matchImg(screenshot, self.friends)
             if fInfo != None:
                 self.adb.click(fInfo['result'][0], fInfo['result'][1])
-                self.adb.screenShot()
             else:
-                fInfo = pictureFind.matchImg(self.screenShot, self.frendList)
+                fInfo = pictureFind.matchImg(screenshot, self.frendList)
                 if fInfo != None:
                     return fInfo
                 elif tryTime > 10:
@@ -69,8 +69,7 @@ class Credit:
         tryTime = 0
         while self.switch:
             self.adb.click(fInfo['result'][0], fInfo['result'][1])
-            self.adb.screenShot()
-            vInfo = pictureFind.matchImg(self.screenShot, self.visit)
+            vInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.visit)
             if vInfo != None:
                 return vInfo
             elif tryTime > 10:
@@ -82,9 +81,9 @@ class Credit:
         breakFlag = False
         while self.switch:
             self.adb.click(vInfo['result'][0], vInfo['result'][1])
-            self.adb.screenShot()
+            screenshot = self.adb.getScreen_std()
             for each in self.listGetCredit:
-                gInfo = pictureFind.matchImg(self.screenShot, each, 0.95)
+                gInfo = pictureFind.matchImg(screenshot, each, 0.95)
                 if gInfo != None:
                     breakFlag = True
                     break
@@ -102,9 +101,8 @@ class Credit:
                 if tryTime > 5:
                     print('visit next failed')
                     break
-                self.adb.screenShot()
                 for each in self.listGetCredit:
-                    gInfo = pictureFind.matchImg(self.screenShot, each, 0.95)
+                    gInfo = pictureFind.matchImg(self.adb.getScreen_std(), each, 0.95)
                     if gInfo != None:
                         break
             elif gInfo['obj'] == 'visitFinish.png':
@@ -112,9 +110,8 @@ class Credit:
             else:
                 tryTime = 0
                 self.adb.click(gInfo['result'][0], gInfo['result'][1])
-                self.adb.screenShot()
                 for each in self.listGetCredit:
-                    gInfo = pictureFind.matchImg(self.screenShot, each, 0.95)
+                    gInfo = pictureFind.matchImg(self.adb.getScreen_std(), each, 0.95)
                     if gInfo != None:
                         break
 

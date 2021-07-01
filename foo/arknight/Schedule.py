@@ -44,7 +44,7 @@ class BattleSchedule(QObject):
         self.sign = pictureFind.picRead(self.cwd + "/res/panel/level/sign.png")
 
         #self.exPos = {'ex1':(220,280),'ex2':(845,580),'ex3':(1230,340)}
-        self.screenShot = self.cwd + '/bin/adb/arktemp.png'
+        #self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.act = self.cwd + "/res/panel/other/act.png"
         self.battle = self.cwd + "/res/panel/other/battle.png"
         self.home = self.cwd + "/res/panel/other/home.png"
@@ -78,44 +78,34 @@ class BattleSchedule(QObject):
 
         #前往一级菜单
         while self.switch:
-            if self.adb.screenShot():
-                picTh = pictureFind.matchImg(self.screenShot, self.sign)
-                if picTh != None:
-                    break
+            picTh = pictureFind.matchImg(self.adb.getScreen_std(), self.sign)
+            if picTh != None:
+                break
+
+            picAct = pictureFind.matchImg(self.adb.getScreen_std(), self.act)
+            if picAct != None:
+                posAct = picAct['result']
+                self.adb.click(posAct[0], posAct[1])
             else:
-                print('Fail to get screenshot')
-                return False
-            if self.adb.screenShot():
-                picAct = pictureFind.matchImg(self.screenShot, self.act)
-                if picAct != None:
-                    posAct = picAct['result']
-                    self.adb.click(posAct[0], posAct[1])
-                else:
-                    picHome = pictureFind.matchImg(self.screenShot, self.home)
-                    if picHome != None:
-                        posHome = picHome['result']
-                        self.adb.click(posHome[0], posHome[1])
-                        if self.adb.screenShot():
-                            picBattle = pictureFind.matchImg(self.screenShot, self.battle)
-                            if picBattle != None:
-                                posBattle = picBattle['result']
-                                self.adb.click(posBattle[0], posBattle[1])
-                            else:
-                                continue
-                        else:
-                            print('Fail to get screenshot')
-                            return False
+                picHome = pictureFind.matchImg(self.adb.getScreen_std(), self.home)
+                if picHome != None:
+                    posHome = picHome['result']
+                    self.adb.click(posHome[0], posHome[1])
+
+                    picBattle = pictureFind.matchImg(self.adb.getScreen_std(), self.battle)
+                    if picBattle != None:
+                        posBattle = picBattle['result']
+                        self.adb.click(posBattle[0], posBattle[1])
                     else:
-                        tempCount += 1
-                        if tempCount > 5:
-                            print('unable to init')
-                            return False
-                        else:
-                            continue
-                
-            else:
-                print('Fail to get screenshot')
-                return False
+                        continue
+                else:
+                    tempCount += 1
+                    if tempCount > 5:
+                        print('unable to init')
+                        return False
+                    else:
+                        continue
+
 
         #二级菜单的选择
         if part == 'MAIN':
@@ -136,8 +126,7 @@ class BattleSchedule(QObject):
         #关卡选择
         if part == 'EX':
             for i in range(5):
-                self.adb.screenShot()
-                picEx = pictureFind.matchImg(self.screenShot, self.exSymbol)
+                picEx = pictureFind.matchImg(self.adb.getScreen_std(), self.exSymbol)
                 if picEx != None:
                     break
             else:
@@ -145,8 +134,7 @@ class BattleSchedule(QObject):
             for i in range(5):
                 self.adb.click(720, 405) #存在不小心点开剿灭关卡无法切换关卡的可能性
                 sleep(1)
-                self.adb.screenShot()
-                picExChap = pictureFind.matchImg(self.screenShot, self.exIV["exSwitch"])
+                picExChap = pictureFind.matchImg(self.adb.getScreen_std(), self.exIV["exSwitch"])
                 if picExChap != None:
                     self.adb.click(picExChap['result'][0], picExChap['result'][1])
                     sleep(0.5)
@@ -154,11 +142,11 @@ class BattleSchedule(QObject):
             else:
                 return False
             for i in range(5):
-                self.adb.screenShot()
-                picLevelOn = pictureFind.matchImg(self.screenShot,self.startA)
+                screenshot = self.adb.getScreen_std()
+                picLevelOn = pictureFind.matchImg(screenshot,self.startA)
                 if picLevelOn != None:
                     return True
-                picExObj = pictureFind.matchImg(self.screenShot, self.exIV[objLevel])
+                picExObj = pictureFind.matchImg(screenshot, self.exIV[objLevel])
                 if picExObj != None:
                     if objLevel == 'ex4':
                         self.adb.click(picExObj['result'][0], picExObj['result'][1] + 80)
@@ -172,12 +160,11 @@ class BattleSchedule(QObject):
             for i in range(25):
                 if not self.switch:
                     break
-                self.adb.screenShot()
-                levelOnScreen = pictureFind.levelOcr(self.screenShot)
+                levelOnScreen = pictureFind.levelOcr(self.adb.getScreen_std())
                 if levelOnScreen != None:
                     if objLevel in levelOnScreen:
                         self.adb.click(levelOnScreen[objLevel][0],levelOnScreen[objLevel][1])
-                        picLevelOn = pictureFind.matchImg(self.screenShot,self.startA)
+                        picLevelOn = pictureFind.matchImg(self.adb.getScreen_std(),self.startA)
                         if picLevelOn != None:
                             return True
                     else:
@@ -190,9 +177,8 @@ class BattleSchedule(QObject):
 
 
     def chooseChap(self,chap):
-        self.adb.screenShot()
         if chap == 'external' or chap == 'tempE':
-            picChap = pictureFind.matchImg(self.screenShot, self.III['ex'])
+            picChap = pictureFind.matchImg(self.adb.getScreen_std(), self.III['ex'])
             if picChap != None:
                 self.adb.click(picChap['result'][0], picChap['result'][1])
                 return True
@@ -203,8 +189,8 @@ class BattleSchedule(QObject):
                 self.adb.click(165, 160)
             elif int(chap) <= 8:
                 self.adb.click(165, 595)
-            for eachChap in range(1, 9):
-                picChap = pictureFind.matchImg(self.screenShot, self.III[str(eachChap)])
+            for eachChap in range(0, 9): #0-8章
+                picChap = pictureFind.matchImg(self.adb.getScreen_std(), self.III[str(eachChap)])
                 if picChap != None:
                     nowChap = eachChap
                     break
@@ -218,8 +204,7 @@ class BattleSchedule(QObject):
                     for i in range(10):
                         if not self.switch:
                             break
-                        self.adb.screenShot()
-                        picChap = pictureFind.matchImg(self.screenShot, self.III[chap])
+                        picChap = pictureFind.matchImg(self.adb.getScreen_std(), self.III[chap])
                         if not self.switch:
                             break
                         elif picChap == None:
@@ -231,8 +216,7 @@ class BattleSchedule(QObject):
                     for i in range(10):
                         if not self.switch:
                             break
-                        self.adb.screenShot()
-                        picChap = pictureFind.matchImg(self.screenShot, self.III[chap])
+                        picChap = pictureFind.matchImg(self.adb.getScreen_std(), self.III[chap])
                         if not self.switch:
                             break
                         elif picChap == None:
@@ -246,8 +230,7 @@ class BattleSchedule(QObject):
             for i in range(20):
                 if not self.switch:
                     break
-                self.adb.screenShot()
-                picChap = pictureFind.matchImg(self.screenShot, self.III[chap])
+                picChap = pictureFind.matchImg(self.adb.getScreen_std(), self.III[chap])
                 if not self.switch:
                     break
                 elif picChap == None:
@@ -274,13 +257,13 @@ class BattleSchedule(QObject):
         errorCount = 0
         while self.switch and self.switchB:
             
-            self.adb.screenShot()
+            screenshot = self.adb.getScreen_std()
             #判断代理指挥是否勾选
-            picStartA = pictureFind.matchImg(self.screenShot, self.startA, confidencevalue= 0.9)
+            picStartA = pictureFind.matchImg(screenshot, self.startA, confidencevalue= 0.9)
             if picStartA != None and self.switch and self.switchB:
-                picAutoOn = pictureFind.matchImg(self.screenShot, self.autoOn)
+                picAutoOn = pictureFind.matchImg(screenshot, self.autoOn)
                 if picAutoOn == None and self.switch and self.switchB:
-                    picAutoOff = pictureFind.matchImg(self.screenShot, self.autoOff)
+                    picAutoOff = pictureFind.matchImg(screenshot, self.autoOff)
                     if picAutoOff != None and self.switch and self.switchB:
                         posAutoOff = picAutoOff['result']
                         self.adb.click(posAutoOff[0], posAutoOff[1])
@@ -294,8 +277,7 @@ class BattleSchedule(QObject):
                         confidence = 0.8
                     else:
                         confidence = 0.9
-                    #print(self.screenShot + ' ' + self.cwd + '/res/battle/' + eachObj)
-                    picInfo = pictureFind.matchImg(self.screenShot, eachObj, confidence)
+                    picInfo = pictureFind.matchImg(screenshot, eachObj, confidence)
                     #print(eachObj+ '：', picInfo)
                     if picInfo != None:
                         if picInfo['result'][1] < 270:
@@ -330,13 +312,15 @@ class BattleSchedule(QObject):
                             if eachObj['obj'] == 'endNormal.png':
                                 countStep += 1
                                 if bootyMode:
+                                    lastPic = None
                                     for i in range(10):
-                                        temp = pictureFind.imreadCH(self.screenShot)#改用picRead
-                                        self.adb.screenShot()
-                                        if pictureFind.matchImg(temp, self.screenShot, confidencevalue=0.99) != None:
-                                            break
+                                        nowPic = nowPic = self.adb.getScreen_std()
+                                        if not isinstance(lastPic, type(None)):
+                                            if pictureFind.matchImg(lastPic, nowPic, confidencevalue=0.99) != None:
+                                                break
+                                        lastPic = nowPic
                                         sleep(1)
-                                    bootyTotalCount += self.BootyDetect.bootyCheck(bootyName, self.screenShot)
+                                    bootyTotalCount += self.BootyDetect.bootyCheck(bootyName, nowPic)
                                     print(f'{bootyName} 应获得：{times} 实获得：{bootyTotalCount}')
                                     
                         elif countStep == 2:
@@ -354,15 +338,16 @@ class BattleSchedule(QObject):
                             return True
                         if eachObj['obj'] == "cancel.png":
                             if self.autoRecMed or self.autoRecStone:
-                                medInfo = pictureFind.matchImg(self.screenShot, self.recMed)
-                                stoneInfo = pictureFind.matchImg(self.screenShot, self.recStone)
-                                confirmInfo = pictureFind.matchImg(self.screenShot, self.confirm)
+                                screenshot = self.adb.getScreen_std()
+                                medInfo = pictureFind.matchImg(screenshot, self.recMed)
+                                stoneInfo = pictureFind.matchImg(screenshot, self.recStone)
+                                confirmInfo = pictureFind.matchImg(screenshot, self.confirm)
                                 if (not self.autoRecMed) and (self.autoRecStone):
                                     if medInfo != None and stoneInfo == None:
                                         self.adb.click(medInfo['result'][0]+350, medInfo['result'][1], isSleep= True)
-                                        self.adb.screenShot()
-                                        medInfo = pictureFind.matchImg(self.screenShot, self.recMed)
-                                        stoneInfo = pictureFind.matchImg(self.screenShot, self.recStone)
+                                        screenshot = self.adb.getScreen_std()
+                                        medInfo = pictureFind.matchImg(screenshot, self.recMed)
+                                        stoneInfo = pictureFind.matchImg(screenshot, self.recStone)
                                         if medInfo == None and stoneInfo != None:
                                             if self.restStone >0:
                                                 self.adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
@@ -413,7 +398,7 @@ class BattleSchedule(QObject):
                                         lackTem = eachTem
                                         break
                                 if lackTem:
-                                    picLackInfo = pictureFind.matchImg(self.screenShot, lackTem, 0.9)
+                                    picLackInfo = pictureFind.matchImg(screenshot, lackTem, 0.9)
                                     if picLackInfo:
                                         self.adb.click(picLackInfo['result'][0], picLackInfo['result'][1], isSleep = True)
                                         self.switch = False
@@ -421,16 +406,14 @@ class BattleSchedule(QObject):
                                     else:
                                         self.adb.click(picPos[0], picPos[1], isSleep = True)
                                         if eachObj['obj'] == 'startApartOF.png':
-                                            self.adb.screenShot()
-                                            OFend = pictureFind.matchImg(self.screenShot, self.cwd + '/res/act/OFend.png', 0.8)
+                                            OFend = pictureFind.matchImg(self.adb.getScreen_std(), self.cwd + '/res/act/OFend.png', 0.8)
                                             if OFend != None:
                                                 self.switch = False
                                                 toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
                                 else:
                                     self.adb.click(picPos[0], picPos[1], isSleep = True)
                                     if eachObj['obj'] == 'startApartOF.png':
-                                        self.adb.screenShot()
-                                        OFend = pictureFind.matchImg(self.screenShot, self.cwd + '/res/act/OFend.png', 0.8)
+                                        OFend = pictureFind.matchImg(self.adb.getScreen_std(), self.cwd + '/res/act/OFend.png', 0.8)
                                         if OFend != None:
                                             self.switch = False
                                             toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)

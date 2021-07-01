@@ -11,7 +11,7 @@ class Logistic:
     def __init__(self, adb, defaultRuleName, rule, moodThreshold = 0, dormThreshold = 24):
         self.adb = adb
         self.cwd = getcwd()
-        self.screenShot = self.cwd + '/bin/adb/arktemp.png'
+        self.screenShot = self.cwd + '/res/gui/launchWindow.png'
 
         self.runFlag = False
 
@@ -69,7 +69,7 @@ class Logistic:
         self.dormThreshold = threshold
 
     def getScreen(self):
-        self.adb.screenShot()
+        self.screenShot = self.adb.getScreen_std()
 
     def click(self, picResult):
         self.adb.click(picResult[0], picResult[1])
@@ -116,15 +116,15 @@ class Logistic:
                 if not self.runFlag:
                     return -2
                 self.getScreen()
-                if lastScreen != None:
+                if not isinstance(lastScreen, type(None)):
                     isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
                     if isScreenStop != None:
                         break
                     else:
-                        lastScreen = pictureFind.picRead(self.screenShot)
+                        lastScreen = self.screenShot
                         sleep(0.5)
                 else:
-                    lastScreen = pictureFind.picRead(self.screenShot)
+                    lastScreen = self.screenShot
 
 
     def matchPic(self, obj):
@@ -476,7 +476,7 @@ class Logistic:
     def dormRange(self, remaingNum, vacancyNum, freeNumOnScreen):
         '适用于填充宿舍时的range函数'
         if remaingNum >= vacancyNum:
-            return range(5 - vacancyNum, 5)
+            return range(0, vacancyNum)
         else:
             if freeNumOnScreen - 1 < 4:
                 if freeNumOnScreen > remaingNum:
@@ -517,6 +517,7 @@ class Logistic:
         if not self.runFlag:
             return 0
         need2relax = self.freeOperator()
+        need2relax = 10
         if not self.runFlag:
             return 0
         print(f'需要休息的人数：{need2relax}')

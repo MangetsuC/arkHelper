@@ -22,7 +22,7 @@ class UIPublicCall(QDialog):
     
     def initVar(self, adb, battle, cwd, normal, high):
         self.cwd = cwd
-        self.screenShot = self.cwd + '/bin/adb/arktemp.png'
+        #self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.battle = battle
         #self.btnCheck = btnCheck
         self.adb = adb
@@ -278,9 +278,8 @@ class UIPublicCall(QDialog):
         listGoToTemp = self.listGoTo.copy()
         tryCount = 0
         while self.autoSwitch:
-            self.adb.screenShot()
             for eachStep in listGoToTemp:
-                bInfo = pictureFind.matchImg(self.screenShot, eachStep)
+                bInfo = pictureFind.matchImg(self.adb.getScreen_std(), eachStep)
                 if bInfo != None:
                     listGoToTemp.remove(eachStep)
                     break
@@ -303,8 +302,7 @@ class UIPublicCall(QDialog):
             tagState = self.publicCall.chooseTag()
         if tagState == 6 or tagState == 1 or (self.skip23Star and tagState == 0):
             for i in range(5):
-                self.adb.screenShot()
-                picInfo = pictureFind.matchImg(self.screenShot, self.pcCancel)
+                picInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.pcCancel)
                 if picInfo != None:
                     picInfo = picInfo['result']
                     self.adb.click(picInfo[0], picInfo[1])
@@ -312,24 +310,23 @@ class UIPublicCall(QDialog):
             return False
         else:
             for i in range(5):
-                self.adb.screenShot()
-                addBtn = pictureFind.matchMultiImg(self.screenShot, self.pcDecreaseTime)[0]
+                screenshot = self.adb.getScreen_std()
+                addBtn = pictureFind.matchMultiImg(screenshot, self.pcDecreaseTime)[0]
                 if addBtn != None:
                     addBtn.sort(key=lambda x:x[0])
                     addBtn = addBtn[0]
                     break
             else:
                 return False
-            picInfo = pictureFind.matchImg(self.screenShot, self.pc9, confidencevalue=0.9)
+            picInfo = None
             while picInfo == None:
                 if not self.autoSwitch:
                     return False
                 self.adb.click(addBtn[0], addBtn[1])
-                self.adb.screenShot()
-                picInfo = pictureFind.matchImg(self.screenShot, self.pc9, confidencevalue=0.9)
+                picInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.pc9, confidencevalue=0.9)
             for i in range(5):
                 #confirmBtn = pictureFind.matchImg(self.screenShot, self.pcCancel)
-                confirmBtn = pictureFind.matchImg(self.screenShot, self.pcConfirm)
+                confirmBtn = pictureFind.matchImg(self.adb.getScreen_std(), self.pcConfirm)
                 if confirmBtn != None:
                     confirmBtn = confirmBtn['result']
                     self.adb.click(confirmBtn[0], confirmBtn[1])
@@ -341,13 +338,11 @@ class UIPublicCall(QDialog):
         for i in range(5):
             if not self.autoSwitch:
                 return False
-            self.adb.screenShot()
-            picInfo = pictureFind.matchImg(self.screenShot, self.pcEnter)
+            picInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.pcEnter)
             if picInfo != None:
                 self.adb.click(picInfo['result'][0], picInfo['result'][1])
-                while pictureFind.matchImg(self.screenShot, self.pcMark) == None:
+                while pictureFind.matchImg(self.adb.getScreen_std(), self.pcMark) == None:
                     sleep(1)
-                    self.adb.screenShot()
                 print('已经进入公开招募界面')
                 return True
         else:
@@ -356,18 +351,16 @@ class UIPublicCall(QDialog):
     
     def employ(self):
         for i in range(2):
-            picInfo = pictureFind.matchMultiImg(self.screenShot, self.pcFinish)[0]
+            picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), self.pcFinish)[0]
             if picInfo != None:
                 if not self.autoSwitch:
                     break
                 for eachPos in picInfo:
                     self.adb.click(eachPos[0], eachPos[1])
-                    self.adb.screenShot()
-                    while pictureFind.matchImg(self.screenShot, self.pcMark) == None:
+                    while pictureFind.matchImg(self.adb.getScreen_std(), self.pcMark) == None:
                         for i in range(5):
                             self.adb.click(1400, 40)
                         sleep(1)
-                        self.adb.screenShot()
             else:
                 break
         return True
@@ -376,8 +369,7 @@ class UIPublicCall(QDialog):
         lastPicInfo = None
         for i in range(5):
             #多次搜索，确保找到所有可招募的位置
-            self.adb.screenShot()
-            picInfo = pictureFind.matchMultiImg(self.screenShot, self.pcNew)[0] #找到所有空的招募位
+            picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), self.pcNew)[0] #找到所有空的招募位
             if picInfo != None and len(picInfo) == 4:
                 #已达到最多空闲位数，直接跳出
                 break
@@ -394,8 +386,7 @@ class UIPublicCall(QDialog):
                         return False
                     self.adb.click(eachPos[0], eachPos[1])
                     sleep(0.5)
-                    self.adb.screenShot()
-                    inMarkInfo = pictureFind.matchImg(self.screenShot, self.pcInMark)
+                    inMarkInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.pcInMark)
                     if inMarkInfo != None:
                         self.chooseTag()
                         break
