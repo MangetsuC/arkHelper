@@ -517,7 +517,6 @@ class Logistic:
         if not self.runFlag:
             return 0
         need2relax = self.freeOperator()
-        need2relax = 10
         if not self.runFlag:
             return 0
         print(f'需要休息的人数：{need2relax}')
