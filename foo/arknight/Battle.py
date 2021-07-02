@@ -33,6 +33,7 @@ class BattleLoop(QObject):
         self.listImg = self.listActImg + self.listBattleImg
 
         self.startA = pictureFind.picRead(self.cwd + "/res/battle/startApart.png")
+        self.startB = pictureFind.picRead(self.cwd + "/res/battle/startBpart.png")
         self.autoOff = pictureFind.picRead(self.cwd + "/res/panel/other/autoOff.png")
         self.autoOn = pictureFind.picRead(self.cwd + "/res/panel/other/autoOn.png")
 
@@ -91,7 +92,7 @@ class BattleLoop(QObject):
             errorCount = 0
             while self.switch:
                 screenshot = self.adb.getScreen_std()
-                picStartA = pictureFind.matchImg(screenshot, self.startA, confidencevalue= 0.9)
+                picStartA = pictureFind.matchImg(screenshot, self.startA, confidencevalue= 0.8)
                 if picStartA != None and self.switch:
                     picIsUseless = pictureFind.matchImg(screenshot, self.uselessLevel)
                     if picIsUseless and (not self.isUselessContinue):
@@ -111,25 +112,22 @@ class BattleLoop(QObject):
 
                 for eachObj in self.listImg:
                     if self.switch:
-                        if eachObj['obj'] == 'end.png' or eachObj['obj'] == 'levelup.png':
-                            confidence = 0.8
-                        elif eachObj['obj'] == 'endExterminate.png':
-                            confidence = self.adb.getTagConfidence()
-                        elif 'endNormal' in eachObj['obj']:
-                            confidence = self.adb.getTagConfidence()
-                        else:
-                            confidence = 0.9
-                        picInfo = pictureFind.matchImg(screenshot, eachObj, confidence)
+                        picInfo = pictureFind.matchImg(screenshot, eachObj, self.adb.getTagConfidence())
                         if picInfo != None:
                             if picInfo['result'][1] < 270 and ('FIN_TS' not in eachObj['obj']):
                                 #FIN_TS为活动连锁竞赛，结束标志在上半屏幕
                                 continue
                             
                             if 'startApart' in eachObj['obj']:
-                                if loopTime == self.battleLoopTimes:
-                                    self.switch = False
-                                    toast.broadcastMsg("ArkHelper", f"达到设定次数，共循环{loopTime}次", self.ico)
-                                    break
+                                BInfo = pictureFind.matchImg(screenshot, self.startB, self.adb.getTagConfidence())
+                                #避免是因为匹配到了队伍配置界面低栏上的行动二字
+                                if BInfo != None:
+                                    picInfo = BInfo
+                                else:
+                                    if loopTime == self.battleLoopTimes:
+                                        self.switch = False
+                                        toast.broadcastMsg("ArkHelper", f"达到设定次数，共循环{loopTime}次", self.ico)
+                                        break
 
                             if eachObj['obj'] != lastFoundPic:
                                 errorCount = 0
