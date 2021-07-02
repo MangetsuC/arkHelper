@@ -315,7 +315,7 @@ class BattleSchedule(QObject):
                                     lastPic = None
                                     for i in range(10):
                                         nowPic = nowPic = self.adb.getScreen_std()
-                                        if not isinstance(lastPic, type(None)):
+                                        if lastPic is not None:
                                             if pictureFind.matchImg(lastPic, nowPic, confidencevalue=0.99) != None:
                                                 break
                                         lastPic = nowPic

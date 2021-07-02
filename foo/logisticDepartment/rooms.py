@@ -56,7 +56,7 @@ class Room:
             #判断滑动已完全停止
             if not self.runFlag:
                 break
-            if not isinstance(lastScreen, type(None)):
+            if lastScreen is not None:
                 self.swipe((500, 400), (1300, 400))
                 sleep(2)
                 self.getScreen()
@@ -81,7 +81,7 @@ class Room:
             if not self.runFlag:
                 break
             self.getScreen()
-            if not isinstance(lastScreen, type(None)):
+            if lastScreen is not None:
                 isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
                 if isScreenStop != None:
                     break

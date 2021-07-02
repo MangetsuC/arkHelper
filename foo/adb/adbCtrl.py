@@ -212,10 +212,16 @@ class Adb(QObject):
 
     def getScreen_std(self):
         pic = self.cmd.run(f'adb -s {self.ip} shell screencap -p', needDecode = False)
-        pic = pic.replace(b'\r\r\n', b'\n')
+        if pic[6] == 10:#LF
+            pic = pic.replace(b'\r\n', b'\n')
+        elif pic[6] == 13:#CR
+            pic = pic.replace(b'\r\r\n', b'\n')
         try:
             pic = imdecode(frombuffer(pic, dtype="uint8"), -1)
-            #pic = imdecode(frombuffer(b'', dtype="uint8"), -1)
+            #if isinstance(pic, type(None)):
+            if pic is None:
+                print('截图解码失败')
+                raise AdbError
         except Exception as e:
             self.adbErr.emit(True)
             print('截取屏幕失败')

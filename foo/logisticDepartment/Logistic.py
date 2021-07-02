@@ -116,7 +116,7 @@ class Logistic:
                 if not self.runFlag:
                     return -2
                 self.getScreen()
-                if not isinstance(lastScreen, type(None)):
+                if lastScreen is not None:
                     isScreenStop = pictureFind.matchImg(self.screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
                     if isScreenStop != None:
                         break
