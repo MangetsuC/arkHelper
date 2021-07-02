@@ -19,6 +19,7 @@ class Task:
         self.weekSel = pictureFind.picRead(self.cwd + "/res/panel/other/weeklyTaskSelect.png")
         self.back = pictureFind.picRead(self.cwd + '/res/panel/other/back.png')
         self.rewardFinish = pictureFind.picRead(self.cwd + '/res/panel/other/rewardFinish.png')
+        self.collectAll = pictureFind.picRead(self.cwd + '/res/panel/other/collectAll.png')
 
         self.listGoTo = listGoTo
         self.mainpage = self.listGoTo[0]
@@ -73,17 +74,18 @@ class Task:
         endCount = 0
         while self.switch:
             screenshot = self.adb.getScreen_std()
-            gInfo = pictureFind.matchImg(screenshot, self.get, 0.9)
+            #gInfo = pictureFind.matchImg(screenshot, self.get, 0.9)
+            collectAllInfo = pictureFind.matchImg(screenshot, self.collectAll, 0.8)
             backInfo = pictureFind.matchImg(screenshot, self.back, 0.9)
-            rewardFinishInfo = pictureFind.matchMultiImg(screenshot, self.rewardFinish, 
-                                                        confidencevalue = self.adb.getTagConfidence())[0]
-            if rewardFinishInfo != None:
-                rewardFinishInfo.sort(key = lambda x:x[1])
-                if rewardFinishInfo[0][1] < 250:#该栏任务交付全部完成
-                    return True
-            if gInfo != None: #有任务待交付
+            #rewardFinishInfo = pictureFind.matchMultiImg(screenshot, self.rewardFinish, 
+            #                                            confidencevalue = self.adb.getTagConfidence())[0]
+            #if rewardFinishInfo != None:
+            #    rewardFinishInfo.sort(key = lambda x:x[1])
+            #    if rewardFinishInfo[0][1] < 250:#该栏任务交付全部完成
+            #        return True
+            if collectAllInfo != None: #有任务待交付
                 endCount = 0
-                self.adb.click(gInfo['result'][0], gInfo['result'][1])
+                self.adb.click(collectAllInfo['result'][0], collectAllInfo['result'][1])
                 continue
             elif backInfo != None: #没有任务待交付
                 endCount += 1
@@ -93,7 +95,7 @@ class Task:
                     continue
             else: #获取了奖励
                 endCount = 0
-                self.adb.click(900, 450)
+                self.adb.click(720, 120)
                 continue
 
     def oneByOne(self):

@@ -100,29 +100,32 @@ class BattleLoop(QObject):
                         while self.isWaitingUser:
                             sleep(1)
                         continue
-                    else:
-                        picAutoOn = pictureFind.matchImg(screenshot, self.autoOn)
-                        if picAutoOn == None and self.switch:
-                            picAutoOff = pictureFind.matchImg(screenshot, self.autoOff)
-                            if picAutoOff != None and self.switch:
-                                posAutoOff = picAutoOff['result']
-                                self.adb.click(posAutoOff[0], posAutoOff[1])
-                                continue
+
+                picAutoOn = pictureFind.matchImg(screenshot, self.autoOn)
+                if picAutoOn == None and self.switch:
+                    picAutoOff = pictureFind.matchImg(screenshot, self.autoOff)
+                    if picAutoOff != None and self.switch:
+                        posAutoOff = picAutoOff['result']
+                        self.adb.click(posAutoOff[0], posAutoOff[1])
+                        continue
 
                 for eachObj in self.listImg:
                     if self.switch:
-                        if eachObj['obj'] == "end.png" or eachObj['obj'] == "levelup.png":
+                        if eachObj['obj'] == 'end.png' or eachObj['obj'] == 'levelup.png':
                             confidence = 0.8
                         elif eachObj['obj'] == 'endExterminate.png':
+                            confidence = self.adb.getTagConfidence()
+                        elif 'endNormal' in eachObj['obj']:
                             confidence = self.adb.getTagConfidence()
                         else:
                             confidence = 0.9
                         picInfo = pictureFind.matchImg(screenshot, eachObj, confidence)
                         if picInfo != None:
-                            if picInfo['result'][1] < 270:
+                            if picInfo['result'][1] < 270 and ('FIN_TS' not in eachObj['obj']):
+                                #FIN_TS为活动连锁竞赛，结束标志在上半屏幕
                                 continue
                             
-                            if eachObj['obj'] == 'startApart.png' or eachObj['obj'] == 'startApartOF.png':
+                            if 'startApart' in eachObj['obj']:
                                 if loopTime == self.battleLoopTimes:
                                     self.switch = False
                                     toast.broadcastMsg("ArkHelper", f"达到设定次数，共循环{loopTime}次", self.ico)
@@ -131,7 +134,7 @@ class BattleLoop(QObject):
                             if eachObj['obj'] != lastFoundPic:
                                 errorCount = 0
                                 lastFoundPic = eachObj['obj']
-                                if eachObj['obj'] == "endNormal.png":
+                                if 'endNormal' in eachObj['obj']:
                                     loopTime += 1
 
                             if eachObj['obj'] == "error.png" or eachObj['obj'] == "giveup.png":
