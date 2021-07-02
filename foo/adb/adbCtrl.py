@@ -8,6 +8,7 @@ from cv2 import imdecode, merge
 from foo.win import toast
 from numpy import frombuffer, zeros, ones
 from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox, QWidget
 
 
 def delImg(dir):
@@ -86,13 +87,14 @@ class Cmd:
 
 class Adb(QObject):
     adbErr = pyqtSignal(bool)
+    adbNotice = pyqtSignal(str)
     def __init__(self, ico, adbPath, config = None):
         super(Adb, self).__init__()
         self.adbPath = adbPath
         self.cmd = Cmd(self.adbPath)
         self.ip = None
         self.simulator = None
-        self.changeConfig(config)
+        #self.changeConfig(config)
         self.screenX = 1440
         self.screenY = 810
         self.ico = ico
@@ -138,7 +140,11 @@ class Adb(QObject):
                     print('夜神模拟器未给出模拟器路径')
             else:
                 self.cmd = Cmd(self.adbPath)
-            self.ip = config.get('connect', 'ip') + ':' + config.get('connect', 'port')
+            self.ip = config.get('connect', 'ip')
+            if self.ip == '127.0.0.1':
+                #QMessageBox.warning(QWidget(), '警告', '模拟器IP格式已更新，请重新选择一次模拟器以恢复正常工作', 
+                #                    QMessageBox.Yes, QMessageBox.Yes)
+                self.adbNotice.emit('模拟器IP格式已更新，请重新选择一次模拟器以恢复正常工作')
         print(self.ip)
 
     def autoGetPort(self):
@@ -152,14 +158,14 @@ class Adb(QObject):
 
     def connect(self):
         self.cmd.run('adb start-server')
-        if self.simulator == 'leidian':
-            cmdText = 'connected to leidian' #雷电模拟器不需要连接，做特殊处理
+        if 'emulator' in self.ip:
+            cmdText = f'connected to {self.ip}' #雷电模拟器不需要连接，做特殊处理
         else:
             cmdText = self.cmd.run('adb connect {0}'.format(self.ip))
             print(cmdText)
         if ('connected to' in cmdText) and ('nable' not in cmdText):
             while True:
-                if self.simulator == 'leidian':
+                if 'emulator' in self.ip:
                     screenMsg = self.cmd.run('adb shell wm size')
                 else:
                     screenMsg = self.cmd.run('adb -s {device} shell wm size'.format(device = self.ip))
@@ -173,10 +179,12 @@ class Adb(QObject):
             self.screenX = int(temp[0])
             self.screenY = int(temp[1])
             if (self.screenX / self.screenY) != (16/9):
-                toast.broadcastMsg('ArkHelper', '检测到模拟器分辨率非16:9或为竖屏，请检查分辨率', self.ico)
+                self.adbNotice.emit('检测到模拟器分辨率非16:9或为竖屏，请检查分辨率')
+                #toast.broadcastMsg('ArkHelper', '检测到模拟器分辨率非16:9或为竖屏，请检查分辨率', self.ico)
             else:
                 if self.screenX > 1920:
-                    toast.broadcastMsg('ArkHelper', '模拟器分辨率设置较高，可能出现无法正常工作的问题，发现请及时反馈。', self.ico)
+                    self.adbNotice.emit('模拟器分辨率设置较高，可能出现无法正常工作的问题，发现请及时反馈。')
+                    #toast.broadcastMsg('ArkHelper', '模拟器分辨率设置较高，可能出现无法正常工作的问题，发现请及时反馈。', self.ico)
             #print(temp, self.screenX, self.screenY)
             return True
         else:
@@ -198,45 +206,60 @@ class Adb(QObject):
             else:
                 sleep(1)
             
-        if self.simulator == 'leidian':
-            self.cmd.run('adb shell screencap -p /sdcard/arktemp.png')
-            self.cmd.run('adb pull \"/sdcard/arktemp.png\" \"{0}/{1}.png\"'\
-                .format(self.adbPath, pngName))
-        else:
-            self.cmd.run('adb -s {device} shell screencap -p /sdcard/arktemp.png'\
-                .format(device = self.ip))
-            self.cmd.run('adb -s {device} pull \"/sdcard/arktemp.png\" \"{0}/{1}.png\"'\
-                .format(self.adbPath, pngName, device = self.ip))
+        #if self.simulator == 'leidian':
+        #    self.cmd.run('adb shell screencap -p /sdcard/arktemp.png')
+        #    self.cmd.run('adb pull \"/sdcard/arktemp.png\" \"{0}/{1}.png\"'\
+        #        .format(self.adbPath, pngName))
+        #else:
+        self.cmd.run('adb -s {device} shell screencap -p /sdcard/arktemp.png'\
+            .format(device = self.ip))
+        self.cmd.run('adb -s {device} pull \"/sdcard/arktemp.png\" \"{0}/{1}.png\"'\
+            .format(self.adbPath, pngName, device = self.ip))
 
         return True
 
     def getScreen_std(self):
-        pic = self.cmd.run(f'adb -s {self.ip} shell screencap -p', needDecode = False)
-        if pic[6] == 10:#LF
-            pic = pic.replace(b'\r\n', b'\n')
-        elif pic[6] == 13:#CR
-            pic = pic.replace(b'\r\r\n', b'\n')
-        try:
-            pic = imdecode(frombuffer(pic, dtype="uint8"), -1)
-            #if isinstance(pic, type(None)):
-            if pic is None:
-                print('截图解码失败')
-                raise AdbError
-        except Exception as e:
+        tryCount = 0
+        for i in range (5):
+            pic = self.cmd.run(f'adb -s {self.ip} shell screencap -p', needDecode = False)
+            try:
+                if pic[6] == 10:#LF
+                    pic = pic.replace(b'\r\n', b'\n')
+                elif pic[6] == 13:#CR
+                    pic = pic.replace(b'\r\r\n', b'\n')
+            except IndexError:
+                tryCount += 1
+                if tryCount > 3:
+                    self.adbErr.emit(True)
+                    print('截取屏幕失败')
+                    tempPicChannel = zeros((810, 1440), dtype = 'uint8')
+                    return merge((tempPicChannel, tempPicChannel, tempPicChannel))
+            try:
+                pic = imdecode(frombuffer(pic, dtype="uint8"), -1)
+                #if isinstance(pic, type(None)):
+                if pic is None:
+                    print('截图解码失败')
+                    raise AdbError
+            except Exception as e:
+                self.adbErr.emit(True)
+                print('截取屏幕失败')
+                print(e)
+                tempPicChannel = zeros((810, 1440), dtype = 'uint8')
+                return merge((tempPicChannel, tempPicChannel, tempPicChannel)) #返回一张纯黑图片，便于后续程序执行，正常退出
+            return pic
+        else:
             self.adbErr.emit(True)
             print('截取屏幕失败')
-            print(e)
             tempPicChannel = zeros((810, 1440), dtype = 'uint8')
-            return merge((tempPicChannel, tempPicChannel, tempPicChannel)) #返回一张纯黑图片，便于后续程序执行，正常退出
-        return pic
+            return merge((tempPicChannel, tempPicChannel, tempPicChannel))
 
     def click(self, x, y, isSleep = True):
         x = int((x / 1440) * self.screenX)
         y = int((y / 810) * self.screenY)
-        if self.simulator == 'leidian':
-            self.cmd.run('adb shell input tap {0} {1}'.format(x, y))
-        else:
-            self.cmd.run('adb -s {device} shell input tap {0} {1}'.format(x, y, device = self.ip))
+        #if self.simulator == 'leidian':
+        #    self.cmd.run('adb shell input tap {0} {1}'.format(x, y))
+        #else:
+        self.cmd.run('adb -s {device} shell input tap {0} {1}'.format(x, y, device = self.ip))
         if isSleep:
             sleep(1)
     
@@ -245,12 +268,12 @@ class Adb(QObject):
         y0 = (int(y0) / 810) * self.screenY
         x1 = (x1 / 1440) * self.screenX
         y1 = (int(y1) / 810) * self.screenY
-        if self.simulator == 'leidian':
-            self.cmd.run('adb shell input swipe {x0_start} {y0_start} {x1_end} {y1_end} {time}'.\
-                    format(x0_start = x0, y0_start = y0, x1_end = x1, y1_end = y1, time = lastTime))
-        else:
-            self.cmd.run('adb -s {device} shell input swipe {x0_start} {y0_start} {x1_end} {y1_end} {time}'.\
-                    format(device = self.ip, x0_start = x0, y0_start = y0, x1_end = x1, y1_end = y1, time = lastTime))
+        #if self.simulator == 'leidian':
+        #    self.cmd.run('adb shell input swipe {x0_start} {y0_start} {x1_end} {y1_end} {time}'.\
+        #            format(x0_start = x0, y0_start = y0, x1_end = x1, y1_end = y1, time = lastTime))
+        #else:
+        self.cmd.run('adb -s {device} shell input swipe {x0_start} {y0_start} {x1_end} {y1_end} {time}'.\
+                format(device = self.ip, x0_start = x0, y0_start = y0, x1_end = x1, y1_end = y1, time = lastTime))
         pass
 
     def speedToLeft(self):

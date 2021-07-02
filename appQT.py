@@ -102,11 +102,11 @@ class App(QWidget):
             self.config.add_section('connect')
             isNeedWrite = True
         if not self.config.has_option('connect', 'ip'):
-            self.config.set('connect','ip','127.0.0.1')
+            self.config.set('connect','ip','127.0.0.1:5555')
             isNeedWrite = True
-        if not self.config.has_option('connect', 'port'):
-            self.config.set('connect','port','5555')
-            isNeedWrite = True
+        #if not self.config.has_option('connect', 'port'):
+        #    self.config.set('connect','port','5555')
+        #    isNeedWrite = True
         if not self.config.has_option('connect', 'simulator'):
             self.config.set('connect','simulator','bluestacks')
             isNeedWrite = True
@@ -757,6 +757,8 @@ class App(QWidget):
 
         self.adb = Adb(self.ico, self.cwd + '/bin/adb', self.config)
         self.adb.adbErr.connect(self.stop)
+        self.adb.adbNotice.connect(self.noticeFromOtherWidget)
+        self.adb.changeConfig(self.config)
 
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
         self.battle.noBootySignal.connect(self.battleWarning)
@@ -1016,9 +1018,9 @@ class App(QWidget):
         if not self.doctorFlag:
             self.publicCall.turnOn()
 
-    def changeSlr(self, name, port, ip = '127.0.0.1'):
+    def changeSlr(self, name, ip ):
         self.config.set('connect', 'simulator', name)
-        self.config.set('connect', 'port', port)
+        #self.config.set('connect', 'port', port)
         self.config.set('connect', 'ip', ip)
         
         configInI = open(self.configPath, 'w')
@@ -1039,14 +1041,14 @@ class App(QWidget):
     def simulatorSel(self):
         slrName = self.sender().text()
         if slrName == '蓝叠模拟器':
-            self.changeSlr('bluestacks', '5555')
+            self.changeSlr('bluestacks', '127.0.0.1:5555')
         elif slrName == 'Mumu模拟器':
-            self.changeSlr('mumu', '7555')
+            self.changeSlr('mumu', '127.0.0.1:7555')
         elif slrName == '夜神模拟器':
             noxPath = QFileDialog.getOpenFileName(None, '选取文件', './', '夜神模拟器程序 (Nox.exe)')
             noxPath = path.dirname(noxPath[0])
             self.changeDefault('noxPath', noxPath, sec = 'connect')
-            self.changeSlr('yeshen', '59865')
+            self.changeSlr('yeshen', '127.0.0.1:59865')
             self.initSlrSel()
             ans = QMessageBox.question(self, '夜神模拟器端口号设置', '是否自动获取夜神模拟器端口号?', 
                                     QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes) 
@@ -1056,7 +1058,7 @@ class App(QWidget):
                                     QMessageBox.Yes, QMessageBox.Yes)
                 isAutoGetPortSuccess = self.adb.autoGetPort()
                 if isAutoGetPortSuccess:
-                    self.changeSlr('yeshen', isAutoGetPortSuccess)
+                    self.changeSlr('yeshen', f'127.0.0.1:{isAutoGetPortSuccess}')
                 else:
                     QMessageBox.warning(self, '警告', '自动获取端口号失败！请您手动输入', 
                                     QMessageBox.Yes, QMessageBox.Yes)
@@ -1065,28 +1067,26 @@ class App(QWidget):
                     port, isOk = QInputDialog.getText(self, '夜神模拟器端口号', '请输入夜神模拟器端口号')
                     if isOk:
                         if port.isnumeric():
-                            self.changeSlr('yeshen', port)
+                            self.changeSlr('yeshen', f'127.0.0.1:{port}')
                             break
                         else:
                             QMessageBox.warning(self, '警告', '请输入正确的端口号！', 
                                         QMessageBox.Yes, QMessageBox.Yes)
-                            self.changeSlr('yeshen', '59865')
+                            self.changeSlr('yeshen', '127.0.0.1:59865')
                     else:
                         QMessageBox.warning(self, '警告', '您取消了端口号录入，将使用默认值59865', 
                                         QMessageBox.Yes, QMessageBox.Yes)
-                        self.changeSlr('yeshen', '59865')
+                        self.changeSlr('yeshen', '127.0.0.1:59865')
                         break
 
         elif slrName == '逍遥模拟器':
-            self.changeSlr('xiaoyao', '21503')
+            self.changeSlr('xiaoyao', '127.0.0.1:21503')
         elif slrName == '雷电模拟器':
-            self.changeSlr('leidian', '5555')
+            self.changeSlr('leidian', 'emulator-5554')
         else:
             customIp, isOk = QInputDialog.getText(self, '自定义', '请输入模拟器IP地址')
             if isOk:
-                customPort, isOk = QInputDialog.getText(self, '自定义', '请输入模拟器端口号')
-                if isOk:
-                    self.changeSlr('custom', customPort, customIp)
+                    self.changeSlr('custom', customIp)
 
         for each in self.slrList:
             each.setIcon(QIcon(''))
@@ -1242,6 +1242,10 @@ class App(QWidget):
         elif widgetNo == 1:
             self.lVer.setText('*有新版本*')
             self.btnUpdate.show()
+
+    def noticeFromOtherWidget(self, text):
+        QMessageBox.warning(self, '警告', text, 
+                                    QMessageBox.Yes, QMessageBox.Yes)
 
 if __name__ == '__main__':
     cgitb.enable(format = 'text')
