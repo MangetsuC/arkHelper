@@ -231,25 +231,24 @@ class Adb(QObject):
                 tryCount += 1
                 if tryCount > 3:
                     self.adbErr.emit(True)
-                    print('截取屏幕失败')
+                    print('截取屏幕失败：无法获取到标准输入流，请重启后再试')
                     tempPicChannel = zeros((810, 1440), dtype = 'uint8')
                     return merge((tempPicChannel, tempPicChannel, tempPicChannel))
             try:
                 pic = imdecode(frombuffer(pic, dtype="uint8"), -1)
                 #if isinstance(pic, type(None)):
                 if pic is None:
-                    print('截图解码失败')
                     raise AdbError
             except Exception as e:
                 self.adbErr.emit(True)
-                print('截取屏幕失败')
+                print('截取屏幕失败：截图解码失败')
                 print(e)
                 tempPicChannel = zeros((810, 1440), dtype = 'uint8')
                 return merge((tempPicChannel, tempPicChannel, tempPicChannel)) #返回一张纯黑图片，便于后续程序执行，正常退出
             return pic
         else:
             self.adbErr.emit(True)
-            print('截取屏幕失败')
+            print('截取屏幕失败：未知原因')
             tempPicChannel = zeros((810, 1440), dtype = 'uint8')
             return merge((tempPicChannel, tempPicChannel, tempPicChannel))
 
