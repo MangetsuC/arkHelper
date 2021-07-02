@@ -1,9 +1,8 @@
 from os import getcwd, listdir
 from sys import path
-from time import perf_counter,sleep
-from threading import Thread, Lock
+from time import perf_counter,sleep, time
 from json import loads
-from cv2 import fillConvexPoly, imshow, waitKey
+from cv2 import fillConvexPoly
 from numpy import array
 from random import choice
 
@@ -95,26 +94,113 @@ class PublicCall:
                 #waitKey(0)
                 #self.lock.release()
 
-    
-    def getAns(self, tagOnScreenList):
-        if tagOnScreenList == []:
-            return False
-        if self.isTagNeedUpdate: #判断是否从网站下载了新公招表
-            with open(self.cwd + '/data.json', 'r', encoding = 'UTF-8') as f:
-                temp = f.read()
-            temp = loads(temp)['data']
-            self.tagDict = temp[0]['normal']
-            self.highTagDict = temp[0]['high']
-            self.isTagNeedUpdate = False
-        applyTagDict = self.tagDict.copy()
-        if '高级资深干员' in tagOnScreenList:
-            for eachTag in self.highTagDict.keys():
-                applyTagDict[eachTag].extend(self.highTagDict[eachTag])
-        tag0 = applyTagDict[tagOnScreenList[0]]
-        tag1 = applyTagDict[tagOnScreenList[1]]
-        tag2 = applyTagDict[tagOnScreenList[2]]
-        tag3 = applyTagDict[tagOnScreenList[3]]
-        tag4 = applyTagDict[tagOnScreenList[4]]
+    def ans_set(self, tagData, tagOnScreenList):
+        tag0 = set([f'{str(x[0])}|{x[1]}' for x in tagData[tagOnScreenList[0]]])
+        tag1 = set([f'{str(x[0])}|{x[1]}' for x in tagData[tagOnScreenList[1]]])
+        tag2 = set([f'{str(x[0])}|{x[1]}' for x in tagData[tagOnScreenList[2]]])
+        tag3 = set([f'{str(x[0])}|{x[1]}' for x in tagData[tagOnScreenList[3]]])
+        tag4 = set([f'{str(x[0])}|{x[1]}' for x in tagData[tagOnScreenList[4]]])
+        ans = dict()
+
+        ans[tagOnScreenList[0]] = list(tag0)
+        ans[tagOnScreenList[1]] = list(tag1)
+        ans[tagOnScreenList[2]] = list(tag2)
+        ans[tagOnScreenList[3]] = list(tag3)
+        ans[tagOnScreenList[4]] = list(tag4)
+        
+        tmp = tag0 & tag1
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}'] = list(tmp)
+        tmp = tag0 & tag2
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[2]}'] = list(tmp)
+        tmp = tag0 & tag3
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[3]}'] = list(tmp)
+        tmp = tag0 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag1 & tag2
+        if tmp != set():
+            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[2]}'] = list(tmp)
+        tmp = tag1 & tag3
+        if tmp != set():
+            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[3]}'] = list(tmp)
+        tmp = tag1 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag2 & tag3
+        if tmp != set():
+            ans[f'{tagOnScreenList[2]}+{tagOnScreenList[3]}'] = list(tmp)
+        tmp = tag2 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[2]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag3 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
+
+        tmp = tag0 & tag1 & tag2
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[2]}'] = list(tmp)
+        tmp = tag0 & tag1 & tag3
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[3]}'] = list(tmp)
+        tmp = tag0 & tag1 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag0 & tag2 & tag3
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}'] = list(tmp)
+        tmp = tag0 & tag2 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[2]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag0 & tag3 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag1 & tag2 & tag3
+        if tmp != set():
+            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}'] = list(tmp)
+        tmp = tag1 & tag2 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag1 & tag3 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag2 & tag3 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[2]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
+
+        tmp = tag0 & tag1 & tag2 & tag3
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}'] = list(tmp)
+        tmp = tag0 & tag1 & tag2 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag0 & tag1 & tag3 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag0 & tag2 & tag3 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
+        tmp = tag1 & tag2 & tag3 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
+
+        tmp = tag0 & tag1 & tag2 & tag3 & tag4
+        if tmp != set():
+            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
+        
+        for each in ans.keys():
+            ans[each] = [[int(x.split('|')[0]), x.split('|')[1]] for x in ans[each]]
+
+        return ans
+
+    def ans_for(self, tagData, tagOnScreenList):
+        tag0 = tagData[tagOnScreenList[0]]
+        tag1 = tagData[tagOnScreenList[1]]
+        tag2 = tagData[tagOnScreenList[2]]
+        tag3 = tagData[tagOnScreenList[3]]
+        tag4 = tagData[tagOnScreenList[4]]
 
         tagall = tag0 + tag1 + tag2 + tag3 + tag4
         tagnew = []
@@ -224,9 +310,25 @@ class PublicCall:
                 temp = ans.get(tagOnScreenList[4], [])
                 temp.append(each)
                 ans[tagOnScreenList[4]] = temp
+        return ans
 
-        #print('匹配'+str(perf_counter() - tempT))
-        #print(ans)
+    def getAns(self, tagOnScreenList):
+        if tagOnScreenList == []:
+            return False
+        if self.isTagNeedUpdate: #判断是否从网站下载了新公招表
+            with open(self.cwd + '/data.json', 'r', encoding = 'UTF-8') as f:
+                temp = f.read()
+            temp = loads(temp)['data']
+            self.tagDict = temp[0]['normal']
+            self.highTagDict = temp[0]['high']
+            self.isTagNeedUpdate = False
+        applyTagDict = self.tagDict.copy()
+        if '高级资深干员' in tagOnScreenList:
+            for eachTag in self.highTagDict.keys():
+                applyTagDict[eachTag].extend(self.highTagDict[eachTag])
+
+        ans = self.ans_set(applyTagDict, tagOnScreenList)
+
         return (ans, tagOnScreenList)
 
     def run(self):
