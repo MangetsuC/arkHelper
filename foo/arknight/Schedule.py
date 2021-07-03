@@ -251,7 +251,7 @@ class BattleSchedule(QObject):
             bootyMode = False
             times = int(times)
 
-        #isFirstTurn = True
+        isInBattle = False
         countStep = 0
         totalCount = 0
         bootyTotalCount = 0
@@ -260,17 +260,14 @@ class BattleSchedule(QObject):
             
             screenshot = self.adb.getScreen_std()
             #判断代理指挥是否勾选
-            picStartA = pictureFind.matchImg(screenshot, self.startA, confidencevalue= 0.9)
-            if picStartA != None and self.switch and self.switchB:
-                picAutoOn = pictureFind.matchImg(screenshot, self.autoOn)
-                if picAutoOn == None and self.switch and self.switchB:
-                    picAutoOff = pictureFind.matchImg(screenshot, self.autoOff)
-                    if picAutoOff != None and self.switch and self.switchB:
-                        posAutoOff = picAutoOff['result']
-                        self.adb.click(posAutoOff[0], posAutoOff[1])
-                        continue
+            picAutoOn = pictureFind.matchImg(screenshot, self.autoOn)
+            if picAutoOn == None and self.switch and self.switchB:
+                picAutoOff = pictureFind.matchImg(screenshot, self.autoOff)
+                if picAutoOff != None and self.switch and self.switchB:
+                    posAutoOff = picAutoOff['result']
+                    self.adb.click(posAutoOff[0], posAutoOff[1])
+                    continue
 
-            isInBattle = False
             #sleep(1)
             for eachObj in self.listBattleImg:
                 if self.switch and self.switchB:
