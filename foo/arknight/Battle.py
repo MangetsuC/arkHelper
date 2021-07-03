@@ -88,6 +88,8 @@ class BattleLoop(QObject):
         self.switch = switchI
         self.isUselessContinue = False
 
+        confidence = self.adb.getTagConfidence()
+
         if self.switch:
             errorCount = 0
             while self.switch:
@@ -112,14 +114,14 @@ class BattleLoop(QObject):
 
                 for eachObj in self.listImg:
                     if self.switch:
-                        picInfo = pictureFind.matchImg(screenshot, eachObj, self.adb.getTagConfidence())
+                        picInfo = pictureFind.matchImg(screenshot, eachObj, confidence)
                         if picInfo != None:
                             if picInfo['result'][1] < 270 and ('FIN_TS' not in eachObj['obj']):
                                 #FIN_TS为活动连锁竞赛，结束标志在上半屏幕
                                 continue
                             
                             if 'startApart' in eachObj['obj']:
-                                BInfo = pictureFind.matchImg(screenshot, self.startB, self.adb.getTagConfidence())
+                                BInfo = pictureFind.matchImg(screenshot, self.startB, confidence)
                                 #避免是因为匹配到了队伍配置界面低栏上的行动二字
                                 if BInfo != None:
                                     picInfo = BInfo

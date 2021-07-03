@@ -51,6 +51,7 @@ class BattleSchedule(QObject):
         self.visitNext = self.cwd + "/res/panel/other/visitNext.png"
         self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
         self.startA = pictureFind.picRead(self.cwd + "/res/battle/startApart.png")
+        self.startB = pictureFind.picRead(self.cwd + "/res/battle/startBpart.png")
         self.autoOff = pictureFind.picRead(self.cwd + "/res/panel/other/autoOff.png")
         self.autoOn = pictureFind.picRead(self.cwd + "/res/panel/other/autoOn.png")
         self.II = {'MAIN':self.cwd + "/res/panel/level/I/main.png", 'EX':self.cwd + "/res/panel/level/I/exterminate.png",\
@@ -273,13 +274,15 @@ class BattleSchedule(QObject):
             #sleep(1)
             for eachObj in self.listBattleImg:
                 if self.switch and self.switchB:
-                    if eachObj['obj'] == "end.png" or eachObj['obj'] == "levelup.png":
-                        confidence = 0.8
-                    else:
-                        confidence = 0.9
+                    confidence = self.adb.getTagConfidence()
                     picInfo = pictureFind.matchImg(screenshot, eachObj, confidence)
                     #print(eachObj+ '：', picInfo)
                     if picInfo != None:
+                        if 'startApart' in eachObj['obj']:
+                            BInfo = pictureFind.matchImg(screenshot, self.startB, confidence)
+                                #避免是因为匹配到了队伍配置界面低栏上的行动二字
+                            if BInfo != None:
+                                picInfo = BInfo
                         if picInfo['result'][1] < 270:
                             continue
 
