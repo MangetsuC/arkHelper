@@ -27,6 +27,7 @@ from foo.ui.UItheme import ThemeEditor
 from foo.ui.UILogistic import UILogistic
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
+from foo.ui.messageBox import AMessageBox
 
 
 class App(QWidget):
@@ -423,7 +424,7 @@ class App(QWidget):
         self.actAutoStoneSche = QAction('自动使用（计划）', self.actStone)
         self.actAutoStoneSche.triggered.connect(self.changeRecStateStoneSche)
         self.actMaxNumber = QAction('设置上限', self.actStone)
-        self.actMaxNumber.triggered.connect(self.changeMaxNum)
+        self.actMaxNumber.triggered.connect(self.getInput)
 
         self.actTheme = QAction('主题设置', parent=self.settingMenu)
         self.actConsole = QAction('控制台', parent=self.settingMenu)
@@ -617,6 +618,8 @@ class App(QWidget):
         self.doctorFlag = False
         self.logisticFlag = None
 
+        self.inputSwitch = None
+
     def initNormalPicRes(self):
         self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
         self.mainpage = pictureFind.picRead(self.cwd + "/res/panel/other/mainpage.png")
@@ -664,8 +667,8 @@ class App(QWidget):
         self.autoStoneScheFlag = not self.autoStoneScheFlag
         self.changeDefault('schedule', self.autoStoneScheFlag, 'stone')
 
-    def changeMaxNum(self):
-        num, ok = QInputDialog.getText(self, f'当前（{self.stoneMaxNum}）', '请输入最大源石消耗数量：')
+    def changeMaxNum(self, ans):
+        num, ok = ans#QInputDialog.getText(self, f'当前（{self.stoneMaxNum}）', '请输入最大源石消耗数量：')
         if ok:
             if not num.isdecimal():
                 num = '0'
@@ -750,6 +753,10 @@ class App(QWidget):
     
     def initClass(self):
         self.rateMonitor = ScreenRateMonitor([self])
+
+        self.messageBox = AMessageBox(self.theme)
+        self.messageBox.ans.connect(self.aInputEvent)
+        #self.messageBox.warning('测试警告', '这是一条测试信息')
 
         self.themeEditor = ThemeEditor(self.config, self.app, theme = self.theme, ico = self.ico)
         self.themeEditor.configUpdate.connect(self.configUpdate)
@@ -1246,6 +1253,19 @@ class App(QWidget):
     def noticeFromOtherWidget(self, text):
         QMessageBox.warning(self, '警告', text, 
                                     QMessageBox.Yes, QMessageBox.Yes)
+
+    def getInput(self):
+        source = self.sender()
+        if source == self.actMaxNumber:
+            self.messageBox.inputDialog(f'当前（{self.stoneMaxNum}）', '请输入最大源石消耗数量：')
+
+        self.inputSwitch = source
+
+    def aInputEvent(self, ans):
+        if self.inputSwitch == self.actMaxNumber:
+            self.changeMaxNum(ans)
+            pass
+
 
 if __name__ == '__main__':
     cgitb.enable(format = 'text')

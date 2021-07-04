@@ -8,7 +8,7 @@ from os import getcwd, startfile, path as osPath
 from json import dumps
 
 path.append(getcwd())
-from foo.logisticDepartment import logistic, ruleEncoder
+from foo.logisticDepartment import Logistic, ruleEncoder
 from foo.ui.screen import ScreenRateMonitor
 
 class UILogistic(QWidget):
@@ -114,7 +114,7 @@ class UILogistic(QWidget):
         self.config = config
         self.rulePath = rulePath
         self.ruleEncoder = ruleEncoder.RuleEncoder(rulePath)
-        self.logistic = logistic.Logistic(adb, self.config.get('logistic', 'defaultrule'), self.ruleEncoder,
+        self.logistic = Logistic.Logistic(adb, self.config.get('logistic', 'defaultrule'), self.ruleEncoder,
                                           moodThreshold = int(self.config.get('logistic', 'moodThreshold')),
                                           dormThreshold = int(self.config.get('logistic', 'dormThreshold')))
 
