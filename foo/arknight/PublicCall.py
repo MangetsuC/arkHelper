@@ -95,221 +95,28 @@ class PublicCall:
                 #self.lock.release()
 
     def ans_set(self, tagData, tagOnScreenList):
-        tag0 = set([f'{str(x[0])}|{x[1]}' for x in tagData[tagOnScreenList[0]]])
-        tag1 = set([f'{str(x[0])}|{x[1]}' for x in tagData[tagOnScreenList[1]]])
-        tag2 = set([f'{str(x[0])}|{x[1]}' for x in tagData[tagOnScreenList[2]]])
-        tag3 = set([f'{str(x[0])}|{x[1]}' for x in tagData[tagOnScreenList[3]]])
-        tag4 = set([f'{str(x[0])}|{x[1]}' for x in tagData[tagOnScreenList[4]]])
+        tags = tuple(
+            set(tuple(x) for x in tagData[tagOnScreenList[i]])
+            for i in range(5)
+        )
         ans = dict()
 
-        ans[tagOnScreenList[0]] = list(tag0)
-        ans[tagOnScreenList[1]] = list(tag1)
-        ans[tagOnScreenList[2]] = list(tag2)
-        ans[tagOnScreenList[3]] = list(tag3)
-        ans[tagOnScreenList[4]] = list(tag4)
-        
-        tmp = tag0 & tag1
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}'] = list(tmp)
-        tmp = tag0 & tag2
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[2]}'] = list(tmp)
-        tmp = tag0 & tag3
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[3]}'] = list(tmp)
-        tmp = tag0 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag1 & tag2
-        if tmp != set():
-            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[2]}'] = list(tmp)
-        tmp = tag1 & tag3
-        if tmp != set():
-            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[3]}'] = list(tmp)
-        tmp = tag1 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag2 & tag3
-        if tmp != set():
-            ans[f'{tagOnScreenList[2]}+{tagOnScreenList[3]}'] = list(tmp)
-        tmp = tag2 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[2]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag3 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
+        def check_combination(args):
+            tmp = set.intersection(*[tags[i] for i in args])
+            if tmp == set(): return False
+            ans["+".join([tagOnScreenList[i] for i in args])] = [list(i) for i in tmp]
+            return True
 
-        tmp = tag0 & tag1 & tag2
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[2]}'] = list(tmp)
-        tmp = tag0 & tag1 & tag3
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[3]}'] = list(tmp)
-        tmp = tag0 & tag1 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag0 & tag2 & tag3
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}'] = list(tmp)
-        tmp = tag0 & tag2 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[2]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag0 & tag3 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag1 & tag2 & tag3
-        if tmp != set():
-            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}'] = list(tmp)
-        tmp = tag1 & tag2 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag1 & tag3 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag2 & tag3 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[2]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
+        def recursive_check(history=None, parent=0):
+            # 最多只有 5 个标签
+            if len(history) == 5: return
+            for i in range(parent, 5):
+                new = history + [i]
+                if not check_combination(new):
+                    return
+                recursive_check(new, i + 1)
 
-        tmp = tag0 & tag1 & tag2 & tag3
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}'] = list(tmp)
-        tmp = tag0 & tag1 & tag2 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag0 & tag1 & tag3 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag0 & tag2 & tag3 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
-        tmp = tag1 & tag2 & tag3 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
-
-        tmp = tag0 & tag1 & tag2 & tag3 & tag4
-        if tmp != set():
-            ans[f'{tagOnScreenList[0]}+{tagOnScreenList[1]}+{tagOnScreenList[2]}+{tagOnScreenList[3]}+{tagOnScreenList[4]}'] = list(tmp)
-        
-        for each in ans.keys():
-            ans[each] = [[int(x.split('|')[0]), x.split('|')[1]] for x in ans[each]]
-
-        return ans
-
-    def ans_for(self, tagData, tagOnScreenList):
-        tag0 = tagData[tagOnScreenList[0]]
-        tag1 = tagData[tagOnScreenList[1]]
-        tag2 = tagData[tagOnScreenList[2]]
-        tag3 = tagData[tagOnScreenList[3]]
-        tag4 = tagData[tagOnScreenList[4]]
-
-        tagall = tag0 + tag1 + tag2 + tag3 + tag4
-        tagnew = []
-        for i in tagall:
-            if i not in tagnew:
-                tagnew.append(i)
-
-        ans = dict()
-        for each in tagnew:
-            if each in tag0:
-                temp = ans.get(tagOnScreenList[0], [])
-                temp.append(each)
-                ans[tagOnScreenList[0]] = temp
-                if each in tag1:
-                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1], [])
-                    temp.append(each)
-                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[1]] = temp
-                    if each in tag2:
-                        temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2], [])
-                        temp.append(each)
-                        ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2]] = temp
-                        if each in tag3:
-                            temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
-                            temp.append(each)
-                            ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
-                            if each in tag4:
-                                temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
-                                temp.append(each)
-                                ans[tagOnScreenList[0] + '+' + tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
-                if each in tag2:
-                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[2], [])
-                    temp.append(each)
-                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[2]] = temp
-                    if each in tag3:
-                        temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
-                        temp.append(each)
-                        ans[tagOnScreenList[0] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
-                        if each in tag4:
-                            temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
-                            temp.append(each)
-                            ans[tagOnScreenList[0] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
-                if each in tag3:
-                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[3], [])
-                    temp.append(each)
-                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[3]] = temp
-                    if each in tag4:
-                        temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
-                        temp.append(each)
-                        ans[tagOnScreenList[0] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
-                if each in tag4:
-                    temp = ans.get(tagOnScreenList[0] + '+' + tagOnScreenList[4], [])
-                    temp.append(each)
-                    ans[tagOnScreenList[0] + '+' + tagOnScreenList[4]] = temp
-            if each in tag1:
-                temp = ans.get(tagOnScreenList[1], [])
-                temp.append(each)
-                ans[tagOnScreenList[1]] = temp
-                if each in tag2:
-                    temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[2], [])
-                    temp.append(each)
-                    ans[tagOnScreenList[1] + '+' + tagOnScreenList[2]] = temp
-                    if each in tag3:
-                        temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
-                        temp.append(each)
-                        ans[tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
-                        if each in tag4:
-                            temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
-                            temp.append(each)
-                            ans[tagOnScreenList[1] + '+' + tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
-                if each in tag3:
-                    temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[3], [])
-                    temp.append(each)
-                    ans[tagOnScreenList[1] + '+' + tagOnScreenList[3]] = temp
-                    if each in tag4:
-                        temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
-                        temp.append(each)
-                        ans[tagOnScreenList[1] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
-                if each in tag4:
-                    temp = ans.get(tagOnScreenList[1] + '+' + tagOnScreenList[4], [])
-                    temp.append(each)
-                    ans[tagOnScreenList[1] + '+' + tagOnScreenList[4]] = temp
-            if each in tag2:
-                temp = ans.get(tagOnScreenList[2], [])
-                temp.append(each)
-                ans[tagOnScreenList[2]] = temp
-                if each in tag3:
-                    temp = ans.get(tagOnScreenList[2] + '+' + tagOnScreenList[3], [])
-                    temp.append(each)
-                    ans[tagOnScreenList[2] + '+' + tagOnScreenList[3]] = temp
-                    if each in tag4:
-                        temp = ans.get(tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
-                        temp.append(each)
-                        ans[tagOnScreenList[2] + '+' + tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
-                if each in tag4:
-                    temp = ans.get(tagOnScreenList[2] + '+' + tagOnScreenList[4], [])
-                    temp.append(each)
-                    ans[tagOnScreenList[2] + '+' + tagOnScreenList[4]] = temp
-            if each in tag3:
-                temp = ans.get(tagOnScreenList[3], [])
-                temp.append(each)
-                ans[tagOnScreenList[3]] = temp
-                if each in tag4:
-                    temp = ans.get(tagOnScreenList[3] + '+' + tagOnScreenList[4], [])
-                    temp.append(each)
-                    ans[tagOnScreenList[3] + '+' + tagOnScreenList[4]] = temp
-            if each in tag4:
-                temp = ans.get(tagOnScreenList[4], [])
-                temp.append(each)
-                ans[tagOnScreenList[4]] = temp
+        recursive_check([])
         return ans
 
     def getAns(self, tagOnScreenList):
