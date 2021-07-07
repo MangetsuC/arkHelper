@@ -1,6 +1,6 @@
 from os import getcwd, listdir
 from sys import path
-from time import sleep
+from time import sleep, time
 from PyQt5.QtCore import pyqtSignal, QObject
 
 from foo.pictureR import pictureFind
@@ -90,8 +90,8 @@ class BattleLoop(QObject):
 
         confidence = self.adb.getTagConfidence()
 
-        sleepCount = 0
         sleepTime = None
+        isFirstWait = False
 
         if self.switch:
             errorCount = 0
@@ -154,9 +154,11 @@ class BattleLoop(QObject):
 
                             if 'startBpart' in picInfo['obj']:
                                 isInBattle = True
+                                isFirstWait = True
+                                startTime = time()
                             else:
                                 if sleepTime == None and isInBattle:
-                                    sleepTime = sleepCount
+                                    sleepTime = int(time() - startTime)
                                 isInBattle = False
 
                             picPos = picInfo['result']
@@ -243,13 +245,17 @@ class BattleLoop(QObject):
                             break
                 if isInBattle:
                     if sleepTime == None:
-                        sleepCount += 1
                         sleep(1)
                     else:
-                        for i in range(sleepTime):
+                        if not isFirstWait:
                             sleep(1)
-                            if not self.switch:
-                                return
+                        else:
+                            for i in range(sleepTime):
+                                sleep(1)
+                                if not self.switch:
+                                    return
+                            else:
+                                isFirstWait = False
     def stop(self):
         self.connectSwitch = False
         self.switch = False
