@@ -256,6 +256,8 @@ class BattleSchedule(QObject):
         totalCount = 0
         bootyTotalCount = 0
         errorCount = 0
+        sleepCount = 0
+        sleepTime = None
         while self.switch and self.switchB:
             
             screenshot = self.adb.getScreen_std()
@@ -275,7 +277,7 @@ class BattleSchedule(QObject):
                     picInfo = pictureFind.matchImg(screenshot, eachObj, confidence)
                     #print(eachObj+ '：', picInfo)
                     if picInfo != None:
-                        if 'startApart' in eachObj['obj']:
+                        if 'startApart' in picInfo['obj']:
                             BInfo = pictureFind.matchImg(screenshot, self.startB, confidence)
                                 #避免是因为匹配到了队伍配置界面低栏上的行动二字
                             if BInfo != None:
@@ -283,7 +285,7 @@ class BattleSchedule(QObject):
                         if picInfo['result'][1] < 270:
                             continue
 
-                        if eachObj['obj'] == "error.png" or eachObj['obj'] == "giveup.png":
+                        if picInfo['obj'] == "error.png" or picInfo['obj'] == "giveup.png":
                             errorCount += 1
                             if errorCount > 2:
                                 self.errorSignal.emit('schedule')
@@ -298,18 +300,19 @@ class BattleSchedule(QObject):
                         else:
                             errorCount = 0
 
-                        if eachObj['obj'] == "startBpart.png":
+                        if picInfo['obj'] == "startBpart.png":
                             isInBattle = True
                         else:
+                            if sleepTime == None and isInBattle:
+                                sleepTime = sleepCount
                             isInBattle = False
-                        
 
                         picPos = picInfo['result']
                         if countStep == 0:
-                            if eachObj['obj'] == 'startBpart.png':
+                            if picInfo['obj'] == 'startBpart.png':
                                 countStep += 1
                         elif countStep == 1:
-                            if eachObj['obj'] == 'endNormal.png':
+                            if picInfo['obj'] == 'endNormal.png':
                                 countStep += 1
                                 if bootyMode:
                                     lastPic = None
@@ -324,7 +327,7 @@ class BattleSchedule(QObject):
                                     print(f'{bootyName} 应获得：{times} 实获得：{bootyTotalCount}')
                                     
                         elif countStep == 2:
-                            if eachObj['obj'] == 'startApart.png':
+                            if picInfo['obj'] == 'startApart.png':
                                 countStep += 1
                         if countStep == 3:
                             countStep =0
@@ -336,7 +339,7 @@ class BattleSchedule(QObject):
                             self.adb.click(picPos[0], picPos[1], isSleep = True)
                             self.switchB = False
                             return True
-                        if eachObj['obj'] == "cancel.png":
+                        if picInfo['obj'] == "cancel.png":
                             if self.autoRecMed or self.autoRecStone:
                                 screenshot = self.adb.getScreen_std()
                                 medInfo = pictureFind.matchImg(screenshot, self.recMed)
@@ -385,13 +388,13 @@ class BattleSchedule(QObject):
                                 self.switchB = False
                                 toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
                                 return False
-                        elif eachObj['obj'] == "stoneLack.png":
+                        elif picInfo['obj'] == "stoneLack.png":
                             self.adb.click(picPos[0], picPos[1], isSleep = True)
                             self.switch = False
                             self.switchB = False
                             toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
                             return False
-                        elif eachObj['obj'] == 'levelup.png':
+                        elif picInfo['obj'] == 'levelup.png':
                                 lackTem = False
                                 for eachTem in self.listBattleImg:
                                     if eachTem['obj'] == 'stoneLack.png':
@@ -405,14 +408,14 @@ class BattleSchedule(QObject):
                                         toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
                                     else:
                                         self.adb.click(picPos[0], picPos[1], isSleep = True)
-                                        if eachObj['obj'] == 'startApartOF.png':
+                                        if picInfo['obj'] == 'startApartOF.png':
                                             OFend = pictureFind.matchImg(self.adb.getScreen_std(), self.cwd + '/res/act/OFend.png', 0.8)
                                             if OFend != None:
                                                 self.switch = False
                                                 toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
                                 else:
                                     self.adb.click(picPos[0], picPos[1], isSleep = True)
-                                    if eachObj['obj'] == 'startApartOF.png':
+                                    if picInfo['obj'] == 'startApartOF.png':
                                         OFend = pictureFind.matchImg(self.adb.getScreen_std(), self.cwd + '/res/act/OFend.png', 0.8)
                                         if OFend != None:
                                             self.switch = False
@@ -423,7 +426,14 @@ class BattleSchedule(QObject):
                 else:
                     break
             if isInBattle:
-                sleep(1)
+                if sleepTime == None:
+                    sleepCount += 1
+                    sleep(1)
+                else:
+                    for i in range(sleepTime):
+                        sleep(1)
+                        if not self.switch:
+                            return
                 
     def readJson(self):
         with open(self.json,'r', encoding='UTF-8') as s:
