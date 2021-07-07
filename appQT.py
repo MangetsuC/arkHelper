@@ -74,7 +74,7 @@ class App(QWidget):
         else:
             rate = 2
         
-        return size * rate
+        return int(size * rate)
 
     def initFile(self):
         self.userDataPath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper'
