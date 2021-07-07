@@ -21,9 +21,6 @@ class Console(QDialog):
         self.grid.addWidget(self.textBrowser, 0, 0, 1, 1)
         self.setLayout(self.grid)
 
-        sys.stdout = EmittingStr(sgnConsole = self.outputWritten)
-        sys.stderr = EmittingStr(sgnConsole = self.outputWritten)
-
     def applyStyleSheet(self, theme):
         self.setStyleSheet(f'''Console{{background-color:{theme.getBgColor()};}}
                               QTextBrowser{{background-color:{theme.getFgColor()};
