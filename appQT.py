@@ -37,10 +37,13 @@ class App(QWidget):
         self.app = app
 
         self.cwd = getcwd().replace('\\', '/')
-
-        self.console = Console(self.cwd) #接管输出与报错
-
         self.ver = Cmd(self.cwd).getVersion() #获取版本号
+        self.ver = Cmd(self.cwd).getVersion() #获取版本号
+
+        self.console = Console(self.cwd)  # 接管输出与报错
+        if self.ver != "DEV":
+            sys.stdout = EmittingStr(sgnConsole=self.console.outputWritten)
+            sys.stderr = EmittingStr(sgnConsole=self.console.outputWritten)
 
         #获取整块屏幕的尺寸
         self.totalWidth = 0
