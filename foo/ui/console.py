@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QDialog, QGridLayout, QTextBrowser, QDesktopWidget
 
 
 class Console(QDialog):
-    def __init__(self, cwd, parent=None, flags=Qt.WindowFlags(1)):
+    def __init__(self, cwd, ver, parent=None, flags=Qt.WindowFlags(1)):
         super().__init__(parent=parent, flags=flags)
         self.cwd = cwd
         self.setWindowIcon(QIcon(self.cwd + '/res/ico.ico'))
@@ -20,6 +20,11 @@ class Console(QDialog):
         self.grid = QGridLayout()
         self.grid.addWidget(self.textBrowser, 0, 0, 1, 1)
         self.setLayout(self.grid)
+        if ver != "DEV":
+            sys.stdout = EmittingStr(sgnConsole=self.outputWritten)
+            sys.stderr = EmittingStr(sgnConsole=self.outputWritten)
+        else:
+            self.textBrowser.setText('In DEV')
 
     def applyStyleSheet(self, theme):
         self.setStyleSheet(f'''Console{{background-color:{theme.getBgColor()};}}

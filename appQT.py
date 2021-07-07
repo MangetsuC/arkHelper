@@ -19,7 +19,7 @@ from foo.arknight.credit import Credit
 from foo.arknight.Schedule import BattleSchedule
 from foo.arknight.task import Task
 from foo.pictureR import pictureFind
-from foo.ui.console import Console, EmittingStr
+from foo.ui.console import Console
 from foo.ui.launch import AfterInit, BlackBoard, Launch
 from foo.ui.screen import Screen, ScreenRateMonitor
 from foo.ui.theme import Theme
@@ -38,14 +38,8 @@ class App(QWidget):
 
         self.cwd = getcwd().replace('\\', '/')
         self.ver = Cmd(self.cwd).getVersion() #获取版本号
-        self.ver = Cmd(self.cwd).getVersion() #获取版本号
 
-        self.console = Console(self.cwd)  # 接管输出与报错
-        if self.ver != "DEV":
-            sys.stdout = EmittingStr(sgnConsole=self.console.outputWritten)
-            sys.stderr = EmittingStr(sgnConsole=self.console.outputWritten)
-        else:
-            self.console.textBrowser.setText('In DEV')
+        self.console = Console(self.cwd, self.ver)  # 接管输出与报错
 
         #获取整块屏幕的尺寸
         self.totalWidth = 0
