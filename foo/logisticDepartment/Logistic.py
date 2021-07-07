@@ -174,6 +174,7 @@ class Logistic:
                             pictureFind.picRead(self.cwd + '/res/logistic/general/trust_touch.png')]
 
         self.working = pictureFind.picRead(getcwd() + '/res/logistic/general/working.png')
+        self.resting = pictureFind.picRead(getcwd() + '/res/logistic/general/resting.png')
 
         self.actBtn = pictureFind.picRead(self.cwd + '/res/panel/other/act.png')
         self.homeBtn = pictureFind.picRead(self.cwd + '/res/panel/other/mainpage.png')
@@ -359,10 +360,19 @@ class Logistic:
                                     break
 
                             workingOnScreen = pictureFind.matchMultiImg(self.screenShot, self.working, confidencevalue = 0.7)
+                            restingOnScreen = pictureFind.matchMultiImg(self.screenShot, self.resting, confidencevalue = 0.7)
                             
-                            if workingOnScreen != None: #排除屏幕上工作中的干员
-                                workingOnScreen = workingOnScreen[0]
-                                relaxPosThisDorm = self.getRealDormPos(workingOnScreen)
+                            if workingOnScreen != None or restingOnScreen != None: #排除屏幕上工作中的干员
+                                notAvaliablePos = []
+                                if workingOnScreen != None:
+                                    workingOnScreen = workingOnScreen[0]
+                                    if workingOnScreen != None:
+                                        notAvaliablePos.extend(workingOnScreen)
+                                if restingOnScreen != None:
+                                    restingOnScreen = restingOnScreen[0]
+                                    if restingOnScreen != None:
+                                        notAvaliablePos.extend(restingOnScreen)
+                                relaxPosThisDorm = self.getRealDormPos(notAvaliablePos)
                             else:
                                 relaxPosThisDorm = self.getRealDormPos(None)
 
