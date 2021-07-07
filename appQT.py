@@ -405,12 +405,20 @@ class App(QWidget):
         self.settingMenu = QMenu() #创建设置按钮菜单
         
         self.actSimulator = QMenu('模拟器', parent=self.settingMenu) #模拟器二级菜单
+
         self.actSlrBlueStacks = QAction('蓝叠模拟器', parent=self.actSimulator)
+        self.actSlrBlueStacks.triggered.connect(self.simulatorSel)
         self.actSlrMumu = QAction('Mumu模拟器', parent=self.actSimulator)
+        self.actSlrMumu.triggered.connect(self.simulatorSel)
         self.actSlrYeshen = QAction('夜神模拟器', parent=self.actSimulator)
+        self.actSlrYeshen.triggered.connect(self.simulatorSel)
         self.actSlrXiaoyao = QAction('逍遥模拟器', parent=self.actSimulator)
+        self.actSlrXiaoyao.triggered.connect(self.simulatorSel)
+
         self.actSlrLeidian = QAction('雷电模拟器', parent=self.actSimulator)
+        self.actSlrLeidian.triggered.connect(self.simulatorSel)
         self.actSlrCustom = QAction('自定义', parent=self.actSimulator)
+        self.actSlrCustom.triggered.connect(self.getInput)
 
         self.actRecovery = QMenu('额外理智', parent=self.settingMenu)
         self.actMedicament = QMenu('理智顶液', parent=self.actRecovery)
@@ -438,7 +446,6 @@ class App(QWidget):
         self.settingMenu.addMenu(self.actSimulator) #模拟器二级菜单
         for eachSlr in self.slrList:
             self.actSimulator.addAction(eachSlr)
-            eachSlr.triggered.connect(self.simulatorSel)
 
         self.settingMenu.addMenu(self.actRecovery)
         self.actRecovery.addMenu(self.actMedicament)
@@ -1258,13 +1265,18 @@ class App(QWidget):
         source = self.sender()
         if source == self.actMaxNumber:
             self.messageBox.inputDialog(f'当前（{self.stoneMaxNum}）', '请输入最大源石消耗数量：')
+        elif source == self.actSlrCustom:
+            self.messageBox.inputDialog('自定义', '请输入模拟器IP地址(如127.0.0.1:5555)或模拟器编号(如emulator-5554)：')
 
         self.inputSwitch = source
 
     def aInputEvent(self, ans):
         if self.inputSwitch == self.actMaxNumber:
             self.changeMaxNum(ans)
-            pass
+        elif self.inputSwitch == self.actSlrCustom:
+            customIp, isOk = ans
+            if isOk:
+                self.changeSlr('custom', customIp)
 
 
 if __name__ == '__main__':
