@@ -28,10 +28,12 @@ from foo.ui.UILogistic import UILogistic
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
 from foo.ui.messageBox import AMessageBox
+from foo.win.exitThread import forceThreadStop
 
 
 class App(QWidget):
     exitBeforeShutdown = pyqtSignal()
+    startBtnPressed = pyqtSignal(str)
     def __init__(self, app):
         super(App, self).__init__()
         self.app = app
@@ -57,7 +59,10 @@ class App(QWidget):
         self.initRightClickMeun()
         self.initState()
         self.applyStyleSheet()
+
         self.exitBeforeShutdown.connect(self.exit)
+        self.startBtnPressed.connect(self.btnStartAndStop.setText)
+
         self.isRun = False
         self.center()
         self.show()
@@ -625,6 +630,8 @@ class App(QWidget):
         self.logisticFlag = None
 
         self.inputSwitch = None
+
+        self.forceStop = False
 
     def initNormalPicRes(self):
         self.home = pictureFind.picRead(self.cwd + "/res/panel/other/home.png")
@@ -1205,20 +1212,39 @@ class App(QWidget):
         if self.logistic != None:
             self.logistic.stop()
         self.btnMainClicked = False
-        self.btnStartAndStop.setText('启动虚拟博士')
+        #self.btnStartAndStop.setText('启动虚拟博士')
+
+        aliveCheck = Thread(target=self.threadAliveCheck)
+        aliveCheck.setDaemon(True)
+        aliveCheck.start()
+
         if isErrStop:
             self.lTitle.setText('出现错误 请检查控制台')
 
     def clickBtnStartAndStop(self):
-        self.btnMainClicked = not self.btnMainClicked
-        if self.btnMainClicked:
-            self.btnStartAndStop.setText('停止虚拟博士')
-            self.thRun = Thread(target=self.start)
-            self.thRun.setDaemon(True)
-            self.thRun.start()
+        if not '虚拟博士' in self.btnStartAndStop.text():
+            forceThreadStop(self.thRun)
+            self.forceStop = True
+            print('收到用户指令强制终止，可能存在部分未释放的资源')
         else:
-            self.stop()  
-            self.thRun.join()
+            self.btnMainClicked = not self.btnMainClicked
+            if self.btnMainClicked:
+                self.forceStop = False
+                self.btnStartAndStop.setText('停止虚拟博士')
+                self.thRun = Thread(target=self.start)
+                self.thRun.setDaemon(True)
+                self.thRun.start()
+            else:
+                self.stop()  
+                self.thRun.join(0.5)
+
+    def threadAliveCheck(self):
+        self.startBtnPressed.emit('正在停止\n再次点击强制关闭\n-不推荐-\n仅供特殊情况')
+        while not self.forceStop:
+            if not self.thRun.isAlive():
+                break
+        self.startBtnPressed.emit('启动虚拟博士')
+
 
     def errorDetect(self, source):
         if source == 'loop':
