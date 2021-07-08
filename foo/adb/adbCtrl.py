@@ -25,7 +25,6 @@ def delImg(dir):
 class Cmd:
     def __init__(self, path):
         self.path = path
-        self.path 
 
     def run(self, code, needDecode = True):
         p = Popen(code, shell = True, stdout = PIPE, stderr = PIPE, bufsize = -1, cwd = self.path)
@@ -239,18 +238,16 @@ class Adb(QObject):
                 #if isinstance(pic, type(None)):
                 if pic is None:
                     raise AdbError
+                return pic
             except Exception as e:
                 self.adbErr.emit(True)
                 print('截取屏幕失败：截图解码失败')
                 print(e)
-                tempPicChannel = zeros((810, 1440), dtype = 'uint8')
-                return merge((tempPicChannel, tempPicChannel, tempPicChannel)) #返回一张纯黑图片，便于后续程序执行，正常退出
-            return pic
+                return zeros((810, 1440, 3), dtype='uint8') #返回一张纯黑图片，便于后续程序执行，正常退出
         else:
             self.adbErr.emit(True)
             print('截取屏幕失败：未知原因')
-            tempPicChannel = zeros((810, 1440), dtype = 'uint8')
-            return merge((tempPicChannel, tempPicChannel, tempPicChannel))
+            return zeros((810, 1440, 3), dtype='uint8')
 
     def click(self, x, y, isSleep = True):
         x = int((x / 1440) * self.screenX)
