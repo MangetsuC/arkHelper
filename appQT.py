@@ -1118,7 +1118,7 @@ class App(QWidget):
         '退出按钮'
         self.schJsonEditer.close()
         self.hide()
-        self.stop()
+        self.stop(isExit = True)
         self.console.close()
         if self.publicCall != None:
             self.publicCall.close()
@@ -1201,7 +1201,7 @@ class App(QWidget):
         else:
             self.stop()
 
-    def stop(self, isErrStop = False):
+    def stop(self, isErrStop = False, isExit = False):
         self.doctorFlag = False
         if self.publicCall != None:
             self.publicCall.autoPCStop()
@@ -1214,9 +1214,10 @@ class App(QWidget):
         self.btnMainClicked = False
         #self.btnStartAndStop.setText('启动虚拟博士')
 
-        aliveCheck = Thread(target=self.threadAliveCheck)
-        aliveCheck.setDaemon(True)
-        aliveCheck.start()
+        if not isExit:
+            aliveCheck = Thread(target=self.threadAliveCheck)
+            aliveCheck.setDaemon(True)
+            aliveCheck.start()
 
         if isErrStop:
             self.lTitle.setText('出现错误 请检查控制台')
