@@ -1199,7 +1199,7 @@ class App(QWidget):
             self.adb.cmd.shutdown(time=120)
             self.exitBeforeShutdown.emit()
         else:
-            self.stop()
+            self.stop(isExit = True)
 
     def stop(self, isErrStop = False, isExit = False):
         self.doctorFlag = False
@@ -1218,6 +1218,8 @@ class App(QWidget):
             aliveCheck = Thread(target=self.threadAliveCheck)
             aliveCheck.setDaemon(True)
             aliveCheck.start()
+        else:
+            self.startBtnPressed.emit('启动虚拟博士')
 
         if isErrStop:
             self.lTitle.setText('出现错误 请检查控制台')
@@ -1242,7 +1244,7 @@ class App(QWidget):
     def threadAliveCheck(self):
         self.startBtnPressed.emit('正在停止\n再次点击强制关闭\n-不推荐-\n仅供特殊情况')
         while not self.forceStop:
-            if not self.thRun.isAlive():
+            if not self.thRun.is_alive():
                 break
         self.startBtnPressed.emit('启动虚拟博士')
 
