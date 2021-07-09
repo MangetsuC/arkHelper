@@ -36,8 +36,7 @@ class Room:
         while True:
             if not self.runFlag:
                 break
-            screenShot = self.adb.getScreen_std()
-            if pictureFind.matchImg(screenShot, submitting, confidencevalue = 0.7) == None: #等待提交完成
+            if pictureFind.matchImg(self.adb.getScreen_std(), submitting, confidencevalue = 0.7) == None: #等待提交完成
                 break
 
     def getRealName(self, name):
@@ -91,20 +90,17 @@ class Room:
     def backToOneLayer(self, layerMark):
         '回到某一层'
         startTime = time()
-        screenShot = self.adb.getScreen_std()
-        while pictureFind.matchImg(screenShot, layerMark, confidencevalue = 0.7) is None:
+        while pictureFind.matchImg(self.adb.getScreen_std(), layerMark, confidencevalue = 0.7) is None:
             if not self.runFlag:
                 break
             self.clickBack()
-            screenShot = self.adb.getScreen_std()
             if time() - startTime > 30:
                 return -1
         return 0
 
     def findOpOnScreen(self, operatorName):
         '找到指定干员在屏幕上的位置'
-        screenShot = self.adb.getScreen_std()
-        picInfo = pictureFind.matchImg(screenShot, wordsTemplate.getTemplatePic_CH(operatorName, 30),
+        picInfo = pictureFind.matchImg(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(operatorName, 30),
                                         targetSize = (1920, 1080), confidencevalue = 0.6)
         if picInfo != None:
             return ((int(picInfo['result'][0]/1920*1440), int(picInfo['result'][1]/1920*1440)), 
@@ -154,8 +150,7 @@ class Room:
     def findAllRooms(self):
         '找到本类所有房间'
         self.swipeScreen()
-        screenShot = self.adb.getScreen_std()
-        picInfo = pictureFind.matchMultiImg(screenShot, wordsTemplate.getTemplatePic_CH(self.roomName, 27),
+        picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(self.roomName, 27),
                                             confidencevalue = 0.5)
         if picInfo != None:
             picInfo = picInfo[0]
@@ -187,8 +182,7 @@ class Room:
                 if not self.runFlag:
                     break
                 self.click(oneRoom)
-                screenShot = self.adb.getScreen_std()
-                if pictureFind.matchImg_roi(screenShot, wordsTemplate.getTemplatePic_CH(self.roomName, 28),
+                if pictureFind.matchImg_roi(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(self.roomName, 28),
                                             roi = (475, 25, 170, 35), confidencevalue = 0.7) != None:
                     self.clickCenter()
                     break
@@ -196,9 +190,9 @@ class Room:
         return -1
 
     def checkRoomVacancy(self):
+        '检查房间有几个空位'
         self.click((75, 325))
-        screenShot = self.adb.getScreen_std()
-        vacancyCoor = pictureFind.matchMultiImg(screenShot, operatorEnter, confidencevalue = 0.7)
+        vacancyCoor = pictureFind.matchMultiImg(self.adb.getScreen_std(), operatorEnter, confidencevalue = 0.7)
         if vacancyCoor != None:
             vacancyCoor = vacancyCoor[0]
             if vacancyCoor != None:
@@ -297,7 +291,6 @@ class Room:
                         if not self.runFlag:
                             break
                         self.swipeToNextOperatorPage()
-                        self.getScreen()
                         opCoor = self.findOpOnScreen(opFinding)
                         if opCoor:
                             if self.checkOpAvailable(opCoor[1]):
@@ -311,8 +304,7 @@ class Room:
                         print(f'干员{opFinding}不可用')
         while self.runFlag: #确认
             self.click((1325, 760))
-            screenShot = self.adb.getScreen_std()
-            if pictureFind.matchImg_roi(screenShot, wordsTemplate.getTemplatePic_CH(self.roomName, 28),
+            if pictureFind.matchImg_roi(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(self.roomName, 28),
                                         roi = (475, 25, 170, 35), confidencevalue = 0.7) != None:
                 break
         myRuleList.extend(reversed(unFit))
