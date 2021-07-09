@@ -180,8 +180,8 @@ class JsonEdit(QWidget):
         self.grid.addWidget(self.timesLable,0,6,1,1)
         self.grid.addWidget(self.timeEdit,0,7,1,1)
         self.grid.addWidget(self.bootyModeBtn,1,1,1,1)
-        self.grid.addWidget(self.bootySelBtn,1,2,1,1)
-        self.grid.addWidget(self.addBtn,1,3,1,5)
+        self.grid.addWidget(self.bootySelBtn,1,2,1,4)
+        self.grid.addWidget(self.addBtn,1,6,1,2)
         self.grid.addWidget(self.delBtn,2,1,1,4)
         self.grid.addWidget(self.clearBtn,2,5,1,3)
         self.grid.addWidget(self.planCb,3,0,1,1)
@@ -493,9 +493,6 @@ class JsonEdit(QWidget):
             self.timesLable.setText('次数:')
             self.bootySelBtn.setText('———')
     
-    def test(self):
-        self.listSchedule.append('add')
-        print(self.listSchedule)
 
 class BootyChoice(QWidget):
     def __init__(self, scheduleEdit, ico, theme):
@@ -690,6 +687,7 @@ class BootyChoice(QWidget):
     def setBooty(self):
         bootyName = self.sender().text()
         self.scheduleEdit.bootyName = bootyName
+        self.scheduleEdit.bootySelBtn.setText(f'当前:{bootyName}')
         #print(self.scheduleEdit.bootyName)
         self.close()
 
