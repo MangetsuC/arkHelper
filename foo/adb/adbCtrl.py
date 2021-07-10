@@ -93,7 +93,6 @@ class Adb(QObject):
         self.cmd = Cmd(self.adbPath)
         self.ip = None
         self.simulator = None
-        #self.changeConfig(config)
         self.screenX = 1440
         self.screenY = 810
         self.ico = ico

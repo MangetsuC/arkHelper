@@ -101,7 +101,7 @@ class Room:
     def findOpOnScreen(self, operatorName):
         '找到指定干员在屏幕上的位置'
         picInfo = pictureFind.matchImg(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(operatorName, 30),
-                                        targetSize = (1920, 1080), confidencevalue = 0.6)
+                                        targetSize = (1920, 1080), confidencevalue = 0.5)
         if picInfo != None:
             return ((int(picInfo['result'][0]/1920*1440), int(picInfo['result'][1]/1920*1440)), 
                     (int(picInfo['rectangle'][3][0]/1920*1440), int(picInfo['rectangle'][3][1]/1920*1440)))
@@ -389,17 +389,3 @@ overviewEntry = pictureFind.picRead(getcwd() + '/res/logistic/general/overviewEn
 resting = pictureFind.picRead(getcwd() + '/res/logistic/general/resting.png')
 working = pictureFind.picRead(getcwd() + '/res/logistic/general/working.png')
 submitting = pictureFind.picRead(getcwd() + '/res/logistic/general/submitting.png')
-
-if __name__ == '__main__':
-    rule = ruleEncoder.RuleEncoder(getcwd() + '/logisticRule.ahrule')
-    adb = adbCtrl.Adb(getcwd() + '/res/ico.ico', getcwd() + '/bin/adb')
-    adb.connect()
-    testT = Trade(adb)
-    testT.findAllRooms()
-    tempRule = rule.getOneRule('示例配置')['贸易站']
-    while testT.enterRoom() > 0:
-        roomType = testT.checkType()
-        vacancyNum = testT.checkRoomVacancy()
-        if vacancyNum > 0:
-            tempRule = testT.dispatchOperator(tempRule, roomType, vacancyNum)
-        testT.backToMain()

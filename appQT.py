@@ -412,13 +412,12 @@ class App(QWidget):
 
         self.actSlrBlueStacks = QAction('蓝叠模拟器', parent=self.actSimulator)
         self.actSlrBlueStacks.triggered.connect(self.simulatorSel)
-        self.actSlrMumu = QAction('Mumu模拟器', parent=self.actSimulator)
+        self.actSlrMumu = QAction('Mumu模拟器(旧版)', parent=self.actSimulator)
         self.actSlrMumu.triggered.connect(self.simulatorSel)
         self.actSlrYeshen = QAction('夜神模拟器', parent=self.actSimulator)
         self.actSlrYeshen.triggered.connect(self.simulatorSel)
         self.actSlrXiaoyao = QAction('逍遥模拟器', parent=self.actSimulator)
         self.actSlrXiaoyao.triggered.connect(self.simulatorSel)
-
         self.actSlrLeidian = QAction('雷电模拟器', parent=self.actSimulator)
         self.actSlrLeidian.triggered.connect(self.simulatorSel)
         self.actSlrCustom = QAction('自定义', parent=self.actSimulator)
@@ -1059,12 +1058,12 @@ class App(QWidget):
 
 
     def simulatorSel(self):
-        slrName = self.sender().text()
-        if slrName == '蓝叠模拟器':
+        slrName = self.sender()
+        if slrName == self.actSlrBlueStacks:
             self.changeSlr('bluestacks', '127.0.0.1:5555')
-        elif slrName == 'Mumu模拟器':
+        elif slrName == self.actSlrMumu:
             self.changeSlr('mumu', '127.0.0.1:7555')
-        elif slrName == '夜神模拟器':
+        elif slrName == self.actSlrYeshen:
             noxPath = QFileDialog.getOpenFileName(None, '选取文件', './', '夜神模拟器程序 (Nox.exe)')
             noxPath = path.dirname(noxPath[0])
             self.changeDefault('noxPath', noxPath, sec = 'connect')
@@ -1099,9 +1098,9 @@ class App(QWidget):
                         self.changeSlr('yeshen', '127.0.0.1:59865')
                         break
 
-        elif slrName == '逍遥模拟器':
+        elif slrName == self.actSlrXiaoyao:
             self.changeSlr('xiaoyao', '127.0.0.1:21503')
-        elif slrName == '雷电模拟器':
+        elif slrName == self.actSlrLeidian:
             self.changeSlr('leidian', 'emulator-5554')
         else:
             customIp, isOk = QInputDialog.getText(self, '自定义', '请输入模拟器IP地址')
