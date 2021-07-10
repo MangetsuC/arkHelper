@@ -101,7 +101,7 @@ class Room:
     def findOpOnScreen(self, operatorName):
         '找到指定干员在屏幕上的位置'
         picInfo = pictureFind.matchImg(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(operatorName, 30),
-                                        targetSize = (1920, 1080), confidencevalue = 0.5)
+                                        targetSize = (1920, 1080), confidencevalue = 0.6)
         if picInfo != None:
             return ((int(picInfo['result'][0]/1920*1440), int(picInfo['result'][1]/1920*1440)), 
                     (int(picInfo['rectangle'][3][0]/1920*1440), int(picInfo['rectangle'][3][1]/1920*1440)))
@@ -238,7 +238,7 @@ class Room:
                             if self.checkOpAvailable(opCoor[1]):
                                 availableNum += 1
                             else:
-                                print(f'干员{realName}的暂不可用，组合{tempOpList}不可用')
+                                print(f'干员{realName}正在工作或休息，组合{tempOpList}不可用')
                                 break
                         else:
                             isAvailable = True
@@ -253,10 +253,10 @@ class Room:
                                         break
                                     else:
                                         isAvailable = False
-                                        print(f'干员{realName}的暂不可用，组合{tempOpList}不可用')
+                                        print(f'干员{realName}正在工作或休息，组合{tempOpList}不可用')
                                         break
                             else:
-                                print(f'干员{realName}的暂不可用，组合{tempOpList}不可用')
+                                print(f'干员{realName}暂不可用，组合{tempOpList}不可用')
                                 break
                             if not isAvailable:
                                 break #有组合内的干员不可选取 不再检查其它角色
