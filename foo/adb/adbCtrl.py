@@ -1,3 +1,5 @@
+from os import getcwd
+from sys import path as syspath
 from os import path, remove
 from re import findall as refind
 from re import split as resplit
@@ -9,6 +11,9 @@ from foo.win import toast
 from numpy import frombuffer, zeros, ones
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QWidget
+
+syspath.append(getcwd())
+from foo.pictureR import pictureFind
 
 
 def delImg(dir):
@@ -96,6 +101,8 @@ class Adb(QObject):
         self.screenX = 1440
         self.screenY = 810
         self.ico = ico
+
+        self.submitting = pictureFind.picRead(getcwd() + '/res/logistic/general/submitting.png')
 
     def getResolution(self):
         return (self.screenX, self.screenY)
@@ -217,43 +224,49 @@ class Adb(QObject):
         return True
 
     def getScreen_std(self):
-        tryCount = 0
-        for i in range (5):
-            pic = self.cmd.run(f'adb -s {self.ip} shell screencap -p', needDecode = False)
-            try:
-                if pic[6] == 10:#LF
-                    pic = pic.replace(b'\r\n', b'\n')
-                elif pic[6] == 13:#CR
-                    pic = pic.replace(b'\r\r\n', b'\n')
-            except IndexError:
-                tryCount += 1
-                if tryCount > 3:
+        submitCount = 0
+        while True:
+            tryCount = 0
+            for i in range (5):
+                pic = self.cmd.run(f'adb -s {self.ip} shell screencap -p', needDecode = False)
+                try:
+                    if pic[6] == 10:#LF
+                        pic = pic.replace(b'\r\n', b'\n')
+                    elif pic[6] == 13:#CR
+                        pic = pic.replace(b'\r\r\n', b'\n')
+                except IndexError:
+                    tryCount += 1
+                    if tryCount > 3:
+                        self.adbErr.emit(True)
+                        print('截取屏幕失败：无法获取到标准输入流，请重启后再试')
+                        return zeros((810, 1440, 3), dtype='uint8')
+                try:
+                    pic = imdecode(frombuffer(pic, dtype="uint8"), -1)
+                    if pic is None:
+                        raise AdbError
+                    break
+                except Exception as e:
                     self.adbErr.emit(True)
-                    print('截取屏幕失败：无法获取到标准输入流，请重启后再试')
-                    tempPicChannel = zeros((810, 1440), dtype = 'uint8')
-                    return merge((tempPicChannel, tempPicChannel, tempPicChannel))
-            try:
-                pic = imdecode(frombuffer(pic, dtype="uint8"), -1)
-                #if isinstance(pic, type(None)):
-                if pic is None:
-                    raise AdbError
-                return pic
-            except Exception as e:
+                    print('截取屏幕失败：截图解码失败')
+                    print(e)
+                    return zeros((810, 1440, 3), dtype='uint8') #返回一张纯黑图片，便于后续程序执行，正常退出
+            else:
                 self.adbErr.emit(True)
-                print('截取屏幕失败：截图解码失败')
-                print(e)
-                return zeros((810, 1440, 3), dtype='uint8') #返回一张纯黑图片，便于后续程序执行，正常退出
-        else:
-            self.adbErr.emit(True)
-            print('截取屏幕失败：未知原因')
-            return zeros((810, 1440, 3), dtype='uint8')
+                print('截取屏幕失败：未知原因')
+                return zeros((810, 1440, 3), dtype='uint8')
+            if pictureFind.matchImg_roi(pic, self.submitting, (0, 700, 1440, 110), confidencevalue = 0.7) == None:
+                return pic
+            else:
+                submitCount += 1
+                sleep(1)
+                if submitCount > 10:
+                    self.adbErr.emit(True)
+                    print('长时间提示正在连接至神经网络，请检查网络连接')
+                    return zeros((810, 1440, 3), dtype='uint8')
 
     def click(self, x, y, isSleep = True):
         x = int((x / 1440) * self.screenX)
         y = int((y / 810) * self.screenY)
-        #if self.simulator == 'leidian':
-        #    self.cmd.run('adb shell input tap {0} {1}'.format(x, y))
-        #else:
         self.cmd.run('adb -s {device} shell input tap {0} {1}'.format(x, y, device = self.ip))
         if isSleep:
             sleep(1)

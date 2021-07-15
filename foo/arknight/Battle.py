@@ -140,7 +140,7 @@ class BattleLoop(QObject):
                                 if 'endNormal' in picInfo['obj']:
                                     loopTime += 1
 
-                            if picInfo['obj'] == "error.png" or picInfo['obj'] == "giveup.png":
+                            if 'error' in picInfo['obj']:
                                 errorCount += 1
                                 if errorCount > 2:
                                     self.errorSignal.emit('loop')
