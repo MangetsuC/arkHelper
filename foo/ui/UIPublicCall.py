@@ -351,7 +351,7 @@ class UIPublicCall(QDialog):
     
     def employ(self):
         for i in range(2):
-            picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), self.pcFinish)[0]
+            picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), self.pcFinish, confidencevalue = 0.7)[0]
             if picInfo != None:
                 if not self.autoSwitch:
                     break
@@ -369,7 +369,7 @@ class UIPublicCall(QDialog):
         lastPicInfo = None
         for i in range(5):
             #多次搜索，确保找到所有可招募的位置
-            picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), self.pcNew)[0] #找到所有空的招募位
+            picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), self.pcNew, confidencevalue = 0.7)[0] #找到所有空的招募位
             if picInfo != None and len(picInfo) == 4:
                 #已达到最多空闲位数，直接跳出
                 break
