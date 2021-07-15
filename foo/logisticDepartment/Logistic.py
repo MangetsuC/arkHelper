@@ -510,6 +510,9 @@ class Logistic:
                 roomRule = room.dispatchOperator(roomRule, roomType, vacancyNum)
             if not self.runFlag:
                 break
+            room.uniqueFunc()
+            if not self.runFlag:
+                break
             room.backToMain()
 
     def run(self, flag):

@@ -32,6 +32,12 @@ class Room:
     def clickBack(self):
         self.click((100,50))
 
+    def checkType(self):
+        return ''
+
+    def uniqueFunc(self):
+        return None
+
     def checkSubmitting(self):
         while True:
             if not self.runFlag:
@@ -363,26 +369,69 @@ class PowerRoom(Room):
     def __init__(self, adb):
         super(PowerRoom, self).__init__(adb, '发电站', 'LEFT')
 
-    def checkType(self):
-        return ''
 
 class OfficeRoom(Room):
     '办公室'
     def __init__(self, adb):
         super(OfficeRoom, self).__init__(adb, '办公室', 'RIGHT')
 
-    def checkType(self):
-        return ''
-
 class ReceptionRoom(Room):
     '会客室'
     #不完整，暂未完成自动收发线索功能
     def __init__(self, adb):
         super(ReceptionRoom, self).__init__(adb, '会客室', 'RIGHT')
+        self.clear = pictureFind.picRead(getcwd() + '/res/logistic/meeting/clear.png')
+        self.opened = pictureFind.picRead(getcwd() + '/res/logistic/meeting/opened.png')
+        self.confidential = pictureFind.picRead(getcwd() + '/res/logistic/meeting/confidential.png')
+        self.clues = [pictureFind.picRead(getcwd() + f'/res/logistic/meeting/{x}.png') for x in range(1, 8)]
+        self.noClue = pictureFind.picRead(getcwd() + '/res/logistic/meeting/noClue.png')
 
-    def checkType(self):
-        sleep(10) #低效，为了不被右上角弹出来的各类通知遮挡，后续调整
-        return ''
+    def checkRoomVacancy(self):
+        '检查房间有几个空位'
+        self.click((75, 325))
+        while True:
+            screenshot = self.adb.getScreen_std()
+            if pictureFind.matchImg(screenshot, self.opened, confidencevalue = 0.7) == None:
+                self.click((75, 325))
+            else:
+                if pictureFind.matchImg(screenshot, self.clear, confidencevalue = 0.7) != None:
+                    break
+        vacancyCoor = pictureFind.matchMultiImg(self.adb.getScreen_std(), operatorEnter, confidencevalue = 0.7)
+        if vacancyCoor != None:
+            vacancyCoor = vacancyCoor[0]
+            if vacancyCoor != None:
+                return len(vacancyCoor)
+        return 0
+
+    def bactToMeetingIndex(self):
+        while pictureFind.matchImg(self.adb.getScreen_std(), self.confidential, confidencevalue = 0.7) == None:
+            self.click((350, 700))
+
+    def uniqueFunc(self):
+        self.bactToMeetingIndex()
+
+        self.click((1350, 205)) #线索收集
+        self.click((900, 650))
+        self.click((1115, 115))
+
+        self.click((1345, 325)) #接收线索赠送
+        self.click((1200, 760))
+
+        self.bactToMeetingIndex()
+
+        clueNotExit = 0
+        for clue in self.clues: #添加线索
+            lackClue = pictureFind.matchImg(self.adb.getScreen_std(), clue, confidencevalue = 0.7)
+            if lackClue != None:
+                self.click(lackClue['result'])
+                if pictureFind.matchImg_roi(self.adb.getScreen_std(), self.noClue, (1080, 350, 240, 110), 
+                    confidencevalue = 0.7) != None:
+                    self.click((1150, 270))
+                else:
+                    clueNotExit += 1
+        if clueNotExit == 0:
+            pass
+            #开启线索交流
 
 operatorEnter = pictureFind.picRead(getcwd() + '/res/logistic/general/operatorEnter.png') #进驻界面的空位
 overviewEntry = pictureFind.picRead(getcwd() + '/res/logistic/general/overviewEntry.png') #进驻总览按钮
