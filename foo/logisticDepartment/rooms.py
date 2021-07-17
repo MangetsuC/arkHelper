@@ -385,6 +385,7 @@ class ReceptionRoom(Room):
         self.confidential = pictureFind.picRead(getcwd() + '/res/logistic/meeting/confidential.png')
         self.clues = [pictureFind.picRead(getcwd() + f'/res/logistic/meeting/{x}.png') for x in range(1, 8)]
         self.noClue = pictureFind.picRead(getcwd() + '/res/logistic/meeting/noClue.png')
+        self.communication = pictureFind.picRead(getcwd() + '/res/logistic/meeting/communication.png')
 
     def checkRoomVacancy(self):
         '检查房间有几个空位'
@@ -403,9 +404,11 @@ class ReceptionRoom(Room):
                 return len(vacancyCoor)
         return 0
 
-    def bactToMeetingIndex(self):
+    def bactToMeetingIndex(self, point = (350, 700)):
         while pictureFind.matchImg(self.adb.getScreen_std(), self.confidential, confidencevalue = 0.7) == None:
-            self.click((350, 700))
+            self.click(point)
+            if pictureFind.matchImg(self.adb.getScreen_std(), self.communication, confidencevalue = 0.7) != None:
+                self.backToOneLayer(self.confidential)
 
     def uniqueFunc(self):
         self.bactToMeetingIndex()
@@ -417,20 +420,25 @@ class ReceptionRoom(Room):
         self.click((1345, 325)) #接收线索赠送
         self.click((1200, 760))
 
-        self.bactToMeetingIndex()
+        self.bactToMeetingIndex((750, 700))
 
         clueNotExit = 0
+        isUIDeviate= False
         for clue in self.clues: #添加线索
             lackClue = pictureFind.matchImg(self.adb.getScreen_std(), clue, confidencevalue = 0.7)
             if lackClue != None:
+                isUIDeviate = True
                 self.click(lackClue['result'])
                 if pictureFind.matchImg_roi(self.adb.getScreen_std(), self.noClue, (1080, 350, 240, 110), 
-                    confidencevalue = 0.7) != None:
+                    confidencevalue = 0.7) == None:
                     self.click((1150, 270))
                 else:
                     clueNotExit += 1
         if clueNotExit == 0:
-            pass
+            if isUIDeviate:
+                self.click((450, 735))
+            else:
+                self.click((780, 735))
             #开启线索交流
 
 operatorEnter = pictureFind.picRead(getcwd() + '/res/logistic/general/operatorEnter.png') #进驻界面的空位
