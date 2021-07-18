@@ -112,8 +112,7 @@ class PublicCall:
             if len(history) == 5: return
             for i in range(parent, 5):
                 new = history + [i]
-                if not check_combination(new):
-                    return
+                check_combination(new)
                 recursive_check(new, i + 1)
 
         recursive_check([])
