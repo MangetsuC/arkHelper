@@ -167,6 +167,7 @@ class Logistic:
         self.todoList_unSel = pictureFind.picRead(self.cwd + '/res/logistic/general/todoList_unSel.png')
         self.todoList_sel = pictureFind.picRead(self.cwd + '/res/logistic/general/todoList_sel.png')
         self.todoList_no = pictureFind.picRead(self.cwd + '/res/logistic/general/todoList_no.png')
+        self.emergency = pictureFind.picRead(self.cwd + '/res/logistic/general/emergency.png')
         self.exitroom = pictureFind.picRead(self.cwd + '/res/logistic/general/exitroom.png')
         self.submitting = pictureFind.picRead(self.cwd + '/res/logistic/general/submitting.png') #正在连接神经网络
         self.todoListPic = [pictureFind.picRead(self.cwd + '/res/logistic/general/manufactory_output.png'),
@@ -413,22 +414,24 @@ class Logistic:
         while self.runFlag:
             #避免进入基建的时候右上角弹出提示遮挡提示按钮
             self.getScreen()
-            isTodoListExist = self.matchPic(self.todoList_unSel)
-            isTodoListSel = self.matchPic(self.todoList_sel)
+            isTodoListExist = pictureFind.matchImg_roi(self.screenShot, self.todoList_unSel, (1310, 70, 125, 120), confidencevalue = 0.7)
+            isTodoListSel = pictureFind.matchImg_roi(self.screenShot, self.todoList_sel, (1310, 70, 125, 120), confidencevalue = 0.7)
+            isEmergency = pictureFind.matchImg_roi(self.screenShot, self.emergency, (1310, 70, 125, 120), confidencevalue = 0.7)
             isTodoListNo = pictureFind.matchImg_roi(self.screenShot, self.todoList_no, (1315, 70, 125, 60), confidencevalue = 0.7)
-            if isTodoListNo != None or isTodoListExist != None or isTodoListSel != None:
+            if isTodoListNo != None or isTodoListExist != None or isTodoListSel != None or isEmergency != None:
                 break
             else:
                 sleep(0.5)
         if isTodoListExist != None or isTodoListSel != None:
             if isTodoListExist:
-                self.click(isTodoListExist['result'])
+                self.click((isTodoListExist['result'][0] + 1310, isTodoListExist['result'][1] + 70))
                 while True:
                     self.getScreen()
-                    if self.matchPic(self.todoList_sel) != None:
+                    if pictureFind.matchImg_roi(self.screenShot, self.todoList_sel, (1310, 70, 125, 120), 
+                                                confidencevalue = 0.7) != None:
                         break
                     else:
-                        self.click(isTodoListExist['result'])
+                        self.click((isTodoListExist['result'][0] + 1310, isTodoListExist['result'][1] + 70))
             interactTodo = []
             for i in self.todoListPic:
                 if not self.runFlag:
