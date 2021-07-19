@@ -1,6 +1,7 @@
 from os import getcwd
 from sys import path
 from time import sleep, time
+from random import randint
 
 from cv2 import resize
 
@@ -386,6 +387,10 @@ class ReceptionRoom(Room):
         self.clues = [pictureFind.picRead(getcwd() + f'/res/logistic/meeting/{x}.png') for x in range(1, 8)]
         self.noClue = pictureFind.picRead(getcwd() + '/res/logistic/meeting/noClue.png')
         self.communication = pictureFind.picRead(getcwd() + '/res/logistic/meeting/communication.png')
+        self.sendClue = pictureFind.picRead(getcwd() + '/res/logistic/meeting/sendClue.png')
+        self.noExtraClue = pictureFind.picRead(getcwd() + '/res/logistic/meeting/noExtraClue.png')
+
+        self.sendBtn = [(1340, 145), (1340, 315), (1340, 470), (1340, 645)]
 
     def checkRoomVacancy(self):
         '检查房间有几个空位'
@@ -410,21 +415,12 @@ class ReceptionRoom(Room):
             if pictureFind.matchImg(self.adb.getScreen_std(), self.communication, confidencevalue = 0.7) != None:
                 self.backToOneLayer(self.confidential)
 
-    def uniqueFunc(self):
-        self.bactToMeetingIndex()
-
-        self.click((1350, 205)) #线索收集
-        self.click((900, 650))
-        self.click((1115, 115))
-
-        self.click((1345, 325)) #接收线索赠送
-        self.click((1200, 760))
-
-        self.bactToMeetingIndex((750, 700))
-
+    def setClue(self):
         clueNotExit = 0
         isUIDeviate= False
         for clue in self.clues: #添加线索
+            if not self.runFlag:
+                break
             lackClue = pictureFind.matchImg(self.adb.getScreen_std(), clue, confidencevalue = 0.7)
             if lackClue != None:
                 isUIDeviate = True
@@ -434,11 +430,61 @@ class ReceptionRoom(Room):
                     self.click((1150, 270))
                 else:
                     clueNotExit += 1
-        if clueNotExit == 0:
-            if isUIDeviate:
-                self.click((450, 735))
-            else:
-                self.click((780, 735))
+        if isUIDeviate:
+            returnPoint = (450, 735)
+        else:
+            returnPoint = (780, 735)
+        return (clueNotExit, returnPoint)
+
+    def uniqueFunc(self):
+        self.bactToMeetingIndex()
+
+        self.setClue()#先添加一次线索，以便于线索赠送
+        self.bactToMeetingIndex((750, 700))
+
+
+        #线索赠送
+        while pictureFind.matchImg(self.adb.getScreen_std(), self.sendClue, confidencevalue = 0.7) == None:
+            if not self.runFlag:
+                return 
+            self.click((1350, 440))
+
+        luckyFriend = self.sendBtn.copy()
+        while pictureFind.matchImg(self.adb.getScreen_std(), self.noExtraClue, confidencevalue = 0.7) == None:
+            if not self.runFlag:
+                return 
+            if luckyFriend == []:
+                self.click((1360, 765))
+                luckyFriend = self.sendBtn.copy()
+            self.click((100, 250))
+            self.click(luckyFriend.pop(randint(0, len(luckyFriend) - 1)))
+        while pictureFind.matchImg(self.adb.getScreen_std(), self.confidential, confidencevalue = 0.7) == None:
+            if not self.runFlag:
+                return 
+            self.click((1400, 40)) #返回
+        
+
+
+        self.click((1350, 205)) #线索收集
+        self.click((900, 650))
+        self.click((1115, 115))
+
+        if not self.runFlag:
+            return 
+
+        self.click((1345, 325)) #接收线索赠送
+        self.click((1200, 760))
+
+        if not self.runFlag:
+            return 
+
+        self.bactToMeetingIndex((750, 700))
+
+        cluesCondition = self.setClue()#添加线索
+        if not self.runFlag:
+            return 
+        if (cluesCondition[0] == 0):
+            self.click(cluesCondition[1])
             #开启线索交流
 
 operatorEnter = pictureFind.picRead(getcwd() + '/res/logistic/general/operatorEnter.png') #进驻界面的空位
