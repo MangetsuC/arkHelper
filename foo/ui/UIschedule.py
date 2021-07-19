@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
                              QListView, QMenu, QPushButton, QWidget, QAction)
 
 from foo.ui.screen import ScreenRateMonitor
+from foo.ui.messageBox import AMessageBox
 
 
 class JsonEdit(QWidget):
@@ -444,11 +445,11 @@ class JsonEdit(QWidget):
     def editLine(self):
         if self.selIndex != None:
             if isinstance(self.selList[self.selIndex]['times'], dict):
-                newNum, isOk = QInputDialog.getText(self, '修改', '请输入新的掉落物个数')
+                newNum, isOk = AMessageBox.input(self, '修改', '请输入新的掉落物个数')
                 if isOk:
                     self.selList[self.selIndex]['times']['bootyNum'] = newNum
             else:
-                newNum, isOk = QInputDialog.getText(self, '修改', '请输入新的次数')
+                newNum, isOk = AMessageBox.input(self, '修改', '请输入新的次数')
                 self.selList[self.selIndex]['times'] = newNum
             self.refreshJsonView()
         self.selIndex = None
@@ -464,7 +465,7 @@ class JsonEdit(QWidget):
             self.refreshJsonView()
 
     def addPlan(self):
-        planName, ok = QInputDialog.getText(self, '配置名称', '请输入配置名称：')
+        planName, ok = AMessageBox.input(self, '配置名称', '请输入配置名称：')
         if ok:
             if '|' in planName:
                 planName.replace('|', '·')

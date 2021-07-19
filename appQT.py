@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
                              QInputDialog, QLabel, QMenu, QMessageBox,
                              QPushButton, QVBoxLayout, QWidget)
 
-from foo.adb.adbCtrl import Adb, Cmd
+from foo.adb.adbCtrl import Adb, AdbError, Cmd
 from foo.arknight.Battle import BattleLoop
 from foo.arknight.credit import Credit
 from foo.arknight.Schedule import BattleSchedule
@@ -277,7 +277,7 @@ class App(QWidget):
             self.tbShutdown.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
 
     def initUI(self): 
-        self.theme = Theme(self.config) #在UI初始化前加载主题
+        self.theme = Theme(self.config, True) #在UI初始化前加载主题
 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
@@ -421,7 +421,7 @@ class App(QWidget):
         self.actSlrLeidian = QAction('雷电模拟器', parent=self.actSimulator)
         self.actSlrLeidian.triggered.connect(self.simulatorSel)
         self.actSlrCustom = QAction('自定义', parent=self.actSimulator)
-        self.actSlrCustom.triggered.connect(self.getInput)
+        self.actSlrCustom.triggered.connect(self.simulatorSel)
 
         self.actRecovery = QMenu('额外理智', parent=self.settingMenu)
         self.actMedicament = QMenu('理智顶液', parent=self.actRecovery)
@@ -435,7 +435,7 @@ class App(QWidget):
         self.actAutoStoneSche = QAction('自动使用（计划）', self.actStone)
         self.actAutoStoneSche.triggered.connect(self.changeRecStateStoneSche)
         self.actMaxNumber = QAction('设置上限', self.actStone)
-        self.actMaxNumber.triggered.connect(self.getInput)
+        self.actMaxNumber.triggered.connect(self.changeMaxNum)
 
         self.actTheme = QAction('主题设置', parent=self.settingMenu)
         self.actConsole = QAction('控制台', parent=self.settingMenu)
@@ -679,8 +679,9 @@ class App(QWidget):
         self.autoStoneScheFlag = not self.autoStoneScheFlag
         self.changeDefault('schedule', self.autoStoneScheFlag, 'stone')
 
-    def changeMaxNum(self, ans):
-        num, ok = ans#QInputDialog.getText(self, f'当前（{self.stoneMaxNum}）', '请输入最大源石消耗数量：')
+    def changeMaxNum(self):
+        #num, ok = QInputDialog.getText(self, f'当前（{self.stoneMaxNum}）', '请输入最大源石消耗数量：')
+        num, ok = AMessageBox.input(self, f'当前({self.stoneMaxNum})', '请输入最大源石消耗数量:')
         if ok:
             if not num.isdecimal():
                 num = '0'
@@ -695,7 +696,7 @@ class App(QWidget):
         nowLoopTimes = self.battle.getLoopTimes()
         if nowLoopTimes == -1:
             nowLoopTimes = '无限'
-        times, ok = QInputDialog.getText(self, f'当前（{nowLoopTimes}）', '请输入作战次数(输入0即为无限)：')
+        times, ok = AMessageBox.input(self, f'当前（{nowLoopTimes}）', '请输入作战次数(输入0即为无限)：')
         if ok:
             if not times.isdecimal():
                 times = -1
@@ -766,8 +767,6 @@ class App(QWidget):
     def initClass(self):
         self.rateMonitor = ScreenRateMonitor([self])
 
-        self.messageBox = AMessageBox(self.theme)
-        self.messageBox.ans.connect(self.aInputEvent)
         #self.messageBox.warning('测试警告', '这是一条测试信息')
 
         self.themeEditor = ThemeEditor(self.config, self.app, theme = self.theme, ico = self.ico)
@@ -1069,32 +1068,27 @@ class App(QWidget):
             self.changeDefault('noxPath', noxPath, sec = 'connect')
             self.changeSlr('yeshen', '127.0.0.1:59865')
             self.initSlrSel()
-            ans = QMessageBox.question(self, '夜神模拟器端口号设置', '是否自动获取夜神模拟器端口号?', 
-                                    QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes) 
+            ans = AMessageBox.warning(self, '夜神模拟器端口号设置', '是否自动获取夜神模拟器端口号?') 
             isAutoGetPortSuccess = False
-            if ans == QMessageBox.Yes:
-                QMessageBox.warning(self, '警告', '自动获取端口号前请确认已启动夜神模拟器', 
-                                    QMessageBox.Yes, QMessageBox.Yes)
+            if ans:
+                AMessageBox.warning(self, '警告', '自动获取端口号前请确认已启动夜神模拟器')
                 isAutoGetPortSuccess = self.adb.autoGetPort()
                 if isAutoGetPortSuccess:
                     self.changeSlr('yeshen', f'127.0.0.1:{isAutoGetPortSuccess}')
                 else:
-                    QMessageBox.warning(self, '警告', '自动获取端口号失败！请您手动输入', 
-                                    QMessageBox.Yes, QMessageBox.Yes)
-            if ans == QMessageBox.No or (not isAutoGetPortSuccess):
+                    AMessageBox.warning(self, '警告', '自动获取端口号失败！请您手动输入')
+            if (not ans) or (not isAutoGetPortSuccess):
                 while True:
-                    port, isOk = QInputDialog.getText(self, '夜神模拟器端口号', '请输入夜神模拟器端口号')
+                    port, isOk = AMessageBox.input(self, '夜神模拟器端口号', '请输入夜神模拟器端口号')
                     if isOk:
                         if port.isnumeric():
                             self.changeSlr('yeshen', f'127.0.0.1:{port}')
                             break
                         else:
-                            QMessageBox.warning(self, '警告', '请输入正确的端口号！', 
-                                        QMessageBox.Yes, QMessageBox.Yes)
+                            AMessageBox.warning(self, '警告', '请输入正确的端口号！')
                             self.changeSlr('yeshen', '127.0.0.1:59865')
                     else:
-                        QMessageBox.warning(self, '警告', '您取消了端口号录入，将使用默认值59865', 
-                                        QMessageBox.Yes, QMessageBox.Yes)
+                        AMessageBox.warning(self, '警告', '您取消了端口号录入，将使用默认值59865')
                         self.changeSlr('yeshen', '127.0.0.1:59865')
                         break
 
@@ -1103,7 +1097,7 @@ class App(QWidget):
         elif slrName == self.actSlrLeidian:
             self.changeSlr('leidian', 'emulator-5554')
         else:
-            customIp, isOk = QInputDialog.getText(self, '自定义', '请输入模拟器IP地址')
+            customIp, isOk = AMessageBox.input(self, '自定义', '请输入模拟器IP地址(如:127.0.0.1:5555或emulator-5554):')
             if isOk:
                     self.changeSlr('custom', customIp)
 
@@ -1165,16 +1159,15 @@ class App(QWidget):
             startfile('update.exe')
     
     def battleWarning(self):
-        reply = QMessageBox.warning(self, '警告', '发现您选中的关卡可能无掉落，是否继续？', 
-                                    QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
-        if reply == QMessageBox.No:
-            self.battle.stop()
-        elif reply == QMessageBox.Yes:
+        reply = AMessageBox.warning(self, '警告', '发现您选中的关卡可能无掉落，是否继续？')
+        if reply:
             self.battle.isUselessContinue = True
+        else:
+            self.battle.stop()
         self.battle.isWaitingUser = False
 
     def testUpdate(self):
-        version, isOk = QInputDialog.getText(self, '???', '神秘代码')
+        version, isOk = AMessageBox.input(self, '???', '神秘代码')
         if isOk:
             if self._updateData != None:
                 self._updateData['version'] = version
@@ -1252,16 +1245,14 @@ class App(QWidget):
         if source == 'loop':
             self.battle.isWaitingUser = True
             self.battle.isRecovered = False
-            reply = QMessageBox.warning(self, '警告', '发现网络中断或代理异常，是否继续？（请在恢复异常后继续）', 
-                                    QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+            reply = AMessageBox.warning(self, '警告', '发现网络中断或代理异常，是否继续？（请在恢复异常后继续）')
             self.battle.isWaitingUser = False
             if reply:
                 self.battle.isRecovered = True
         elif source == 'schedule':
             self.schedule.isWaitingUser = True
             self.schedule.isRecovered = False
-            reply = QMessageBox.warning(self, '警告', '发现网络中断或代理异常，是否继续？（请在恢复异常后继续）', 
-                                    QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+            reply = AMessageBox.warning(self, '警告', '发现网络中断或代理异常，是否继续？（请在恢复异常后继续）')
             self.schedule.isWaitingUser = False
             if reply:
                 self.schedule.isRecovered = True
@@ -1285,25 +1276,8 @@ class App(QWidget):
             self.btnUpdate.show()
 
     def noticeFromOtherWidget(self, text):
-        QMessageBox.warning(self, '警告', text, 
-                                    QMessageBox.Yes, QMessageBox.Yes)
+        AMessageBox.warning(self, '警告', text)
 
-    def getInput(self):
-        source = self.sender()
-        if source == self.actMaxNumber:
-            self.messageBox.inputDialog(f'当前（{self.stoneMaxNum}）', '请输入最大源石消耗数量：')
-        elif source == self.actSlrCustom:
-            self.messageBox.inputDialog('自定义', '请输入模拟器IP地址(如127.0.0.1:5555)或模拟器编号(如emulator-5554)：')
-
-        self.inputSwitch = source
-
-    def aInputEvent(self, ans):
-        if self.inputSwitch == self.actMaxNumber:
-            self.changeMaxNum(ans)
-        elif self.inputSwitch == self.actSlrCustom:
-            customIp, isOk = ans
-            if isOk:
-                self.changeSlr('custom', customIp)
 
 
 if __name__ == '__main__':

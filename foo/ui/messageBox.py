@@ -1,42 +1,54 @@
-from os import getcwd
-import sys
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QCursor, QIcon
-from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
-                             QFileDialog, QGridLayout, QHBoxLayout,
-                             QInputDialog, QLabel, QMenu, QMessageBox,
-                             QPushButton, QVBoxLayout, QWidget, QLineEdit)
+from os import getcwd, path, getlogin
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (QDialog,
+                             QHBoxLayout,
+                             QLabel,
+                             QPushButton, QVBoxLayout, QLineEdit)
 
-class AMessageBox(QWidget):
-    ans = pyqtSignal(tuple)
-    def __init__(self, theme = None):
-        super(AMessageBox, self).__init__()
+from configparser import ConfigParser
+
+from foo.ui.theme import Theme
+
+class AMessageBox(QDialog):
+    def __init__(self, parent):
+        super(AMessageBox, self).__init__(parent)
         self.setWindowIcon(QIcon(getcwd() + '/res/ico.ico'))
 
-        if theme != None:
-            self.setStyleSheet(f'''QWidget{{background:{theme.getBgColor()}}}
-                                QLabel{{color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}}
-                                QPushButton{{border:0px;background:{theme.getFgColor()};
-                                color:{theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}}
-                                QPushButton:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};}}
-                                QPushButton:pressed{{background:{theme.getPressedColor()};font:9pt;}}
-                                QPushButton:checked{{background:{theme.getThemeColor()};color:{theme.getCheckedFontColor()}}}
-                                QLineEdit{{color:{theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:12pt;}}
-                            ''')
+        config = ConfigParser()
+        configPath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/config.ini'
+        if not path.exists(configPath):
+            configPath = getcwd() + '/config.ini'
+            
+        try:
+            config.read(filenames=configPath, encoding="UTF-8")
+        except UnicodeDecodeError:
+            config.read(filenames=configPath, encoding="gbk")
+
+        theme = Theme(config)
+        self.setStyleSheet(f'''QWidget{{background:{theme.getBgColor()}}}
+                            QLabel{{color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}}
+                            QPushButton{{border:0px;background:{theme.getFgColor()};
+                            color:{theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;}}
+                            QPushButton:hover{{border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};}}
+                            QPushButton:pressed{{background:{theme.getPressedColor()};font:9pt;}}
+                            QPushButton:checked{{background:{theme.getThemeColor()};color:{theme.getCheckedFontColor()}}}
+                            QLineEdit{{color:{theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
+                                       border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};}}
+                        ''')
 
         self.setMinimumWidth(400)
 
         self.isBtnClicked = False
 
         self.btnOK = QPushButton('确定')
-        self.btnOK.setMinimumSize(75, 40)
+        self.btnOK.setMinimumSize(70, 30)
         self.btnOK.clicked.connect(self.btnClicked)
         self.btnCancel = QPushButton('取消')
-        self.btnCancel.setMinimumSize(75, 40)
+        self.btnCancel.setMinimumSize(70, 30)
         self.btnCancel.clicked.connect(self.btnClicked)
 
         self.input = QLineEdit()
-        self.input.setMinimumSize(150, 40)
+        self.input.setMinimumSize(150, 30)
         self.notice = QLabel('测试文本')
 
         topVLayout = QVBoxLayout()
@@ -54,43 +66,30 @@ class AMessageBox(QWidget):
         lowHLayout.addWidget(self.btnCancel)
 
         self.setLayout(topVLayout)
+
+        self.ans = ['', False]
         #self.show()
 
     def btnClicked(self):
-        self.isBtnClicked = True
-        source = self.sender()
-        if self.input.isVisible():
-            txt = self.input.text()
-        else:
-            txt = ''
-        
-        if source == self.btnOK:
-            self.ans.emit((txt, True))
-        elif source == self.btnCancel:
-            self.ans.emit((txt, False))
+        if self.sender() == self.btnOK:
+            self.ans[1] = True
         
         self.close()
 
     def closeEvent(self, event):
-        if not self.isBtnClicked:
-            if self.input.isVisible():
-                txt = self.input.text()
-            else:
-                txt = ''
-            self.ans.emit((txt, False))
-        self.isBtnClicked = False
+        if self.input.isVisible():
+            self.ans[0] = self.input.text()
         event.accept()
 
-    def warning(self, title, warningMsg):
+    def warningInit(self, title, warningMsg):
         self.setWindowTitle(title)
         self.notice.setText(warningMsg)
         self.notice.show()
         self.input.hide()
         self.btnOK.show()
         self.btnCancel.hide()
-        self.show()
 
-    def inputDialog(self, title, reminderText):
+    def inputInit(self, title, reminderText):
         self.setWindowTitle(title)
         self.notice.setText(reminderText)
         self.notice.show()
@@ -98,11 +97,17 @@ class AMessageBox(QWidget):
         self.input.setText('')
         self.btnOK.show()
         self.btnCancel.show()
-        self.show()
 
+    @classmethod
+    def warning(cls, parent, title, msg):
+        warningDialog = cls(parent)
+        warningDialog.warningInit(title, msg)
+        warningDialog.exec_()
+        return warningDialog.ans[1]
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    app.processEvents()
-    messagebox = AMessageBox()
-    sys.exit(app.exec_())
+    @classmethod
+    def input(cls, parent, title, msg):
+        inputDialog = cls(parent)
+        inputDialog.inputInit(title, msg)
+        inputDialog.exec_()
+        return inputDialog.ans

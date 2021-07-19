@@ -5,7 +5,7 @@ from os import getcwd
 #FileNotFoundError
 
 class Theme:
-    def __init__(self, config):
+    def __init__(self, config, isShowSystem = False):
         self.themeColor = '#70bbe4'
         self.fontColor = '#ffffff'
         self.checkedFontColor = '#ffffff'
@@ -14,7 +14,8 @@ class Theme:
         self.bgColor = '#272626'
         self.pressedColor = '#606162'
         self.selectedIcon = QIcon(getcwd() + '/res/gui/selected.png')
-        print(f'操作系统：{platform()}')
+        if isShowSystem:
+            print(f'操作系统：{platform()}')
         if 'Windows-10' in platform():
             try:
                 keyDwm = OpenKey(HKEY_CURRENT_USER, 'SOFTWARE\\Microsoft\\Windows\\DWM')
