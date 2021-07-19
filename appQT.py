@@ -42,6 +42,7 @@ class App(QWidget):
         self.ver = Cmd(self.cwd).getVersion() #获取版本号
 
         self.console = Console(self.cwd, self.ver)  # 接管输出与报错
+        self.console.adbCloseError.connect(self.adbClosedHandle)
 
         #获取整块屏幕的尺寸
         self.totalWidth = 0
@@ -1215,6 +1216,11 @@ class App(QWidget):
 
         if isErrStop:
             self.lTitle.setText('出现错误 请检查控制台')
+
+    def adbClosedHandle(self):
+        forceThreadStop(self.thRun)
+        self.lTitle.setText('出现错误 请检查控制台')
+        self.startBtnPressed.emit('启动虚拟博士')
 
     def clickBtnStartAndStop(self):
         if not '虚拟博士' in self.btnStartAndStop.text():

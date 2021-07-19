@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QDialog, QGridLayout, QTextBrowser, QDesktopWidget
 
 
 class Console(QDialog):
+    adbCloseError = pyqtSignal()
     def __init__(self, cwd, ver, parent=None, flags=Qt.WindowFlags(1)):
         super().__init__(parent=parent, flags=flags)
         self.cwd = cwd
@@ -47,7 +48,10 @@ class Console(QDialog):
 
     def outputWritten(self, text):
         text = text.strip()
-        if text != '':
+        if 'error: closed' in text:
+            print('发现adb端口关闭！请检查您的模拟器设置！')
+            self.adbCloseError.emit()
+        elif text != '':
             text = text + '\n'
             cursor = self.textBrowser.textCursor()
             cursor.movePosition(QTextCursor.End)
