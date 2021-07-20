@@ -170,10 +170,7 @@ class Adb(QObject):
             print(cmdText)
         if ('connected to' in cmdText) and ('nable' not in cmdText):
             while True:
-                if 'emulator' in self.ip:
-                    screenMsg = self.cmd.run('adb shell wm size')
-                else:
-                    screenMsg = self.cmd.run('adb -s {device} shell wm size'.format(device = self.ip))
+                screenMsg = self.cmd.run(f'adb -s {self.ip} shell wm size')
                 if screenMsg != '':
                     break
             screenMsg = screenMsg.replace(' ', '')
