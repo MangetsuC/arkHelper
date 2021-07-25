@@ -1069,7 +1069,7 @@ class App(QWidget):
             self.changeDefault('noxPath', noxPath, sec = 'connect')
             self.changeSlr('yeshen', '127.0.0.1:59865')
             self.initSlrSel()
-            ans = AMessageBox.warning(self, '夜神模拟器端口号设置', '是否自动获取夜神模拟器端口号?') 
+            ans = AMessageBox.question(self, '夜神模拟器端口号设置', '是否自动获取夜神模拟器端口号?') 
             isAutoGetPortSuccess = False
             if ans:
                 AMessageBox.warning(self, '警告', '自动获取端口号前请确认已启动夜神模拟器')
@@ -1160,7 +1160,7 @@ class App(QWidget):
             startfile('update.exe')
     
     def battleWarning(self):
-        reply = AMessageBox.warning(self, '警告', '发现您选中的关卡可能无掉落，是否继续？')
+        reply = AMessageBox.question(self, '警告', '发现您选中的关卡可能无掉落，是否继续？')
         if reply:
             self.battle.isUselessContinue = True
         else:
@@ -1251,14 +1251,14 @@ class App(QWidget):
         if source == 'loop':
             self.battle.isWaitingUser = True
             self.battle.isRecovered = False
-            reply = AMessageBox.warning(self, '警告', '发现网络中断或代理异常，是否继续？（请在恢复异常后继续）')
+            reply = AMessageBox.question(self, '警告', '发现网络中断或代理异常，是否继续？（请在恢复异常后继续）')
             self.battle.isWaitingUser = False
             if reply:
                 self.battle.isRecovered = True
         elif source == 'schedule':
             self.schedule.isWaitingUser = True
             self.schedule.isRecovered = False
-            reply = AMessageBox.warning(self, '警告', '发现网络中断或代理异常，是否继续？（请在恢复异常后继续）')
+            reply = AMessageBox.question(self, '警告', '发现网络中断或代理异常，是否继续？（请在恢复异常后继续）')
             self.schedule.isWaitingUser = False
             if reply:
                 self.schedule.isRecovered = True

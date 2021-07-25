@@ -89,6 +89,14 @@ class AMessageBox(QDialog):
         self.btnOK.show()
         self.btnCancel.hide()
 
+    def questionInit(self, title, questionMsg):
+        self.setWindowTitle(title)
+        self.notice.setText(questionMsg)
+        self.notice.show()
+        self.input.hide()
+        self.btnOK.show()
+        self.btnCancel.show()
+
     def inputInit(self, title, reminderText):
         self.setWindowTitle(title)
         self.notice.setText(reminderText)
@@ -104,6 +112,13 @@ class AMessageBox(QDialog):
         warningDialog.warningInit(title, msg)
         warningDialog.exec_()
         return warningDialog.ans[1]
+
+    @classmethod
+    def question(cls, parent, title, msg):
+        questionDialog = cls(parent)
+        questionDialog.questionInit(title, msg)
+        questionDialog.exec_()
+        return questionDialog.ans[1]
 
     @classmethod
     def input(cls, parent, title, msg):
