@@ -107,11 +107,12 @@ class Room:
 
     def findOpOnScreen(self, operatorName):
         '找到指定干员在屏幕上的位置'
-        picInfo = pictureFind.matchImg(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(operatorName, 30),
-                                        targetSize = (1920, 1080), confidencevalue = 0.6)
+        fontsize = wordsTemplate.getFontSize_name(self.adb.getResolution())
+        picInfo = pictureFind.matchImg(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(operatorName, fontsize[0]),
+                                        targetSize = fontsize[1], confidencevalue = 0.6)
         if picInfo != None:
-            return ((int(picInfo['result'][0]/1920*1440), int(picInfo['result'][1]/1920*1440)), 
-                    (int(picInfo['rectangle'][3][0]/1920*1440), int(picInfo['rectangle'][3][1]/1920*1440)))
+            return ((int(picInfo['result'][0]/fontsize[1][0]*1440), int(picInfo['result'][1]/fontsize[1][0]*1440)), 
+                    (int(picInfo['rectangle'][3][0]/fontsize[1][0]*1440), int(picInfo['rectangle'][3][1]/fontsize[1][0]*1440)))
         else:
             return False
 
@@ -190,7 +191,7 @@ class Room:
                     break
                 self.click(oneRoom)
                 if pictureFind.matchImg_roi(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(self.roomName, 28),
-                                            roi = (475, 25, 170, 35), confidencevalue = 0.7) != None:
+                                            roi = (465, 15, 190, 55), confidencevalue = 0.7) != None:
                     self.clickCenter()
                     break
             return 1
@@ -312,7 +313,7 @@ class Room:
         while self.runFlag: #确认
             self.click((1325, 760))
             if pictureFind.matchImg_roi(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(self.roomName, 28),
-                                        roi = (475, 25, 170, 35), confidencevalue = 0.7) != None:
+                                        roi = (465, 15, 190, 55), confidencevalue = 0.7) != None:
                 break
         myRuleList.extend(reversed(unFit))
         return list(reversed(myRuleList))
