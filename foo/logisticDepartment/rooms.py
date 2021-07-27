@@ -451,12 +451,16 @@ class ReceptionRoom(Room):
             self.click((1350, 440))
 
         luckyFriend = self.sendBtn.copy()
-        while pictureFind.matchImg(self.adb.getScreen_std(), self.noExtraClue, confidencevalue = 0.7) == None:
+        maxPages = 3 #最多只有10个线索，每页4个好友
+        while pictureFind.matchImg(self.adb.getScreen_std(), self.noExtraClue, confidencevalue = 0.6) == None:
+            if maxPages == 0:
+                break
             if not self.runFlag:
                 return 
             if luckyFriend == []:
                 self.click((1360, 765))
                 luckyFriend = self.sendBtn.copy()
+                maxPages -= 1
             self.click((100, 250))
             self.click(luckyFriend.pop(randint(0, len(luckyFriend) - 1)))
         while pictureFind.matchImg(self.adb.getScreen_std(), self.confidential, confidencevalue = 0.7) == None:
