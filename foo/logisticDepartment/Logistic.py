@@ -500,20 +500,24 @@ class Logistic:
 
     def returnToWork(self, room, roomRule):
         room.findAllRooms()
-        while room.enterRoom() > 0:
+        while True:
+            isInCorrectRoom = room.enterRoom()
+            if isInCorrectRoom <= 0:
+                break
             if not self.runFlag:
                 break
-            roomType = room.checkType()
-            if not self.runFlag:
-                break
-            vacancyNum = room.checkRoomVacancy()
-            if not self.runFlag:
-                break
-            if vacancyNum > 0:
-                roomRule = room.dispatchOperator(roomRule, roomType, vacancyNum)
-            if not self.runFlag:
-                break
-            room.uniqueFunc()
+            if isInCorrectRoom != 2: #房间名称不匹配
+                roomType = room.checkType()
+                if not self.runFlag:
+                    break
+                vacancyNum = room.checkRoomVacancy()
+                if not self.runFlag:
+                    break
+                if vacancyNum > 0:
+                    roomRule = room.dispatchOperator(roomRule, roomType, vacancyNum)
+                if not self.runFlag:
+                    break
+                room.uniqueFunc()
             if not self.runFlag:
                 break
             room.backToMain()

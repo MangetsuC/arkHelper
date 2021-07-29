@@ -159,7 +159,7 @@ class Room:
         '找到本类所有房间'
         self.swipeScreen()
         picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(self.roomName, 27),
-                                            confidencevalue = 0.5)
+                                            confidencevalue = 0.6)
         if picInfo != None:
             picInfo = picInfo[0]
             if picInfo != None:
@@ -186,9 +186,12 @@ class Room:
                 oneRoom = self.roomCoor.pop()
             except IndexError:
                 return 0
+            startTime = time()
             while True:
                 if not self.runFlag:
                     break
+                if time() - startTime > 5:
+                    return 2 #房间名称不匹配
                 self.click(oneRoom)
                 if pictureFind.matchImg_roi(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(self.roomName, 28),
                                             roi = (465, 15, 190, 55), confidencevalue = 0.7) != None:
