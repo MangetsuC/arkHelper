@@ -146,5 +146,6 @@ foo/test/
 schedule.json
 config.ini
 config.toml
+simulator.toml
 data.json
 logisticRule.ahrule
