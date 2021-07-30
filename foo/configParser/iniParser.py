@@ -10,14 +10,14 @@ def iniRead():
             config.read(filenames=devPath, encoding="UTF-8")
         except UnicodeDecodeError:
             config.read(filenames=devPath, encoding="gbk")
-    else:
+    elif path.exists(releasePath):
         try:
             config.read(filenames=releasePath, encoding="UTF-8")
         except UnicodeDecodeError:
             config.read(filenames=releasePath, encoding="gbk")
     return config
 
-def iniParse():
+def ini2dict():
     ini = iniRead()
     config_old = dict()
     for section in ini.sections():
@@ -28,6 +28,6 @@ def iniParse():
                 value = int(value)
             elif value == 'True' or value == 'False':
                 value = bool(value)
-            config_old[section][option] = ini.get(section, option)
+            config_old[section][option] = value
 
     return config_old

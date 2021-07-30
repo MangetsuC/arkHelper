@@ -145,5 +145,6 @@ foo/test/
 #arknightsHelper
 schedule.json
 config.ini
+config.toml
 data.json
 logisticRule.ahrule
