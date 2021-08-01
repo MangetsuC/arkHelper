@@ -13,7 +13,7 @@ class Theme:
         self.fgColor = '#4d4d4d'
         self.bgColor = '#272626'
         self.pressedColor = '#606162'
-        self.selectedIcon = QIcon(getcwd() + '/res/gui/selected.png')
+        self.selectedIcon = getcwd() + '/res/gui/selected.png'
         if isShowSystem:
             print(f'操作系统：{platform()}')
         if 'Windows-10' in platform():
@@ -40,7 +40,7 @@ class Theme:
                     self.fgColor = '#D1D1D5'
                     self.bgColor = '#BFBFC3'
                     self.pressedColor = '#D8D8D9'
-                    self.selectedIcon = QIcon(getcwd() + '/res/gui/selectedLightMode.png')
+                    self.selectedIcon = getcwd() + '/res/gui/selectedLightMode.png'
                 else:
                     #系统为深色
                     self.fontColor = '#ffffff'
@@ -49,33 +49,33 @@ class Theme:
                     self.fgColor = '#4d4d4d'
                     self.bgColor = '#272626'
                     self.pressedColor = '#606162'
-                    self.selectedIcon = QIcon(getcwd() + '/res/gui/selected.png')
+                    self.selectedIcon = getcwd() + '/res/gui/selected.png'
 
                 CloseKey(keyPersonalize)
             except Exception:
                 pass
         #此处用配置文件的设置覆盖自动设置
-        if config.get('theme', 'themecolor') != 'auto':
-            self.themeColor = config.get('theme', 'themecolor')
-        if config.get('theme', 'fontcolor') != 'auto':
-            self.fontColor = config.get('theme', 'fontcolor')
-        if config.get('theme', 'checkedfontcolor') != 'auto':
-            self.checkedFontColor = config.get('theme', 'checkedfontcolor')
-        if config.get('theme', 'bordercolor') != 'auto':
-            self.borderColor = config.get('theme', 'bordercolor')
-        if config.get('theme', 'fgcolor') != 'auto':
-            self.fgColor = config.get('theme', 'fgcolor')
-        if config.get('theme', 'bgcolor') != 'auto':
-            self.bgColor = config.get('theme', 'bgcolor')
-        if config.get('theme', 'pressedcolor') != 'auto':
-            self.pressedColor = config.get('theme', 'pressedcolor')
+        if config.get('theme.themecolor') != 'auto':
+            self.themeColor = config.get('theme.themecolor')
+        if config.get('theme.fontcolor') != 'auto':
+            self.fontColor = config.get('theme.fontcolor')
+        if config.get('theme.checkedfontcolor') != 'auto':
+            self.checkedFontColor = config.get('theme.checkedfontcolor')
+        if config.get('theme.bordercolor') != 'auto':
+            self.borderColor = config.get('theme.bordercolor')
+        if config.get('theme.fgcolor') != 'auto':
+            self.fgColor = config.get('theme.fgcolor')
+        if config.get('theme.bgcolor') != 'auto':
+            self.bgColor = config.get('theme.bgcolor')
+        if config.get('theme.pressedcolor') != 'auto':
+            self.pressedColor = config.get('theme.pressedcolor')
 
-        selectedColor = config.get('theme', 'selectedcolor')
+        selectedColor = config.get('theme.selectedcolor')
         if selectedColor == 'dark':
             #设置勾为深色，实际上用于浅色模式
-            self.selectedIcon = QIcon(getcwd() + '/res/gui/selectedLightMode.png')
+            self.selectedIcon = getcwd() + '/res/gui/selectedLightMode.png'
         elif selectedColor == 'light':
-            self.selectedIcon = QIcon(getcwd() + '/res/gui/selected.png')
+            self.selectedIcon = getcwd() + '/res/gui/selected.png'
 
     def getThemeColor(self):
         return self.themeColor

@@ -29,6 +29,8 @@ from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
 from foo.ui.messageBox import AMessageBox
 from foo.win.exitThread import forceThreadStop
+from foo.configParser.tomlParser import configToml, simulatorToml
+from common import user_data, simulator_data
 
 
 class App(QWidget):
@@ -278,7 +280,7 @@ class App(QWidget):
             self.tbShutdown.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
 
     def initUI(self): 
-        self.theme = Theme(self.config, True) #在UI初始化前加载主题
+        self.theme = Theme(user_data, True) #在UI初始化前加载主题
 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
@@ -356,22 +358,22 @@ class App(QWidget):
 
         self.actAutoSearch = QAction('自动招募')
         self.actAutoSearch.triggered.connect(self.setAutoPCFunc)
-        self.actAutoSearch.setIcon(self.theme.getSelectedIcon())
+        self.actAutoSearch.setIcon(QIcon(self.theme.getSelectedIcon()))
         self.actAutoEmploy = QAction('自动聘用')
         self.actAutoEmploy.triggered.connect(self.setAutoPCFunc)
-        self.actAutoEmploy.setIcon(self.theme.getSelectedIcon())
+        self.actAutoEmploy.setIcon(QIcon(self.theme.getSelectedIcon()))
         self.actSkipStar23 = QAction('跳过3星及以下')
         self.actSkipStar23.triggered.connect(self.setAutoPCFunc)
-        if self.config.getboolean('function','autoPC_skip23Star'):
-            self.actSkipStar23.setIcon(self.theme.getSelectedIcon())
+        if user_data.get('function.autopc.skip23star'):
+            self.actSkipStar23.setIcon(QIcon(self.theme.getSelectedIcon()))
         self.actSkipStar1 = QAction('保留1星')
         self.actSkipStar1.triggered.connect(self.setAutoPCFunc)
-        if self.config.getboolean('function','autoPC_skip1Star'):
-            self.actSkipStar1.setIcon(self.theme.getSelectedIcon())
+        if user_data.get('function.autopc.skip1star'):
+            self.actSkipStar1.setIcon(QIcon(self.theme.getSelectedIcon()))
         self.actSkipStar5 = QAction('保留5星')
         self.actSkipStar5.triggered.connect(self.setAutoPCFunc)
-        if self.config.getboolean('function','autoPC_skip5Star'):
-            self.actSkipStar5.setIcon(self.theme.getSelectedIcon())
+        if user_data.get('function.autopc.skip5star'):
+            self.actSkipStar5.setIcon(QIcon(self.theme.getSelectedIcon()))
         self.actPcCalculate = QAction('公招计算器')
         self.actPcCalculate.triggered.connect(self.monitorPC)
         self.pcCalculateChecked = False
@@ -410,8 +412,10 @@ class App(QWidget):
         self.settingMenu = QMenu() #创建设置按钮菜单
         
         self.actSimulator = QMenu('模拟器', parent=self.settingMenu) #模拟器二级菜单
+        self.simulators = []
+        self.simulator_choices()
 
-        self.actSlrBlueStacks = QAction('蓝叠模拟器', parent=self.actSimulator)
+        '''self.actSlrBlueStacks = QAction('蓝叠模拟器', parent=self.actSimulator)
         self.actSlrBlueStacks.triggered.connect(self.simulatorSel)
         self.actSlrMumu = QAction('Mumu模拟器(旧版)', parent=self.actSimulator)
         self.actSlrMumu.triggered.connect(self.simulatorSel)
@@ -422,7 +426,7 @@ class App(QWidget):
         self.actSlrLeidian = QAction('雷电模拟器', parent=self.actSimulator)
         self.actSlrLeidian.triggered.connect(self.simulatorSel)
         self.actSlrCustom = QAction('自定义', parent=self.actSimulator)
-        self.actSlrCustom.triggered.connect(self.simulatorSel)
+        self.actSlrCustom.triggered.connect(self.simulatorSel)'''
 
         self.actRecovery = QMenu('额外理智', parent=self.settingMenu)
         self.actMedicament = QMenu('理智顶液', parent=self.actRecovery)
@@ -445,11 +449,12 @@ class App(QWidget):
         
         self.actVersion2 = QAction(f'v{self.ver}', parent=self.settingMenu)
 
-        self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrYeshen, self.actSlrLeidian, self.actSlrCustom]
-        #添加菜单选项
         self.settingMenu.addMenu(self.actSimulator) #模拟器二级菜单
+        '''self.slrList = [self.actSlrBlueStacks, self.actSlrMumu, self.actSlrXiaoyao, self.actSlrYeshen, self.actSlrLeidian, self.actSlrCustom]
+        #添加菜单选项
+        
         for eachSlr in self.slrList:
-            self.actSimulator.addAction(eachSlr)
+            self.actSimulator.addAction(eachSlr)'''
 
         self.settingMenu.addMenu(self.actRecovery)
         self.actRecovery.addMenu(self.actMedicament)
@@ -641,57 +646,63 @@ class App(QWidget):
         self.listGoTo = [self.mainpage, self.home, self.mainpageMark]
 
     def changeRecStateMedLoop(self):
-        if self.autoMediFlag:
+        if self.flag_loop_recovery_medicine:
             self.actAtuoMedicament.setIcon(QIcon(self.unSelPNG))
             self.battle.recChange(0, False)
         else:
-            self.actAtuoMedicament.setIcon(self.theme.getSelectedIcon())
+            self.actAtuoMedicament.setIcon(QIcon(self.theme.getSelectedIcon()))
             self.battle.recChange(0, True)
-        self.autoMediFlag = not self.autoMediFlag
-        self.changeDefault('loop', self.autoMediFlag, 'medicament')
+        self.flag_loop_recovery_medicine = not self.flag_loop_recovery_medicine
+        #self.changeDefault('loop', self.flag_loop_recovery_medicine, 'medicament')
+        user_data.change('recover.loop.medicine.enable', self.flag_loop_recovery_medicine)
 
     def changeRecStateMedSche(self):
-        if self.autoMediScheFlag:
+        if self.flag_schedule_recovery_medicine:
             self.actAtuoMedicamentSch.setIcon(QIcon(self.unSelPNG))
             self.schedule.recChange(0, False)
         else:
-            self.actAtuoMedicamentSch.setIcon(self.theme.getSelectedIcon())
+            self.actAtuoMedicamentSch.setIcon(QIcon(self.theme.getSelectedIcon()))
             self.schedule.recChange(0, True)
-        self.autoMediScheFlag = not self.autoMediScheFlag
-        self.changeDefault('schedule', self.autoMediScheFlag, 'medicament')
+        self.flag_schedule_recovery_medicine = not self.flag_schedule_recovery_medicine
+        #self.changeDefault('schedule', self.flag_schedule_recovery_medicine, 'medicament')
+        user_data.change('recover.schedule.medicine.enable', self.flag_schedule_recovery_medicine)
+        
 
     def changeRecStateStoneLoop(self):
-        if self.autoStoneFlag:
+        if self.flag_loop_recovery_stone:
             self.actAutoStone.setIcon(QIcon(self.unSelPNG))
             self.battle.recChange(1, False)
         else:
-            self.actAutoStone.setIcon(self.theme.getSelectedIcon())
+            self.actAutoStone.setIcon(QIcon(self.theme.getSelectedIcon()))
             self.battle.recChange(1, True)
-        self.autoStoneFlag = not self.autoStoneFlag
-        self.changeDefault('loop', self.autoStoneFlag, 'stone')
+        self.flag_loop_recovery_stone = not self.flag_loop_recovery_stone
+        #self.changeDefault('loop', self.flag_loop_recovery_stone, 'stone')
+        user_data.change('recover.loop.stone.enable', self.flag_loop_recovery_stone)
 
     def changeRecStateStoneSche(self):
-        if self.autoStoneScheFlag:
+        if self.flag_schedule_recovery_stone:
             self.actAutoStoneSche.setIcon(QIcon(self.unSelPNG))
             self.schedule.recChange(1, False)
         else:
-            self.actAutoStoneSche.setIcon(self.theme.getSelectedIcon())
+            self.actAutoStoneSche.setIcon(QIcon(self.theme.getSelectedIcon()))
             self.schedule.recChange(1, True)
-        self.autoStoneScheFlag = not self.autoStoneScheFlag
-        self.changeDefault('schedule', self.autoStoneScheFlag, 'stone')
+        self.flag_schedule_recovery_stone = not self.flag_schedule_recovery_stone
+        #self.changeDefault('schedule', self.flag_schedule_recovery_stone, 'stone')
+        user_data.change('recover.schedule.stone.enable', self.flag_schedule_recovery_stone)
+        
 
     def changeMaxNum(self):
         #num, ok = QInputDialog.getText(self, f'当前（{self.stoneMaxNum}）', '请输入最大源石消耗数量：')
-        num, ok = AMessageBox.input(self, f'当前({self.stoneMaxNum})', '请输入最大源石消耗数量:')
+        num, ok = AMessageBox.input(self, f'当前({self.maxNum_loop_recovery_stone})', '请输入最大源石消耗数量:')
         if ok:
             if not num.isdecimal():
                 num = '0'
 
-            self.stoneMaxNum = int(num)
+            self.maxNum_loop_recovery_stone = int(num)
             self.battle.recChange(2, int(num))
             self.schedule.recChange(2, int(num))
-            self.changeDefault('maxnum', num, 'stone')
-            self.actMaxNumber.setText(f'设置上限（当前：{self.stoneMaxNum}）')
+            user_data.change('recover.loop.stone.max', int(num))
+            self.actMaxNumber.setText(f'设置上限（当前：{self.maxNum_loop_recovery_stone}）')
 
     def setLoopBattleTimes(self):
         nowLoopTimes = self.battle.getLoopTimes()
@@ -712,72 +723,73 @@ class App(QWidget):
     def initState(self):
         self.initSlrSel()
         #额外理智恢复设置初始化
-        self.autoMediFlag = self.config.getboolean('medicament', 'loop')
-        if self.autoMediFlag:
-            self.actAtuoMedicament.setIcon(self.theme.getSelectedIcon())
+        self.flag_loop_recovery_medicine = user_data.get('recover.loop.medicine.enable')
+        if self.flag_loop_recovery_medicine:
+            self.actAtuoMedicament.setIcon(QIcon(self.theme.getSelectedIcon()))
             self.battle.recChange(0, True)
         else:
             self.actAtuoMedicament.setIcon(QIcon(self.unSelPNG))
             self.battle.recChange(0, False)
-        self.autoMediScheFlag = self.config.getboolean('medicament', 'schedule')
-        if self.autoMediScheFlag:
-            self.actAtuoMedicamentSch.setIcon(self.theme.getSelectedIcon())
+        self.flag_schedule_recovery_medicine = user_data.get('recover.schedule.medicine.enable')
+        if self.flag_schedule_recovery_medicine:
+            self.actAtuoMedicamentSch.setIcon(QIcon(self.theme.getSelectedIcon()))
             self.schedule.recChange(0, True)
         else:
             self.actAtuoMedicamentSch.setIcon(QIcon(self.unSelPNG))
             self.schedule.recChange(0, False)
-        self.autoStoneFlag = self.config.getboolean('stone', 'loop')
-        if self.autoStoneFlag:
-            self.actAutoStone.setIcon(self.theme.getSelectedIcon())
+
+        self.flag_loop_recovery_stone = user_data.get('recover.loop.stone.enable')
+        if self.flag_loop_recovery_stone:
+            self.actAutoStone.setIcon(QIcon(self.theme.getSelectedIcon()))
             self.battle.recChange(1, True)
         else:
             self.actAutoStone.setIcon(QIcon(self.unSelPNG))
             self.battle.recChange(1, False)
-        self.autoStoneScheFlag = self.config.getboolean('stone', 'schedule')
-        if self.autoStoneScheFlag:
-            self.actAutoStoneSche.setIcon(self.theme.getSelectedIcon())
+        self.flag_schedule_recovery_stone = user_data.get('recover.schedule.stone.enable')
+        if self.flag_schedule_recovery_stone:
+            self.actAutoStoneSche.setIcon(QIcon(self.theme.getSelectedIcon()))
             self.schedule.recChange(1, True)
         else:
             self.actAutoStoneSche.setIcon(QIcon(self.unSelPNG))
             self.schedule.recChange(1, False)
-        self.stoneMaxNum = self.config.getint('stone', 'maxnum')
-        self.actMaxNumber.setText(f'设置上限(当前：{self.stoneMaxNum})')
-        self.battle.recChange(2, self.stoneMaxNum)
-        self.schedule.recChange(2, self.stoneMaxNum)
+        self.maxNum_loop_recovery_stone = user_data.get('recover.loop.stone.max')
+        self.actMaxNumber.setText(f'设置上限(当前：{self.maxNum_loop_recovery_stone})')
+        self.maxNum_schedule_recovery_stone = user_data.get('recover.schedule.stone.max')
+        self.battle.recChange(2, self.maxNum_loop_recovery_stone)
+        self.schedule.recChange(2, self.maxNum_schedule_recovery_stone)
 
         #功能开关
-        self.battleFlag = self.config.getboolean('function', 'battle')
+        self.battleFlag = user_data.get('function.loop.default')
         self.tbBattle.setChecked(self.battleFlag) #战斗选项
-        self.scheduleFlag = self.config.getboolean('function', 'schedule')
+        self.scheduleFlag = user_data.get('function.schedule.default')
         self.tbSchedule.setChecked(self.scheduleFlag)
-        self.autoPCFlag = self.config.getboolean('function', 'autoPC')
+        self.autoPCFlag = user_data.get('function.autopc.default')
         self.tbAutoPC.setChecked(self.autoPCFlag)
         
-        self.taskFlag = self.config.getboolean('function', 'task')
+        self.taskFlag = user_data.get('function.task.default')
         self.tbTask.setChecked(self.taskFlag) #任务选项
-        self.creditFlag = self.config.getboolean('function', 'credit')
+        self.creditFlag = user_data.get('function.credit.default')
         self.tbCredit.setChecked(self.creditFlag)
 
-        self.logisticFlag = self.config.getboolean('function', 'logistic')
+        self.logisticFlag = user_data.get('logistic.default')
         self.tbLogistic.setChecked(self.logisticFlag)
 
-        self.shutdownFlag = self.config.getboolean('function', 'shutdown')
+        self.shutdownFlag = user_data.get('function.shutdown.default')
         self.tbShutdown.setChecked(self.shutdownFlag) #自动关机
 
     
     def initClass(self):
         self.rateMonitor = ScreenRateMonitor([self])
 
-        #self.messageBox.warning('测试警告', '这是一条测试信息')
-
-        self.themeEditor = ThemeEditor(self.config, self.app, theme = self.theme, ico = self.ico)
+        self.themeEditor = ThemeEditor(user_data, self.app, theme = self.theme, ico = self.ico)
         self.themeEditor.configUpdate.connect(self.configUpdate)
         self.rateMonitor.addWidget(self.themeEditor)
 
-        self.adb = Adb(self.ico, self.cwd + '/bin/adb', self.config)
+        self.adb = Adb(self.ico, self.cwd + '/bin/adb', simulator_data)
         self.adb.adbErr.connect(self.stop)
         self.adb.adbNotice.connect(self.noticeFromOtherWidget)
-        self.adb.changeConfig(self.config)
+        #self.adb.changeConfig(self.config) #删除！
+        self.adb.changeSimulator(user_data)
 
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
         self.battle.noBootySignal.connect(self.battleWarning)
@@ -828,27 +840,31 @@ class App(QWidget):
         self._data = loads(temp)
         self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, #self.btnMonitorPublicCall, 
                     self.listGoTo, self._data['data'][0]['normal'], self._data['data'][0]['high'], theme = self.theme) #公开招募
-        self.publicCall.setStar(1, 1, self.config.getboolean('function', 'autoPC_skip1Star')) #自动公招保留一星设定
-        self.publicCall.setStar(5, 1, self.config.getboolean('function', 'autoPC_skip5Star'))
-        self.publicCall.skip23Star = self.config.getboolean('function', 'autoPC_skip23Star')
+        self.publicCall.setStar(1, 1, user_data.get('function.autopc.skip1star')) #自动公招保留一星设定
+        self.publicCall.setStar(5, 1, user_data.get('function.autopc.skip5star'))
+        self.publicCall.skip23Star = user_data.get('function.autopc.skip23star')
         self.tbAutoPC.setEnabled(True)
         #self.btnMonitorPublicCall.setEnabled(True)
 
     def initSlrSel(self):
         '初始化模拟器选择'
-        slrName = self.config.get('connect', 'simulator')
-        if slrName == 'bluestacks':
-            self.actSlrBlueStacks.setIcon(self.theme.getSelectedIcon())
+        slrName = user_data.get('simulator')
+        for i in self.simulators:
+            if i.key == slrName:
+                i.setIcon(QIcon(self.theme.getSelectedIcon()))
+                break
+        '''if slrName == 'bluestacks':
+            self.actSlrBlueStacks.setIcon(QIcon(self.theme.getSelectedIcon()))
         elif slrName == 'mumu':
-            self.actSlrMumu.setIcon(self.theme.getSelectedIcon())
+            self.actSlrMumu.setIcon(QIcon(self.theme.getSelectedIcon()))
         elif slrName == 'yeshen':
-            self.actSlrYeshen.setIcon(self.theme.getSelectedIcon())
+            self.actSlrYeshen.setIcon(QIcon(self.theme.getSelectedIcon()))
         elif slrName == 'xiaoyao':
-            self.actSlrXiaoyao.setIcon(self.theme.getSelectedIcon())
+            self.actSlrXiaoyao.setIcon(QIcon(self.theme.getSelectedIcon()))
         elif slrName == 'leidian':
-            self.actSlrLeidian.setIcon(self.theme.getSelectedIcon())
+            self.actSlrLeidian.setIcon(QIcon(self.theme.getSelectedIcon()))
         elif slrName == 'custom':
-            self.actSlrCustom.setIcon(self.theme.getSelectedIcon())
+            self.actSlrCustom.setIcon(QIcon(self.theme.getSelectedIcon()))'''
 
 
     def center(self):
@@ -885,21 +901,21 @@ class App(QWidget):
         self.rightClickMenu.clear()
         
         if self.source == self.tbBattle:
-            if self.config.getboolean('function', 'battle'):
+            if user_data.get('function.loop.default'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
             self.rightClickMenu.addAction(self.actBattleTimes)
             self.rightClickMenu.addAction(self.line)
         elif self.source.text() == '计划战斗':
-            if self.config.getboolean('function', 'schedule'):
+            if user_data.get('function.schedule.default'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
             self.rightClickMenu.addAction(self.actSchJson)
             self.rightClickMenu.addAction(self.line)
         elif self.source.text() == '自动公招':
-            if self.config.getboolean('function', 'autoPC'):
+            if user_data.get('function.autopc.default'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
@@ -912,27 +928,22 @@ class App(QWidget):
             self.rightClickMenu.addAction(self.line)
             self.rightClickMenu.addAction(self.actPcCalculate)
         elif self.source.text() == '任务交付':
-            if self.config.getboolean('function', 'task'):
+            if user_data.get('function.task.default'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
         elif self.source.text() == '获取信用':
-            if self.config.getboolean('function', 'credit'):
-                text = '设为默认关闭'
-            else:
-                text = '设为默认开启'
-        elif self.source.text() == '公开招募计算器':
-            if self.config.getboolean('function', 'publiccall'):
+            if user_data.get('function.credit.default'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
         elif self.source.text() == '完成后关机':
-            if self.config.getboolean('function', 'shutdown'):
+            if user_data.get('function.shutdown.default'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
         elif self.source == self.tbLogistic:
-            if self.config.getboolean('function', 'logistic'):
+            if user_data.get('logistic.default'):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
@@ -944,31 +955,28 @@ class App(QWidget):
     
     def setDefault(self):
         if self.source == self.tbBattle:
-            key = 'battle'
-            value = not self.config.getboolean('function', 'battle')
+            key = 'function.loop.default'
+            value = not user_data.get('function.loop.default')
         elif self.source.text() == '计划战斗':
-            key = 'schedule'
-            value = not self.config.getboolean('function', 'schedule')
+            key = 'function.schedule.default'
+            value = not user_data.get('function.schedule.default')
         elif self.source.text() == '自动公招':
-            key = 'autoPC'
-            value = not self.config.getboolean('function', 'autoPC')
+            key = 'function.autopc.default'
+            value = not user_data.get('function.autopc.default')
         elif self.source.text() == '任务交付':
-            key = 'task'
-            value = not self.config.getboolean('function', 'task')
+            key = 'function.task.default'
+            value = not user_data.get('function.task.default')
         elif self.source.text() == '获取信用':
-            key = 'credit'
-            value = not self.config.getboolean('function', 'credit')
-        elif self.source.text() == '公开招募计算器':
-            key = 'publiccall'
-            value = not self.config.getboolean('function', 'publiccall')
+            key = 'function.credit.default'
+            value = not user_data.get('function.credit.default')
         elif self.source.text() == '完成后关机':
-            key = 'shutdown'
-            value = not self.config.getboolean('function', 'shutdown')
+            key ='function.shutdown.default'
+            value = not user_data.get('function.shutdown.default')
         elif self.source == self.tbLogistic:
-            key = 'logistic'
-            value = not self.config.getboolean('function', 'logistic')
+            key = 'logistic.default'
+            value = not user_data.get('logistic.default')
 
-        self.changeDefault(key, value)
+        user_data.change(key, value)
     
     def functionSel(self, isChecked):
         source = self.sender()
@@ -996,39 +1004,39 @@ class App(QWidget):
         if source.text() == '自动招募':
             self.publicCall.searchFlag = not self.publicCall.searchFlag
             if self.publicCall.searchFlag:
-                source.setIcon(self.theme.getSelectedIcon())
+                source.setIcon(QIcon(self.theme.getSelectedIcon()))
             else:
                 source.setIcon(QIcon(''))
         elif source.text() == '自动聘用':
             self.publicCall.employFlag = not self.publicCall.employFlag
             if self.publicCall.employFlag:
-                source.setIcon(self.theme.getSelectedIcon())
+                source.setIcon(QIcon(self.theme.getSelectedIcon()))
             else:
                 source.setIcon(QIcon(''))
         elif source.text() == '跳过3星及以下':
             self.publicCall.skip23Star = not self.publicCall.skip23Star
             if self.publicCall.skip23Star:
-                source.setIcon(self.theme.getSelectedIcon())
-                self.changeDefault('autopc_skip23star', True)
+                source.setIcon(QIcon(self.theme.getSelectedIcon()))
+                user_data.change('function.autopc.skip23star', True)
             else:
                 source.setIcon(QIcon(''))
-                self.changeDefault('autopc_skip23star', False)
+                user_data.change('function.autopc.skip23star', False)
         elif source.text() == '保留1星':
             self.publicCall.setStar(1, 1, not self.publicCall.setStar(1, 0))
             if self.publicCall.setStar(1,0):
-                source.setIcon(self.theme.getSelectedIcon())
-                self.changeDefault('autopc_skip1star', True)
+                source.setIcon(QIcon(self.theme.getSelectedIcon()))
+                user_data.change('function.autopc.skip1star', True)
             else:
                 source.setIcon(QIcon(''))
-                self.changeDefault('autopc_skip1star', False)
+                user_data.change('function.autopc.skip1star', False)
         elif source.text() == '保留5星':
             self.publicCall.setStar(5, 1, not self.publicCall.setStar(5, 0))
             if self.publicCall.setStar(5,0):
-                source.setIcon(self.theme.getSelectedIcon())
-                self.changeDefault('autopc_skip5star', True)
+                source.setIcon(QIcon(self.theme.getSelectedIcon()))
+                user_data.change('function.autopc.skip5star', True)
             else:
                 source.setIcon(QIcon(''))
-                self.changeDefault('autopc_skip5star', False)
+                user_data.change('function.autopc.skip5star', False)
     
     def openSchEdit(self):
         self.schJsonEditer.editerShow()
@@ -1058,54 +1066,31 @@ class App(QWidget):
 
 
     def simulatorSel(self):
-        slrName = self.sender()
-        if slrName == self.actSlrBlueStacks:
-            self.changeSlr('bluestacks', '127.0.0.1:5555')
-        elif slrName == self.actSlrMumu:
-            self.changeSlr('mumu', '127.0.0.1:7555')
-        elif slrName == self.actSlrYeshen:
-            noxPath = QFileDialog.getOpenFileName(None, '选取文件', './', '夜神模拟器程序 (Nox.exe)')
-            noxPath = path.dirname(noxPath[0])
-            self.changeDefault('noxPath', noxPath, sec = 'connect')
-            self.changeSlr('yeshen', '127.0.0.1:59865')
-            self.initSlrSel()
-            ans = AMessageBox.question(self, '夜神模拟器端口号设置', '是否自动获取夜神模拟器端口号?') 
-            isAutoGetPortSuccess = False
-            if ans:
-                AMessageBox.warning(self, '警告', '自动获取端口号前请确认已启动夜神模拟器')
-                isAutoGetPortSuccess = self.adb.autoGetPort()
-                if isAutoGetPortSuccess:
-                    self.changeSlr('yeshen', f'127.0.0.1:{isAutoGetPortSuccess}')
-                else:
-                    AMessageBox.warning(self, '警告', '自动获取端口号失败！请您手动输入')
-            if (not ans) or (not isAutoGetPortSuccess):
-                while True:
-                    port, isOk = AMessageBox.input(self, '夜神模拟器端口号', '请输入夜神模拟器端口号')
-                    if isOk:
-                        if port.isnumeric():
-                            self.changeSlr('yeshen', f'127.0.0.1:{port}')
-                            break
-                        else:
-                            AMessageBox.warning(self, '警告', '请输入正确的端口号！')
-                            self.changeSlr('yeshen', '127.0.0.1:59865')
-                    else:
-                        AMessageBox.warning(self, '警告', '您取消了端口号录入，将使用默认值59865')
-                        self.changeSlr('yeshen', '127.0.0.1:59865')
-                        break
+        #slrName = self.sender()
+        slr = self.sender()
+        user_data.change('simulator', slr.key)
 
+        '''if slrName == self.actSlrBlueStacks:
+            user_data.change('simulator', 'bluestacks')
+        elif slrName == self.actSlrMumu:
+            user_data.change('simulator', 'mumu')
+        elif slrName == self.actSlrYeshen:
+            user_data.change('simulator', 'yeshen')
         elif slrName == self.actSlrXiaoyao:
-            self.changeSlr('xiaoyao', '127.0.0.1:21503')
+            user_data.change('simulator', 'xiaoyao')
         elif slrName == self.actSlrLeidian:
-            self.changeSlr('leidian', 'emulator-5554')
+            user_data.change('simulator', 'leidian')
         else:
             customIp, isOk = AMessageBox.input(self, '自定义', '请输入模拟器IP地址(如:127.0.0.1:5555或emulator-5554):')
             if isOk:
-                    self.changeSlr('custom', customIp)
+                    self.changeSlr('custom', customIp)'''
 
-        for each in self.slrList:
+        for each in self.simulators:
             each.setIcon(QIcon(''))
 
-        self.initSlrSel()
+        slr.setIcon(QIcon(self.theme.getSelectedIcon()))
+        self.adb.changeSimulator(user_data)
+        #self.initSlrSel()
 
         
     def exit(self):
@@ -1135,7 +1120,7 @@ class App(QWidget):
         openUrl('https://github.com/MangetsuC/arkHelper')
                 
     def showMessage(self):
-        self.changeDefault('md5', self.noticeMd5, sec = 'notice')
+        user_data.change('notice', self.noticeMd5)
         self.board.updateText(self._notice)
         self.board.show()
         #弹出公告
@@ -1264,13 +1249,12 @@ class App(QWidget):
                 self.schedule.isRecovered = True
 
     def logisticReady(self):
-        self.logistic = UILogistic(self.adb, self.userDataPath + '/logisticRule.ahrule', self.config, self.app, 
-                                    theme = self.theme, ico = self.ico)
+        self.logistic = UILogistic(self.adb, self.userDataPath + '/logisticRule.ahrule', self.app, ico = self.ico)
         self.logistic.configUpdate.connect(self.configUpdate)
         self.actLogisticConfig.triggered.connect(self.logistic.show)
         self.tbLogistic.setEnabled(True)
 
-        self.logisticFlag = self.config.getboolean('function', 'logistic')
+        self.logisticFlag = user_data.get('logistic.default')
         self.tbLogistic.setChecked(self.logisticFlag)
         self.rateMonitor.addWidget(self.logistic)
 
@@ -1284,7 +1268,20 @@ class App(QWidget):
     def noticeFromOtherWidget(self, text):
         AMessageBox.warning(self, '警告', text)
 
+    def simulator_choices(self):
+        '添加模拟器选项'
+        self.actSimulator.clear()
+        self.simulators.clear()
+        for i in simulator_data.get_simulators():
+            temp_act = SimulatorAction(simulator_data.get(i)['name'], i, self.actSimulator)
+            temp_act.triggered.connect(self.simulatorSel)
+            self.simulators.append(temp_act)
+            self.actSimulator.addAction(temp_act)
 
+class SimulatorAction(QAction):
+    def __init__(self, text, key, parent = None):
+        super(SimulatorAction, self).__init__(text, parent)
+        self.key = key
 
 if __name__ == '__main__':
     cgitb.enable(format = 'text')

@@ -5,6 +5,7 @@ from re import findall as refind
 from re import split as resplit
 from subprocess import PIPE, Popen, call
 from time import sleep
+from PyQt5.QtWidgets import QFileDialog
 
 from cv2 import imdecode, merge
 from foo.win import toast
@@ -14,6 +15,7 @@ from PyQt5.QtWidgets import QMessageBox, QWidget
 
 syspath.append(getcwd())
 from foo.pictureR import pictureFind
+from foo.ui.messageBox import AMessageBox
 
 
 def delImg(dir):
@@ -92,7 +94,7 @@ class Cmd:
 class Adb(QObject):
     adbErr = pyqtSignal(bool)
     adbNotice = pyqtSignal(str)
-    def __init__(self, ico, adbPath, config = None):
+    def __init__(self, ico, adbPath, simulator_data):
         super(Adb, self).__init__()
         self.adbPath = adbPath
         self.cmd = Cmd(self.adbPath)
@@ -101,6 +103,7 @@ class Adb(QObject):
         self.screenX = 1440
         self.screenY = 810
         self.ico = ico
+        self.simulator_data = simulator_data
 
         self.submitting = pictureFind.picRead(getcwd() + '/res/logistic/general/submitting.png')
 
@@ -133,6 +136,43 @@ class Adb(QObject):
             print('start adb failed')
             return False
     
+    def changeSimulator(self, config):
+        choosed_simulator = config.get('simulator') #读取模拟器数据
+        try:
+            simulator_data = self.simulator_data.get(choosed_simulator)
+        except KeyError:
+            print('模拟器数据读取错误！')
+            simulator_data = {'ip': '127.0.0.1:5555', 'adb': 'internal'} #给一组默认配置，防止后续出错
+        
+        #由adb路径实例化Cmd类便于操作adb
+        if simulator_data['adb'] == 'external':
+            #要求用户选择adb路径
+            AMessageBox.warning(None, '通知', '您选择的模拟器需要手动选取adb路径！')
+            adb_dir = QFileDialog.getOpenFileName(None, '选取adb.exe', './', 'adb.exe')[0]
+            if adb_dir == '': #用户选择取消
+                AMessageBox.warning(None, '警告', '已取消！将使用自带的adb！')
+                self.cmd = Cmd('./bin/adb') #使用自带的adb，但并不修改配置文件上的adb路径
+            else:
+                self.simulator_data.change(f'{choosed_simulator}.adb', adb_dir)
+                self.cmd = Cmd(path.dirname(adb_dir))
+        elif simulator_data['adb'] == 'internal':
+            self.cmd = Cmd('./bin/adb')
+        else:
+            #已经存储了adb路径
+            self.cmd = Cmd(path.dirname(simulator_data['adb'])) #将路径转化为所在目录
+
+        #确定模拟器ip地址
+        if simulator_data['ip'] == '*req*':
+            #需求用户输入ip
+            ip = AMessageBox.input(None, 'IP地址', '请输入模拟器IP地址(如127.0.0.1:7555或emulator-5554):')[0]
+            self.simulator_data.change(f'{choosed_simulator}.ip', ip)
+            self.ip = ip
+        else:
+            self.ip = simulator_data['ip']
+        
+        #adb设置完成
+
+
     def changeConfig(self, config):
         if config == None:
             self.ip = '127.0.0.1:7555'
@@ -153,6 +193,7 @@ class Adb(QObject):
         print(self.ip)
 
     def autoGetPort(self):
+        #针对夜神的自动获取ip地址
         self.cmd.run('adb start-server')
         devicesText = self.cmd.run('adb devices')
         ports = refind(r':[0-9]*' ,devicesText)
@@ -199,26 +240,6 @@ class Adb(QObject):
         if adbPidList != []:
             for eachAdbPid in adbPidList:
                 self.cmd.killTask(eachAdbPid)
-    
-    def screenShot(self, pngName = 'arktemp'):
-        while True:
-            tempFlag = delImg("{0}/{1}.png".format(self.adbPath, pngName))
-            if tempFlag:
-                break
-            else:
-                sleep(1)
-            
-        #if self.simulator == 'leidian':
-        #    self.cmd.run('adb shell screencap -p /sdcard/arktemp.png')
-        #    self.cmd.run('adb pull \"/sdcard/arktemp.png\" \"{0}/{1}.png\"'\
-        #        .format(self.adbPath, pngName))
-        #else:
-        self.cmd.run('adb -s {device} shell screencap -p /sdcard/arktemp.png'\
-            .format(device = self.ip))
-        self.cmd.run('adb -s {device} pull \"/sdcard/arktemp.png\" \"{0}/{1}.png\"'\
-            .format(self.adbPath, pngName, device = self.ip))
-
-        return True
 
     def getScreen_std(self):
         submitCount = 0

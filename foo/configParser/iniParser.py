@@ -26,8 +26,10 @@ def ini2dict():
             value = ini.get(section, option)
             if value.isnumeric():
                 value = int(value)
-            elif value == 'True' or value == 'False':
-                value = bool(value)
+            elif value == 'True':
+                value = True
+            elif value == 'False':
+                value = False
             config_old[section][option] = value
 
     return config_old

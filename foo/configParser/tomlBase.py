@@ -25,6 +25,7 @@ def defaultConfig():
     selectedcolor = 'auto'
 
     [logistic] #基建配置
+    default = false
     rule = '示例配置' #当前选择的配置名称
     manufactory.enable = true #是否处理制造站
     trade.enable = true #是否处理贸易站
@@ -104,6 +105,7 @@ def ini2toml():
         config_new['theme'] = config_old['theme']
         config_new['logistic'] = config_old['logistic']
         config_new['logistic'] = dict()
+        config_new['logistic']['default'] = config_old['function']['logistic']
         config_new['logistic']['rule'] = config_old['logistic']['defaultrule']
         config_new['logistic']['manufactory'] = {'default': config_old['logistic']['manufactory']}
         config_new['logistic']['trade'] = {'default': config_old['logistic']['trade']}

@@ -61,25 +61,25 @@ class ThemeEditor(QWidget):
         self.setAutoPressedColor.clicked.connect(self.setAuto)
 
         self.editorThemeColor = QPushButton()
-        self.setColorBtnState(self.editorThemeColor, self.config.get('theme', 'themecolor'))
+        self.setColorBtnState(self.editorThemeColor, self.config.get('theme.themecolor'))
         self.editorThemeColor.clicked.connect(self.chooseColor)
         self.editorFontColor = QPushButton()
-        self.setColorBtnState(self.editorFontColor, self.config.get('theme', 'fontcolor'))
+        self.setColorBtnState(self.editorFontColor, self.config.get('theme.fontcolor'))
         self.editorFontColor.clicked.connect(self.chooseColor)
         self.editorCheckedFontColor = QPushButton()
-        self.setColorBtnState(self.editorCheckedFontColor, self.config.get('theme', 'checkedfontcolor'))
+        self.setColorBtnState(self.editorCheckedFontColor, self.config.get('theme.checkedfontcolor'))
         self.editorCheckedFontColor.clicked.connect(self.chooseColor)
         self.editorBorderColor = QPushButton()
-        self.setColorBtnState(self.editorBorderColor, self.config.get('theme', 'bordercolor'))
+        self.setColorBtnState(self.editorBorderColor, self.config.get('theme.bordercolor'))
         self.editorBorderColor.clicked.connect(self.chooseColor)
         self.editorFgColor = QPushButton()
-        self.setColorBtnState(self.editorFgColor, self.config.get('theme', 'fgcolor'))
+        self.setColorBtnState(self.editorFgColor, self.config.get('theme.fgcolor'))
         self.editorFgColor.clicked.connect(self.chooseColor)
         self.editorBgColor = QPushButton()
-        self.setColorBtnState(self.editorBgColor, self.config.get('theme', 'bgcolor'))
+        self.setColorBtnState(self.editorBgColor, self.config.get('theme.bgcolor'))
         self.editorBgColor.clicked.connect(self.chooseColor)
         self.editorPressedColor = QPushButton()
-        self.setColorBtnState(self.editorPressedColor, self.config.get('theme', 'pressedcolor'))
+        self.setColorBtnState(self.editorPressedColor, self.config.get('theme.pressedcolor'))
         self.editorPressedColor.clicked.connect(self.chooseColor)
         
         self.darkSelectedIcon = QPushButton('深色')
@@ -91,7 +91,7 @@ class ThemeEditor(QWidget):
         self.autoSelectedIcon = QPushButton('自动')
         self.autoSelectedIcon.setCheckable(True)
         self.autoSelectedIcon.clicked.connect(self.selectedIconSet)
-        selectedColor = self.config.get('theme', 'selectedcolor')
+        selectedColor = self.config.get('theme.selectedcolor')
         if selectedColor == 'dark':
             self.darkSelectedIcon.setChecked(True)
         elif selectedColor == 'light':
@@ -174,24 +174,24 @@ class ThemeEditor(QWidget):
             if self.darkSelectedIcon.isChecked():
                 self.lightSelectedIcon.setChecked(False)
                 self.autoSelectedIcon.setChecked(False)
-                self.config.set('theme', 'selectedcolor', 'dark')
+                self.config.change('theme.selectedcolor', 'dark')
             else:
                 self.darkSelectedIcon.setChecked(True)
         elif source == self.lightSelectedIcon:
             if self.lightSelectedIcon.isChecked():
                 self.darkSelectedIcon.setChecked(False)
                 self.autoSelectedIcon.setChecked(False)
-                self.config.set('theme', 'selectedcolor', 'light')
+                self.config.change('theme.selectedcolor', 'light')
             else:
                 self.lightSelectedIcon.setChecked(True)
         else:
             if self.autoSelectedIcon.isChecked():
                 self.lightSelectedIcon.setChecked(False)
                 self.darkSelectedIcon.setChecked(False)
-                self.config.set('theme', 'selectedcolor', 'auto')
+                self.config.change('theme.selectedcolor', 'auto')
             else:
                 self.autoSelectedIcon.setChecked(True)
-        self.configUpdate.emit()
+        #self.configUpdate.emit()
 
     def test(self):
         self.colorSelector.show()
@@ -235,8 +235,8 @@ class ThemeEditor(QWidget):
                                 QPushButton{{border:0px;background:{self.theme.getFgColor()};}}
                                 QPushButton:pressed{{background:{self.theme.getPressedColor()};}}
                                 ''')
-        self.config.set('theme', key, 'auto')
-        self.configUpdate.emit()
+        self.config.change(f'theme.{key}', 'auto')
+        #self.configUpdate.emit()
 
     def colorOK(self):
         #点下确认后进行颜色处理
@@ -260,6 +260,6 @@ class ThemeEditor(QWidget):
                                 QPushButton{{border:0px;background:{color};}}
                                 QPushButton:pressed{{background:{color};}}
                                 ''')
-        self.config.set('theme', key, color)
+        self.config.change(f'theme.{key}', color)
         self.configUpdate.emit()
 

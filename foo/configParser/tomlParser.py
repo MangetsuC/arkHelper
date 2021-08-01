@@ -70,6 +70,9 @@ class simulatorToml(Toml):
     def __init__(self):
         super(simulatorToml, self).__init__('simulator.toml', tomlBase.defaultSimulator())
 
+    def get_simulators(self):
+        return self.toml.keys()
+
 if __name__ == '__main__':
     test1 = configToml()
     test2 = simulatorToml()

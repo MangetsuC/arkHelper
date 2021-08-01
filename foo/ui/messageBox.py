@@ -5,26 +5,13 @@ from PyQt5.QtWidgets import (QDialog,
                              QLabel,
                              QPushButton, QVBoxLayout, QLineEdit)
 
-from configparser import ConfigParser
-
-from foo.ui.theme import Theme
+from common import theme
 
 class AMessageBox(QDialog):
     def __init__(self, parent):
         super(AMessageBox, self).__init__(parent)
         self.setWindowIcon(QIcon(getcwd() + '/res/ico.ico'))
 
-        config = ConfigParser()
-        configPath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/config.ini'
-        if not path.exists(configPath):
-            configPath = getcwd() + '/config.ini'
-            
-        try:
-            config.read(filenames=configPath, encoding="UTF-8")
-        except UnicodeDecodeError:
-            config.read(filenames=configPath, encoding="gbk")
-
-        theme = Theme(config)
         self.setStyleSheet(f'''QWidget{{background:{theme.getBgColor()}}}
                             QLabel{{color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;}}
                             QPushButton{{border:0px;background:{theme.getFgColor()};

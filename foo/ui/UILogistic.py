@@ -10,10 +10,11 @@ from json import dumps
 path.append(getcwd())
 from foo.logisticDepartment import Logistic, ruleEncoder
 from foo.ui.screen import ScreenRateMonitor
+from common import user_data, theme
 
 class UILogistic(QWidget):
     configUpdate = pyqtSignal()
-    def __init__(self, adb, rulePath, config, app, theme = None, ico = ''):
+    def __init__(self, adb, rulePath, app, ico = ''):
         super(UILogistic, self).__init__()
         self.app = app
 
@@ -111,12 +112,12 @@ class UILogistic(QWidget):
         self.setLayout(self.grid)
         self.resizeUI()
 
-        self.config = config
+        self.config = user_data
         self.rulePath = rulePath
         self.ruleEncoder = ruleEncoder.RuleEncoder(rulePath)
-        self.logistic = Logistic.Logistic(adb, self.config.get('logistic', 'defaultrule'), self.ruleEncoder,
-                                          moodThreshold = int(self.config.get('logistic', 'moodThreshold')),
-                                          dormThreshold = int(self.config.get('logistic', 'dormThreshold')))
+        self.logistic = Logistic.Logistic(adb, self.config.get('logistic.rule'), self.ruleEncoder,
+                                          moodThreshold = int(self.config.get('logistic.threshold.work')),
+                                          dormThreshold = int(self.config.get('logistic.threshold.dorm')))
 
         self.setDefaultState()
 
@@ -142,13 +143,13 @@ class UILogistic(QWidget):
         self.btnOpenRuleFolder.setMinimumSize(rate * 145, rate * 40)
 
     def setDefaultState(self):
-        self.editDormThreshold.setText(self.config.get('logistic', 'dormthreshold'))
-        self.editMoodThreshold.setText(self.config.get('logistic', 'moodthreshold'))
-        self.btnEnableManufactory.setChecked(self.config.getboolean('logistic', 'manufactory'))
-        self.btnEnableTrade.setChecked(self.config.getboolean('logistic', 'trade'))
-        self.btnEnablePowerRoom.setChecked(self.config.getboolean('logistic', 'powerroom'))
-        self.btnEnableOfficeRoom.setChecked(self.config.getboolean('logistic', 'officeroom'))
-        self.btnEnableReceptionRoom.setChecked(self.config.getboolean('logistic', 'receptionroom'))
+        self.editDormThreshold.setText(str(self.config.get('logistic.threshold.dorm')))
+        self.editMoodThreshold.setText(str(self.config.get('logistic.threshold.work')))
+        self.btnEnableManufactory.setChecked(self.config.get('logistic.manufactory.enable'))
+        self.btnEnableTrade.setChecked(self.config.get('logistic.trade.enable'))
+        self.btnEnablePowerRoom.setChecked(self.config.get('logistic.powerroom.enable'))
+        self.btnEnableOfficeRoom.setChecked(self.config.get('logistic.officeroom.enable'))
+        self.btnEnableReceptionRoom.setChecked(self.config.get('logistic.meetingroom.enable'))
 
         self.ruleRelateRefresh()
         self.logistic.setEnableRooms(self.getEnableRooms())
@@ -165,7 +166,7 @@ class UILogistic(QWidget):
         self.comboBoxRuleNames.clear()
         self.comboBoxRuleNames.addItems(self.ruleEncoder.getAllRulesName())
 
-        defaultName = self.config.get('logistic', 'defaultrule')
+        defaultName = self.config.get('logistic.rule')
         allRuleNames = self.ruleEncoder.getAllRulesName()
         if defaultName in allRuleNames:
             self.comboBoxRuleNames.setCurrentIndex(allRuleNames.index(defaultName))
@@ -177,22 +178,22 @@ class UILogistic(QWidget):
 
     def selRule(self):
         self.logistic.setRuleName(self.comboBoxRuleNames.currentText())
-        self.config.set('logistic', 'defaultrule', self.comboBoxRuleNames.currentText())
+        self.config.change('logistic.rule', self.comboBoxRuleNames.currentText())
         self.ruleRelateRefresh()
 
     def setEnableRoom(self, isChecked):
         source = self.sender()
-        isChecked = str(isChecked)
+        #isChecked = str(isChecked)
         if source == self.btnEnableManufactory:
-            self.config.set('logistic', 'manufactory', isChecked)
+            self.config.change('logistic.manufactory.enable', isChecked)
         elif source == self.btnEnableTrade:
-            self.config.set('logistic', 'trade', isChecked)
+            self.config.change('logistic.trade.enable', isChecked)
         elif source == self.btnEnablePowerRoom:
-            self.config.set('logistic', 'powerroom', isChecked)
+            self.config.change('logistic.powerroom.enable', isChecked)
         elif source == self.btnEnableOfficeRoom:
-            self.config.set('logistic', 'officeroom', isChecked)
+            self.config.change('logistic.officeroom.enable', isChecked)
         elif source == self.btnEnableReceptionRoom:
-            self.config.set('logistic', 'receptionroom', isChecked)
+            self.config.change('logistic.meetingroom.enable', isChecked)
         
         self.logistic.setEnableRooms(self.getEnableRooms())
 
@@ -219,10 +220,10 @@ class UILogistic(QWidget):
     def closeEvent(self, event):
         if self.editDormThreshold.text().isnumeric():
             self.logistic.setDormThreshold(int(self.editDormThreshold.text()))
-            self.config.set('logistic', 'dormthreshold', self.editDormThreshold.text())
+            self.config.change('logistic.threshold.dorm', int(self.editDormThreshold.text()))
         if self.editMoodThreshold.text().isnumeric():
             self.logistic.setMoodThreshold(int(self.editMoodThreshold.text()))
-            self.config.set('logistic', 'moodthreshold', self.editMoodThreshold.text())
+            self.config.change('logistic.threshold.work', int(self.editMoodThreshold.text()))
             
         self.configUpdate.emit()
         event.accept()
