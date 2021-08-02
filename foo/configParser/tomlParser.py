@@ -15,7 +15,7 @@ class Toml:
         self.toml = tomlBase.tomlRead(filename)
         if self.toml == dict() and old != None: #将旧类型配置合并到新配置中
             self.toml = tomlBase.dictUpdate(default_toml, old)
-        else:
+        elif default_toml != None:
             self.toml = tomlBase.dictUpdate(default_toml, self.toml) #将用户先前的配置合并到新配置文件中
         self.write()
 
@@ -67,7 +67,13 @@ class configToml(Toml):
 
 class simulatorToml(Toml):
     def __init__(self):
-        super(simulatorToml, self).__init__('simulator.toml', tomlBase.defaultSimulator())
+        self.releasePath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/simulator.toml'
+        self.devPath = './simulator.toml'
+        self.toml = tomlBase.tomlRead('simulator.toml')
+        if self.toml == dict(): #将旧类型配置合并到新配置中
+            self.toml = tomlBase.dictUpdate(tomlBase.defaultSimulator(), self.toml)
+        self.write()
+        #可以初始化，但不会每次都补充用户删除的配置
 
     def get_simulators(self):
         return self.toml.keys()

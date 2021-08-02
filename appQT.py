@@ -231,21 +231,9 @@ class App(QWidget):
         self.settingMenu = QMenu() #创建设置按钮菜单
         
         self.actSimulator = QMenu('模拟器', parent=self.settingMenu) #模拟器二级菜单
+        self.actSimulator_del = QMenu('删除', parent=self.actSimulator) #删除模拟器三级菜单
         self.simulators = []
         self.simulator_choices()
-
-        '''self.actSlrBlueStacks = QAction('蓝叠模拟器', parent=self.actSimulator)
-        self.actSlrBlueStacks.triggered.connect(self.simulatorSel)
-        self.actSlrMumu = QAction('Mumu模拟器(旧版)', parent=self.actSimulator)
-        self.actSlrMumu.triggered.connect(self.simulatorSel)
-        self.actSlrYeshen = QAction('夜神模拟器', parent=self.actSimulator)
-        self.actSlrYeshen.triggered.connect(self.simulatorSel)
-        self.actSlrXiaoyao = QAction('逍遥模拟器', parent=self.actSimulator)
-        self.actSlrXiaoyao.triggered.connect(self.simulatorSel)
-        self.actSlrLeidian = QAction('雷电模拟器', parent=self.actSimulator)
-        self.actSlrLeidian.triggered.connect(self.simulatorSel)
-        self.actSlrCustom = QAction('自定义', parent=self.actSimulator)
-        self.actSlrCustom.triggered.connect(self.simulatorSel)'''
 
         self.actRecovery = QMenu('额外理智', parent=self.settingMenu)
         self.actMedicament = QMenu('理智顶液', parent=self.actRecovery)
@@ -391,14 +379,16 @@ class App(QWidget):
                                                 background-color:{self.theme.getBgColor()}; margin:3px;}}
                                                 QMenu:item {{padding:8px 32px;}}
                                                 QMenu:item:selected {{background-color: {self.theme.getFgColor()};}}
-                                                QMenu:icon{{padding: 8px 20px;}}''')
+                                                QMenu:icon{{padding: 8px 20px;}}
+                                                QMenu:separator{{background-color: {self.theme.getFontColor()}; 
+                                                        height:1px; margin-left:2px; margin-right:2px;}}''')
         self.rightClickMenu.setStyleSheet(f'''QMenu {{color:{self.theme.getFontColor()};
                                                     font-family: "Microsoft YaHei", SimHei, SimSun;font:10pt;
                                                     background-color:{self.theme.getBgColor()}; margin:3px;}}
                                                 QMenu:item {{padding:8px 32px;}}
                                                 QMenu:item:selected {{ background-color: {self.theme.getFgColor()};}}
                                                 QMenu:icon{{padding: 8px 20px;}}
-                                                QMenu:separator{{background-color: #7C7C7C; 
+                                                QMenu:separator{{background-color: {self.theme.getFontColor()}; 
                                                     height:1px; margin-left:2px; margin-right:2px;}}''')
 
         self.console.applyStyleSheet(self.theme)
@@ -607,7 +597,6 @@ class App(QWidget):
         self.adb = Adb(self.ico, self.cwd + '/bin/adb', simulator_data)
         self.adb.adbErr.connect(self.stop)
         self.adb.adbNotice.connect(self.noticeFromOtherWidget)
-        #self.adb.changeConfig(self.config) #删除！
         self.adb.changeSimulator(user_data)
 
         self.battle = BattleLoop(self.adb, self.cwd, self.ico)
@@ -672,18 +661,12 @@ class App(QWidget):
             if i.key == slrName:
                 i.setIcon(QIcon(self.theme.getSelectedIcon()))
                 break
-        '''if slrName == 'bluestacks':
-            self.actSlrBlueStacks.setIcon(QIcon(self.theme.getSelectedIcon()))
-        elif slrName == 'mumu':
-            self.actSlrMumu.setIcon(QIcon(self.theme.getSelectedIcon()))
-        elif slrName == 'yeshen':
-            self.actSlrYeshen.setIcon(QIcon(self.theme.getSelectedIcon()))
-        elif slrName == 'xiaoyao':
-            self.actSlrXiaoyao.setIcon(QIcon(self.theme.getSelectedIcon()))
-        elif slrName == 'leidian':
-            self.actSlrLeidian.setIcon(QIcon(self.theme.getSelectedIcon()))
-        elif slrName == 'custom':
-            self.actSlrCustom.setIcon(QIcon(self.theme.getSelectedIcon()))'''
+        else:
+            if len(self.simulators) != 0: #删除当前使用的模拟器时的处理
+                self.simulators[0].setIcon(QIcon(self.theme.getSelectedIcon()))
+                user_data.change('simulator', self.simulators[0].key)
+            else:
+                user_data.change('simulator', 'unknow')
 
 
     def center(self):
@@ -1088,14 +1071,50 @@ class App(QWidget):
         AMessageBox.warning(self, '警告', text)
 
     def simulator_choices(self):
-        '添加模拟器选项'
+        '添加模拟器菜单中的选项'
+        self.actSimulator_add = QAction('添加')
+        self.actSimulator_add.triggered.connect(self.simulator_add)
+
         self.actSimulator.clear()
+        self.actSimulator_del.clear()
         self.simulators.clear()
         for i in simulator_data.get_simulators():
             temp_act = SimulatorAction(simulator_data.get(i)['name'], i, self.actSimulator)
             temp_act.triggered.connect(self.simulatorSel)
             self.simulators.append(temp_act)
             self.actSimulator.addAction(temp_act)
+
+            temp_act_del = SimulatorAction(simulator_data.get(i)['name'], i, self.actSimulator)
+            temp_act_del.triggered.connect(self.simulator_del)
+            self.actSimulator_del.addAction(temp_act_del)
+        self.actSimulator.addSeparator()
+        self.actSimulator.addAction(self.actSimulator_add)
+        self.actSimulator.addMenu(self.actSimulator_del)
+
+    def simulator_add(self):
+        '添加模拟器配置'
+        simulator_new = AMessageBox.input(self, '请输入模拟器信息', 
+                '数据格式:名称;ID;adb来源[internal|external];IP地址\n\
+如:蓝叠模拟器;bluestacks;internal;127.0.0.1:5555\n\
+如:雷电模拟器;leidian;internal;emulator-5554')
+        if simulator_new[1]:
+            simulator_new = simulator_new[0].split(';')
+            if len(simulator_new) == 4:
+                id = simulator_new[1]
+                simulator_data.change(f'{id}.ip', simulator_new[3])
+                simulator_data.change(f'{id}.adb', simulator_new[2])
+                simulator_data.change(f'{id}.name', simulator_new[0])
+                self.simulator_choices() #更新菜单
+                self.initSlrSel() #更新选中项
+                self.adb.changeSimulator(user_data)
+
+    def simulator_del(self):
+        '删除模拟器配置'
+        sender = self.sender()
+        simulator_data.delete(sender.key)
+        self.simulator_choices()
+        self.initSlrSel()
+        self.adb.changeSimulator(user_data)
 
 class SimulatorAction(QAction):
     def __init__(self, text, key, parent = None):

@@ -141,7 +141,10 @@ class Adb(QObject):
         try:
             simulator_data = self.simulator_data.get(choosed_simulator)
         except KeyError:
-            print('模拟器数据读取错误！')
+            if choosed_simulator == 'unknow':
+                print('无可用模拟器配置！使用默认！')
+            else:
+                print('模拟器数据读取错误！')
             simulator_data = {'ip': '127.0.0.1:5555', 'adb': 'internal'} #给一组默认配置，防止后续出错
         
         #由adb路径实例化Cmd类便于操作adb
