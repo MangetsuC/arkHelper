@@ -9,6 +9,7 @@ path.append(getcwd())
 from foo.pictureR import pictureFind, ocr, wordsTemplate
 from foo.adb import adbCtrl
 from foo.logisticDepartment import ruleEncoder
+from common import user_data
 
 
 class Room:
@@ -446,36 +447,36 @@ class ReceptionRoom(Room):
         self.setClue()#先添加一次线索，以便于线索赠送
         self.bactToMeetingIndex((750, 700))
 
+        if user_data.get('logistic.meetingroom.send'):
+            #线索赠送
+            while pictureFind.matchImg(self.adb.getScreen_std(), self.sendClue, confidencevalue = 0.7) == None:
+                if not self.runFlag:
+                    return 
+                self.click((1350, 440))
 
-        #线索赠送
-        while pictureFind.matchImg(self.adb.getScreen_std(), self.sendClue, confidencevalue = 0.7) == None:
-            if not self.runFlag:
-                return 
-            self.click((1350, 440))
-
-        luckyFriend = self.sendBtn.copy()
-        maxPages = 3 #最多只有10个线索，每页4个好友
-        while pictureFind.matchImg(self.adb.getScreen_std(), self.noExtraClue, confidencevalue = 0.6) == None:
-            if maxPages == 0:
-                break
-            if not self.runFlag:
-                return 
-            if luckyFriend == []:
-                self.click((1360, 765))
-                luckyFriend = self.sendBtn.copy()
-                maxPages -= 1
-            self.click((100, 250))
-            self.click(luckyFriend.pop(randint(0, len(luckyFriend) - 1)))
-        while pictureFind.matchImg(self.adb.getScreen_std(), self.confidential, confidencevalue = 0.7) == None:
-            if not self.runFlag:
-                return 
-            self.click((1400, 40)) #返回
+            luckyFriend = self.sendBtn.copy()
+            maxPages = 3 #最多只有10个线索，每页4个好友
+            while pictureFind.matchImg(self.adb.getScreen_std(), self.noExtraClue, confidencevalue = 0.6) == None:
+                if maxPages == 0:
+                    break
+                if not self.runFlag:
+                    return 
+                if luckyFriend == []:
+                    self.click((1360, 765))
+                    luckyFriend = self.sendBtn.copy()
+                    maxPages -= 1
+                self.click((100, 250))
+                self.click(luckyFriend.pop(randint(0, len(luckyFriend) - 1)))
+            while pictureFind.matchImg(self.adb.getScreen_std(), self.confidential, confidencevalue = 0.7) == None:
+                if not self.runFlag:
+                    return 
+                self.click((1400, 40)) #返回
         
 
-
-        self.click((1350, 205)) #线索收集
-        self.click((900, 650))
-        self.click((1115, 115))
+        if user_data.get('logistic.meetingroom.daily'):
+            self.click((1350, 205)) #线索收集
+            self.click((900, 650))
+            self.click((1115, 115))
 
         if not self.runFlag:
             return 
@@ -491,7 +492,7 @@ class ReceptionRoom(Room):
         cluesCondition = self.setClue()#添加线索
         if not self.runFlag:
             return 
-        if (cluesCondition[0] == 0):
+        if (cluesCondition[0] == 0) and user_data.get('logistic.meetingroom.use'):
             self.click(cluesCondition[1])
             #开启线索交流
 

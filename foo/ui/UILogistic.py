@@ -82,6 +82,23 @@ class UILogistic(QWidget):
         self.btnOpenRuleFolder = QPushButton('打开所在文件夹')
         self.btnOpenRuleFolder.clicked.connect(self.openRuleFileFolder)
 
+        self.label_meetingRoom_send = QLabel('赠送全部多余的线索:')
+        self.btn_meetingRoom_send = QPushButton('')
+        self.btn_meetingRoom_send.setCheckable(True)
+        self.btn_meetingRoom_send.clicked.connect(self.meetingRoom_function_change)
+
+        self.label_meetingRoom_use = QLabel('自动开启线索交流:')
+        self.btn_meetingRoom_use = QPushButton('')
+        self.btn_meetingRoom_use.setCheckable(True)
+        self.btn_meetingRoom_use.clicked.connect(self.meetingRoom_function_change)
+
+        self.label_meetingRoom_daily = QLabel('自动领取每日线索:')
+        self.btn_meetingRoom_daily = QPushButton('')
+        self.btn_meetingRoom_daily.setCheckable(True)
+        self.btn_meetingRoom_daily.clicked.connect(self.meetingRoom_function_change)
+
+        self.meetingRoom_function_ui_refresh()
+
         self.labelRooms = QLabel('启用的房间:')
         self.labelRuleInUseName = QLabel('当前使用规则:')
         self.labelMood = QLabel('撤下工作干员理智阈值:')
@@ -102,12 +119,18 @@ class UILogistic(QWidget):
         self.grid.addWidget(self.btnEnableReceptionRoom, 3, 2)
         self.grid.addWidget(self.btnEnableOfficeRoom, 4, 2)
         self.grid.addWidget(self.btnEnablePowerRoom, 3, 1)
-        self.grid.addWidget(self.labelMood, 5, 0, 1, 2)
-        self.grid.addWidget(self.editMoodThreshold, 5, 2)
-        self.grid.addWidget(self.labelDorm, 6, 0, 1, 2)
-        self.grid.addWidget(self.editDormThreshold, 6, 2)
-        self.grid.addWidget(self.labelRuleFileName, 7, 0, 1, 2)
-        self.grid.addWidget(self.btnOpenRuleFolder, 7, 2)
+        self.grid.addWidget(self.label_meetingRoom_send, 5, 0, 1, 2)
+        self.grid.addWidget(self.btn_meetingRoom_send, 5, 2)
+        self.grid.addWidget(self.label_meetingRoom_use, 6, 0, 1, 2)
+        self.grid.addWidget(self.btn_meetingRoom_use, 6, 2)
+        self.grid.addWidget(self.label_meetingRoom_daily, 7, 0, 1, 2)
+        self.grid.addWidget(self.btn_meetingRoom_daily, 7, 2)
+        self.grid.addWidget(self.labelMood, 8, 0, 1, 2)
+        self.grid.addWidget(self.editMoodThreshold, 8, 2)
+        self.grid.addWidget(self.labelDorm, 9, 0, 1, 2)
+        self.grid.addWidget(self.editDormThreshold, 9, 2)
+        self.grid.addWidget(self.labelRuleFileName, 10, 0, 1, 2)
+        self.grid.addWidget(self.btnOpenRuleFolder, 10, 2)
 
         self.setLayout(self.grid)
         self.resizeUI()
@@ -140,7 +163,40 @@ class UILogistic(QWidget):
         self.comboBoxRuleNames.setMinimumHeight(rate * 40)
         self.editDormThreshold.setMinimumSize(rate * 145, rate * 40)
         self.editMoodThreshold.setMinimumSize(rate * 145, rate * 40)
+        self.btn_meetingRoom_use.setMinimumSize(rate * 145, rate * 40)
+        self.btn_meetingRoom_daily.setMinimumSize(rate * 145, rate * 40)
+        self.btn_meetingRoom_send.setMinimumSize(rate * 145, rate * 40)
         self.btnOpenRuleFolder.setMinimumSize(rate * 145, rate * 40)
+
+    def meetingRoom_function_ui_refresh(self):
+        if user_data.get('logistic.meetingroom.send'):
+            self.btn_meetingRoom_send.setChecked(True)
+            self.btn_meetingRoom_send.setText('点击关闭')
+        else:
+            self.btn_meetingRoom_send.setChecked(False)
+            self.btn_meetingRoom_send.setText('点击开启')
+        if user_data.get('logistic.meetingroom.use'):
+            self.btn_meetingRoom_use.setChecked(True)
+            self.btn_meetingRoom_use.setText('点击关闭')
+        else:
+            self.btn_meetingRoom_use.setChecked(False)
+            self.btn_meetingRoom_use.setText('点击开启')
+        if user_data.get('logistic.meetingroom.daily'):
+            self.btn_meetingRoom_daily.setChecked(True)
+            self.btn_meetingRoom_daily.setText('点击关闭')
+        else:
+            self.btn_meetingRoom_daily.setChecked(False)
+            self.btn_meetingRoom_daily.setText('点击开启')
+
+    def meetingRoom_function_change(self, isChecked):
+        sender = self.sender()
+        if sender == self.btn_meetingRoom_send:
+            user_data.change('logistic.meetingroom.send', isChecked)
+        elif sender == self.btn_meetingRoom_use:
+            user_data.change('logistic.meetingroom.use', isChecked)
+        elif sender == self.btn_meetingRoom_daily:
+            user_data.change('logistic.meetingroom.daily', isChecked)
+        self.meetingRoom_function_ui_refresh()
 
     def setDefaultState(self):
         self.editDormThreshold.setText(str(self.config.get('logistic.threshold.dorm')))
