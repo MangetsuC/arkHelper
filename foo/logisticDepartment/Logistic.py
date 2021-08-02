@@ -6,10 +6,10 @@ path.append(getcwd())
 from foo.adb import adbCtrl
 from foo.pictureR import pictureFind, ocr
 from foo.logisticDepartment import rooms, ruleEncoder
+from common2 import adb
 
 class Logistic:
-    def __init__(self, adb, defaultRuleName, rule, moodThreshold = 0, dormThreshold = 24):
-        self.adb = adb
+    def __init__(self, defaultRuleName, rule, moodThreshold = 0, dormThreshold = 24):
         self.cwd = getcwd()
         self.screenShot = self.cwd + '/res/gui/launchWindow.png'
 
@@ -23,11 +23,11 @@ class Logistic:
         self.dormThreshold = dormThreshold #上班阈值
         self.enableRooms = ['制造站', '贸易站', '发电站', '办公室', '会客室']
 
-        self.rooms = {  '制造站':rooms.Manufactory(self.adb),
-                        '贸易站':rooms.Trade(self.adb),
-                        '发电站':rooms.PowerRoom(self.adb),
-                        '办公室':rooms.OfficeRoom(self.adb),
-                        '会客室':rooms.ReceptionRoom(self.adb)}
+        self.rooms = {  '制造站':rooms.Manufactory(adb),
+                        '贸易站':rooms.Trade(adb),
+                        '发电站':rooms.PowerRoom(adb),
+                        '办公室':rooms.OfficeRoom(adb),
+                        '会客室':rooms.ReceptionRoom(adb)}
 
         self.ruleName = defaultRuleName
         self.rule = rule
@@ -69,10 +69,10 @@ class Logistic:
         self.dormThreshold = threshold
 
     def getScreen(self):
-        self.screenShot = self.adb.getScreen_std()
+        self.screenShot = adb.getScreen_std()
 
     def click(self, picResult):
-        self.adb.click(picResult[0], picResult[1])
+        adb.click(picResult[0], picResult[1])
 
     def clickBack(self):
         self.click((100,50))
@@ -107,8 +107,8 @@ class Logistic:
             return False
 
     def swipe(self, startPoint, endPoint, stopCheck = True):
-        self.adb.swipe(startPoint[0], startPoint[1], endPoint[0], endPoint[1], lastTime = 500)
-        self.adb.swipe(endPoint[0], endPoint[1], endPoint[0], endPoint[1], lastTime = 200)
+        adb.swipe(startPoint[0], startPoint[1], endPoint[0], endPoint[1], lastTime = 500)
+        adb.swipe(endPoint[0], endPoint[1], endPoint[0], endPoint[1], lastTime = 200)
         if stopCheck:
             lastScreen = None
             while True:

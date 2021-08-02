@@ -94,15 +94,13 @@ class Cmd:
 class Adb(QObject):
     adbErr = pyqtSignal(bool)
     adbNotice = pyqtSignal(str)
-    def __init__(self, ico, adbPath, simulator_data):
+    def __init__(self, simulator_data):
         super(Adb, self).__init__()
-        self.adbPath = adbPath
-        self.cmd = Cmd(self.adbPath)
+        self.cmd = Cmd('./bin/adb')
         self.ip = None
         self.simulator = None
         self.screenX = 1440
         self.screenY = 810
-        self.ico = ico
         self.simulator_data = simulator_data
 
         self.submitting = pictureFind.picRead(getcwd() + '/res/logistic/general/submitting.png')
@@ -174,26 +172,6 @@ class Adb(QObject):
             self.ip = simulator_data['ip']
         
         #adb设置完成
-
-
-    def changeConfig(self, config):
-        if config == None:
-            self.ip = '127.0.0.1:7555'
-        else:
-            self.simulator = config.get('connect', 'simulator')
-            if self.simulator == 'yeshen':
-                if config.has_option('connect', 'noxpath'):
-                    self.cmd = Cmd(config.get('connect', 'noxpath'))
-                else:
-                    print('夜神模拟器未给出模拟器路径')
-            else:
-                self.cmd = Cmd(self.adbPath)
-            self.ip = config.get('connect', 'ip')
-            if self.ip == '127.0.0.1':
-                #QMessageBox.warning(QWidget(), '警告', '模拟器IP格式已更新，请重新选择一次模拟器以恢复正常工作', 
-                #                    QMessageBox.Yes, QMessageBox.Yes)
-                self.adbNotice.emit('模拟器IP格式已更新，请重新选择一次模拟器以恢复正常工作')
-        print(self.ip)
 
     def autoGetPort(self):
         #针对夜神的自动获取ip地址

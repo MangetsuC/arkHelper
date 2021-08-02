@@ -5,6 +5,8 @@ from PyQt5.QtCore import QObject, Qt, pyqtSignal
 from PyQt5.QtGui import QIcon, QTextCursor
 from PyQt5.QtWidgets import QDialog, QGridLayout, QTextBrowser, QDesktopWidget
 
+from common import theme
+
 
 class Console(QDialog):
     adbCloseError = pyqtSignal()
@@ -26,6 +28,7 @@ class Console(QDialog):
             sys.stderr = EmittingStr(sgnConsole=self.outputWritten)
         else:
             self.textBrowser.setText('In DEV')
+        self.applyStyleSheet(theme)
 
     def applyStyleSheet(self, theme):
         self.setStyleSheet(f'''Console{{background-color:{theme.getBgColor()};}}

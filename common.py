@@ -18,3 +18,4 @@ simulator_data = simulatorToml()
 schedule_data = scheduleToml()
 
 theme = Theme(user_data, True)
+

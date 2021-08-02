@@ -14,7 +14,7 @@ from common import user_data, theme
 
 class UILogistic(QWidget):
     configUpdate = pyqtSignal()
-    def __init__(self, adb, rulePath, app, ico = ''):
+    def __init__(self,  rulePath, app, ico = ''):
         super(UILogistic, self).__init__()
         self.app = app
 
@@ -115,7 +115,7 @@ class UILogistic(QWidget):
         self.config = user_data
         self.rulePath = rulePath
         self.ruleEncoder = ruleEncoder.RuleEncoder(rulePath)
-        self.logistic = Logistic.Logistic(adb, self.config.get('logistic.rule'), self.ruleEncoder,
+        self.logistic = Logistic.Logistic(self.config.get('logistic.rule'), self.ruleEncoder,
                                           moodThreshold = int(self.config.get('logistic.threshold.work')),
                                           dormThreshold = int(self.config.get('logistic.threshold.dorm')))
 
@@ -224,7 +224,5 @@ class UILogistic(QWidget):
         if self.editMoodThreshold.text().isnumeric():
             self.logistic.setMoodThreshold(int(self.editMoodThreshold.text()))
             self.config.change('logistic.threshold.work', int(self.editMoodThreshold.text()))
-            
-        self.configUpdate.emit()
         event.accept()
         

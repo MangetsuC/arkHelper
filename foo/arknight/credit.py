@@ -3,10 +3,10 @@ from sys import path
 
 from foo.pictureR import pictureFind
 from foo.win import toast
+from common2 import adb
 
 class Credit:
-    def __init__(self, adb, cwd, listGoTo):
-        self.adb = adb
+    def __init__(self, cwd, listGoTo):
         self.cwd = cwd
         self.switch = False
         self.icon = self.cwd + "/res/ico.ico"
@@ -31,7 +31,7 @@ class Credit:
         listGoToTemp = self.listGoTo.copy()
         tryCount = 0
         while self.switch:
-            screenshot = self.adb.getScreen_std()
+            screenshot = adb.getScreen_std()
             for eachStep in listGoToTemp:
                 bInfo = pictureFind.matchImg(screenshot, eachStep)
                 if bInfo != None:
@@ -47,15 +47,15 @@ class Credit:
                 if bInfo['obj'] == 'act.png': #self.mainpageMark
                     return True
                 else:
-                    self.adb.click(bInfo['result'][0], bInfo['result'][1])
+                    adb.click(bInfo['result'][0], bInfo['result'][1])
 
     def openCard(self):
         tryTime = 0
         while self.switch:
-            screenshot = self.adb.getScreen_std()
+            screenshot = adb.getScreen_std()
             fInfo = pictureFind.matchImg(screenshot, self.friends)
             if fInfo != None:
-                self.adb.click(fInfo['result'][0], fInfo['result'][1])
+                adb.click(fInfo['result'][0], fInfo['result'][1])
             else:
                 fInfo = pictureFind.matchImg(screenshot, self.frendList)
                 if fInfo != None:
@@ -68,8 +68,8 @@ class Credit:
     def openFriendList(self, fInfo):
         tryTime = 0
         while self.switch:
-            self.adb.click(fInfo['result'][0], fInfo['result'][1])
-            vInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.visit)
+            adb.click(fInfo['result'][0], fInfo['result'][1])
+            vInfo = pictureFind.matchImg(adb.getScreen_std(), self.visit)
             if vInfo != None:
                 return vInfo
             elif tryTime > 10:
@@ -80,8 +80,8 @@ class Credit:
         tryTime = 0
         breakFlag = False
         while self.switch:
-            self.adb.click(vInfo['result'][0], vInfo['result'][1])
-            screenshot = self.adb.getScreen_std()
+            adb.click(vInfo['result'][0], vInfo['result'][1])
+            screenshot = adb.getScreen_std()
             for each in self.listGetCredit:
                 gInfo = pictureFind.matchImg(screenshot, each, 0.95)
                 if gInfo != None:
@@ -102,16 +102,16 @@ class Credit:
                     print('visit next failed')
                     break
                 for each in self.listGetCredit:
-                    gInfo = pictureFind.matchImg(self.adb.getScreen_std(), each, 0.95)
+                    gInfo = pictureFind.matchImg(adb.getScreen_std(), each, 0.95)
                     if gInfo != None:
                         break
             elif gInfo['obj'] == 'visitFinish.png':
                 break
             else:
                 tryTime = 0
-                self.adb.click(gInfo['result'][0], gInfo['result'][1])
+                adb.click(gInfo['result'][0], gInfo['result'][1])
                 for each in self.listGetCredit:
-                    gInfo = pictureFind.matchImg(self.adb.getScreen_std(), each, 0.95)
+                    gInfo = pictureFind.matchImg(adb.getScreen_std(), each, 0.95)
                     if gInfo != None:
                         break
 

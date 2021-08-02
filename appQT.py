@@ -1,6 +1,5 @@
 import cgitb
 import sys
-from configparser import ConfigParser
 from json import dumps, loads
 from os import getcwd, getlogin, mkdir, path, startfile
 from threading import Thread
@@ -13,7 +12,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
                              QInputDialog, QLabel, QMenu, QMessageBox,
                              QPushButton, QVBoxLayout, QWidget)
 
-from foo.adb.adbCtrl import Adb, AdbError, Cmd
+from foo.adb.adbCtrl import Cmd
 from foo.arknight.Battle import BattleLoop
 from foo.arknight.credit import Credit
 from foo.arknight.Schedule import BattleSchedule
@@ -22,15 +21,14 @@ from foo.pictureR import pictureFind
 from foo.ui.console import Console
 from foo.ui.launch import AfterInit, BlackBoard, Launch
 from foo.ui.screen import Screen, ScreenRateMonitor
-from foo.ui.theme import Theme
 from foo.ui.UItheme import ThemeEditor
 from foo.ui.UILogistic import UILogistic
 from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
 from foo.ui.messageBox import AMessageBox
 from foo.win.exitThread import forceThreadStop
-from foo.configParser.tomlParser import configToml, simulatorToml
-from common import user_data, simulator_data, config_path
+from common import user_data, simulator_data, config_path, theme
+from common2 import adb
 
 
 class App(QWidget):
@@ -99,7 +97,7 @@ class App(QWidget):
             self.tbShutdown.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
 
     def initUI(self): 
-        self.theme = Theme(user_data, True) #在UI初始化前加载主题
+        self.theme = theme #在UI初始化前加载主题
 
         self.setWindowIcon(QIcon(self.ico))
         self.setWindowTitle('明日方舟小助手')
@@ -391,7 +389,7 @@ class App(QWidget):
                                                 QMenu:separator{{background-color: {self.theme.getFontColor()}; 
                                                     height:1px; margin-left:2px; margin-right:2px;}}''')
 
-        self.console.applyStyleSheet(self.theme)
+        #self.console.applyStyleSheet(self.theme)
 
     def initRightClickMeun(self):
         #战斗按钮
@@ -590,24 +588,21 @@ class App(QWidget):
     def initClass(self):
         self.rateMonitor = ScreenRateMonitor([self])
 
-        self.themeEditor = ThemeEditor(user_data, self.app, theme = self.theme, ico = self.ico)
-        self.themeEditor.configUpdate.connect(self.configUpdate)
+        self.themeEditor = ThemeEditor(self.app, ico = self.ico)
         self.rateMonitor.addWidget(self.themeEditor)
 
-        self.adb = Adb(self.ico, self.cwd + '/bin/adb', simulator_data)
-        self.adb.adbErr.connect(self.stop)
-        self.adb.adbNotice.connect(self.noticeFromOtherWidget)
-        self.adb.changeSimulator(user_data)
+        adb.adbErr.connect(self.stop)
+        adb.adbNotice.connect(self.noticeFromOtherWidget)
 
-        self.battle = BattleLoop(self.adb, self.cwd, self.ico)
+        self.battle = BattleLoop(self.cwd, self.ico)
         self.battle.noBootySignal.connect(self.battleWarning)
         self.battle.errorSignal.connect(self.errorDetect)
         
-        self.schedule = BattleSchedule(self.adb, self.cwd, self.ico) #处于测试
+        self.schedule = BattleSchedule(self.cwd, self.ico) #处于测试
         self.schedule.errorSignal.connect(self.errorDetect)
         
-        self.task = Task(self.adb, self.cwd, self.ico, self.listGoTo)
-        self.credit = Credit(self.adb, self.cwd, self.listGoTo)
+        self.task = Task(self.cwd, self.ico, self.listGoTo)
+        self.credit = Credit(self.cwd, self.listGoTo)
 
         if path.exists(config_path + '/logisticRule.ahrule'):
             self.logisticReady()
@@ -629,7 +624,7 @@ class App(QWidget):
         self.schJsonEditer = JsonEdit(self.app, self.ico)
         self.rateMonitor.addWidget(self.schJsonEditer)
 
-        self.board = BlackBoard(theme = self.theme)
+        self.board = BlackBoard()
 
         self.afterInit_Q = AfterInit(self, self.cwd)
         self.afterInit_Q.boardNeedShow.connect(self.showMessage)
@@ -646,8 +641,8 @@ class App(QWidget):
             with open(self.cwd + '/data.json', 'r', encoding = 'UTF-8') as f:
                 temp = f.read()
         self._data = loads(temp)
-        self.publicCall = UIPublicCall(self.adb, self.battle, self.cwd, #self.btnMonitorPublicCall, 
-                    self.listGoTo, self._data['data'][0]['normal'], self._data['data'][0]['high'], theme = self.theme) #公开招募
+        self.publicCall = UIPublicCall(self.battle, self.cwd, #self.btnMonitorPublicCall, 
+                    self.listGoTo, self._data['data'][0]['normal'], self._data['data'][0]['high']) #公开招募
         self.publicCall.setStar(1, 1, user_data.get('function.autopc.skip1star')) #自动公招保留一星设定
         self.publicCall.setStar(5, 1, user_data.get('function.autopc.skip5star'))
         self.publicCall.skip23Star = user_data.get('function.autopc.skip23star')
@@ -847,52 +842,16 @@ class App(QWidget):
         if not self.doctorFlag:
             self.publicCall.turnOn()
 
-    def changeSlr(self, name, ip ):
-        self.config.set('connect', 'simulator', name)
-        #self.config.set('connect', 'port', port)
-        self.config.set('connect', 'ip', ip)
-        
-        configInI = open(self.configPath, 'w')
-        self.config.write(configInI)
-        configInI.close()
-        self.adb.changeConfig(self.config)
-
-    def changeDefault(self, func, flag, sec = 'function'):
-        self.config.set(sec, func, str(flag))
-        self.configUpdate()
-
-    def configUpdate(self):
-        configInI = open(self.configPath, 'w')
-        self.config.write(configInI)
-        configInI.close()
-
-
     def simulatorSel(self):
         #slrName = self.sender()
         slr = self.sender()
         user_data.change('simulator', slr.key)
 
-        '''if slrName == self.actSlrBlueStacks:
-            user_data.change('simulator', 'bluestacks')
-        elif slrName == self.actSlrMumu:
-            user_data.change('simulator', 'mumu')
-        elif slrName == self.actSlrYeshen:
-            user_data.change('simulator', 'yeshen')
-        elif slrName == self.actSlrXiaoyao:
-            user_data.change('simulator', 'xiaoyao')
-        elif slrName == self.actSlrLeidian:
-            user_data.change('simulator', 'leidian')
-        else:
-            customIp, isOk = AMessageBox.input(self, '自定义', '请输入模拟器IP地址(如:127.0.0.1:5555或emulator-5554):')
-            if isOk:
-                    self.changeSlr('custom', customIp)'''
-
         for each in self.simulators:
             each.setIcon(QIcon(''))
 
         slr.setIcon(QIcon(self.theme.getSelectedIcon()))
-        self.adb.changeSimulator(user_data)
-        #self.initSlrSel()
+        adb.changeSimulator(user_data)
 
         
     def exit(self):
@@ -903,7 +862,7 @@ class App(QWidget):
         self.console.close()
         if self.publicCall != None:
             self.publicCall.close()
-        self.adb.killAdb()
+        adb.killAdb()
 
         #退出两个窗口的放大倍率检测线程
         #self.schJsonEditer.rateMonitor.stop()
@@ -932,7 +891,7 @@ class App(QWidget):
 
     def startUpdate(self):
         if path.exists(self.cwd + '/update.exe'):
-            selfPidList = self.adb.cmd.getTaskList('arkhelper.exe')
+            selfPidList = adb.cmd.getTaskList('arkhelper.exe')
             exceptions = self._updateData['exception'].split(',') #不再排除update.exe自身
             if 'update.exe' in exceptions:
                 exceptions.remove('update.exe')
@@ -976,7 +935,7 @@ class App(QWidget):
         if self.doctorFlag and self.creditFlag:
             self.credit.run(self.doctorFlag)
         if self.shutdownFlag and self.doctorFlag:
-            self.adb.cmd.shutdown(time=120)
+            adb.cmd.shutdown(time=120)
             self.exitBeforeShutdown.emit()
         else:
             self.stop(isExit = True)
@@ -1051,8 +1010,7 @@ class App(QWidget):
                 self.schedule.isRecovered = True
 
     def logisticReady(self):
-        self.logistic = UILogistic(self.adb, config_path + '/logisticRule.ahrule', self.app, ico = self.ico)
-        self.logistic.configUpdate.connect(self.configUpdate)
+        self.logistic = UILogistic(config_path + '/logisticRule.ahrule', self.app, ico = self.ico)
         self.actLogisticConfig.triggered.connect(self.logistic.show)
         self.tbLogistic.setEnabled(True)
 
@@ -1106,7 +1064,7 @@ class App(QWidget):
                 simulator_data.change(f'{id}.name', simulator_new[0])
                 self.simulator_choices() #更新菜单
                 self.initSlrSel() #更新选中项
-                self.adb.changeSimulator(user_data)
+                adb.changeSimulator(user_data)
 
     def simulator_del(self):
         '删除模拟器配置'
@@ -1114,7 +1072,7 @@ class App(QWidget):
         simulator_data.delete(sender.key)
         self.simulator_choices()
         self.initSlrSel()
-        self.adb.changeSimulator(user_data)
+        adb.changeSimulator(user_data)
 
 class SimulatorAction(QAction):
     def __init__(self, text, key, parent = None):

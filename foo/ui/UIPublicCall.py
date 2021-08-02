@@ -7,11 +7,13 @@ from foo.pictureR import pictureFind
 from PyQt5.QtWidgets import QDialog, QGridLayout, QPushButton, QLabel, QWidget, QScrollArea
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QTimer
+from common import theme
+from common2 import adb
 
 class UIPublicCall(QDialog):
-    def __init__(self, adb, battle, cwd, listGoTo, normal, high, theme = None, parent=None, flags=Qt.WindowFlags(1)):
+    def __init__(self, battle, cwd, listGoTo, normal, high, parent=None, flags=Qt.WindowFlags(1)):
         super().__init__(parent=parent, flags=flags)
-        self.initVar(adb, battle, cwd, normal, high)
+        self.initVar(battle, cwd, normal, high)
         self.initAuto(listGoTo)
         self.initUI(theme)
         self.theme = theme
@@ -20,12 +22,11 @@ class UIPublicCall(QDialog):
     def updateTag(self):
         self.publicCall.updateTag()
     
-    def initVar(self, adb, battle, cwd, normal, high):
+    def initVar(self, battle, cwd, normal, high):
         self.cwd = cwd
         #self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.battle = battle
         #self.btnCheck = btnCheck
-        self.adb = adb
         
         self.publicCall = PublicCall(adb, self.cwd, normal, high)
 
@@ -279,7 +280,7 @@ class UIPublicCall(QDialog):
         tryCount = 0
         while self.autoSwitch:
             for eachStep in listGoToTemp:
-                bInfo = pictureFind.matchImg(self.adb.getScreen_std(), eachStep)
+                bInfo = pictureFind.matchImg(adb.getScreen_std(), eachStep)
                 if bInfo != None:
                     listGoToTemp.remove(eachStep)
                     break
@@ -294,7 +295,7 @@ class UIPublicCall(QDialog):
                     print('已返回首页')
                     return True
                 else:
-                    self.adb.click(bInfo['result'][0], bInfo['result'][1])
+                    adb.click(bInfo['result'][0], bInfo['result'][1])
     
     def chooseTag(self):
         tagState = self.publicCall.chooseTag()
@@ -302,15 +303,15 @@ class UIPublicCall(QDialog):
             tagState = self.publicCall.chooseTag()
         if tagState == 6 or tagState == 1 or (self.skip23Star and tagState == 0):
             for i in range(5):
-                picInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.pcCancel)
+                picInfo = pictureFind.matchImg(adb.getScreen_std(), self.pcCancel)
                 if picInfo != None:
                     picInfo = picInfo['result']
-                    self.adb.click(picInfo[0], picInfo[1])
+                    adb.click(picInfo[0], picInfo[1])
                     return True #跳过成功
             return False
         else:
             for i in range(5):
-                screenshot = self.adb.getScreen_std()
+                screenshot = adb.getScreen_std()
                 addBtn = pictureFind.matchMultiImg(screenshot, self.pcDecreaseTime)[0]
                 if addBtn != None:
                     addBtn.sort(key=lambda x:x[0])
@@ -322,14 +323,14 @@ class UIPublicCall(QDialog):
             while picInfo == None:
                 if not self.autoSwitch:
                     return False
-                self.adb.click(addBtn[0], addBtn[1])
-                picInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.pc9, confidencevalue=0.9)
+                adb.click(addBtn[0], addBtn[1])
+                picInfo = pictureFind.matchImg(adb.getScreen_std(), self.pc9, confidencevalue=0.9)
             for i in range(5):
                 #confirmBtn = pictureFind.matchImg(self.screenShot, self.pcCancel)
-                confirmBtn = pictureFind.matchImg(self.adb.getScreen_std(), self.pcConfirm)
+                confirmBtn = pictureFind.matchImg(adb.getScreen_std(), self.pcConfirm)
                 if confirmBtn != None:
                     confirmBtn = confirmBtn['result']
-                    self.adb.click(confirmBtn[0], confirmBtn[1])
+                    adb.click(confirmBtn[0], confirmBtn[1])
                     return True
             return False
 
@@ -338,10 +339,10 @@ class UIPublicCall(QDialog):
         for i in range(5):
             if not self.autoSwitch:
                 return False
-            picInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.pcEnter)
+            picInfo = pictureFind.matchImg(adb.getScreen_std(), self.pcEnter)
             if picInfo != None:
-                self.adb.click(picInfo['result'][0], picInfo['result'][1])
-                while pictureFind.matchImg(self.adb.getScreen_std(), self.pcMark) == None:
+                adb.click(picInfo['result'][0], picInfo['result'][1])
+                while pictureFind.matchImg(adb.getScreen_std(), self.pcMark) == None:
                     sleep(1)
                 print('已经进入公开招募界面')
                 return True
@@ -351,15 +352,15 @@ class UIPublicCall(QDialog):
     
     def employ(self):
         for i in range(2):
-            picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), self.pcFinish, confidencevalue = 0.7)[0]
+            picInfo = pictureFind.matchMultiImg(adb.getScreen_std(), self.pcFinish, confidencevalue = 0.7)[0]
             if picInfo != None:
                 if not self.autoSwitch:
                     break
                 for eachPos in picInfo:
-                    self.adb.click(eachPos[0], eachPos[1])
-                    while pictureFind.matchImg(self.adb.getScreen_std(), self.pcMark) == None:
+                    adb.click(eachPos[0], eachPos[1])
+                    while pictureFind.matchImg(adb.getScreen_std(), self.pcMark) == None:
                         for i in range(5):
-                            self.adb.click(1400, 40)
+                            adb.click(1400, 40)
                         sleep(1)
             else:
                 break
@@ -369,7 +370,7 @@ class UIPublicCall(QDialog):
         lastPicInfo = None
         for i in range(5):
             #多次搜索，确保找到所有可招募的位置
-            picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), self.pcNew, confidencevalue = 0.7)[0] #找到所有空的招募位
+            picInfo = pictureFind.matchMultiImg(adb.getScreen_std(), self.pcNew, confidencevalue = 0.7)[0] #找到所有空的招募位
             if picInfo != None and len(picInfo) == 4:
                 #已达到最多空闲位数，直接跳出
                 break
@@ -384,9 +385,9 @@ class UIPublicCall(QDialog):
                 for i in range(3):
                     if not self.autoSwitch:
                         return False
-                    self.adb.click(eachPos[0], eachPos[1])
+                    adb.click(eachPos[0], eachPos[1])
                     sleep(0.5)
-                    inMarkInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.pcInMark)
+                    inMarkInfo = pictureFind.matchImg(adb.getScreen_std(), self.pcInMark)
                     if inMarkInfo != None:
                         self.chooseTag()
                         break
@@ -394,7 +395,7 @@ class UIPublicCall(QDialog):
     
     def autoPCRun(self, switch):
         self.autoSwitch = switch
-        #self.adb.connect()
+        #adb.connect()
         self.goToMainpage()
         if self.enterPC():
             if self.employFlag:

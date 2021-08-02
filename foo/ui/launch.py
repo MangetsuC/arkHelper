@@ -7,7 +7,7 @@ from time import sleep
 import requests
 from json import loads, dumps
 from hashlib import md5
-from common import config_path, user_data
+from common import config_path, user_data, theme
 
 class Launch(QSplashScreen):
     def __init__(self):
@@ -16,7 +16,7 @@ class Launch(QSplashScreen):
         self.show()
 
 class BlackBoard(QWidget):
-    def __init__(self, theme = None):
+    def __init__(self):
         super().__init__()
         if theme != None:
             self.setStyleSheet(f'''BlackBoard{{background:{theme.getBgColor()}}}

@@ -3,10 +3,10 @@ from sys import path
 
 from foo.pictureR import pictureFind
 from foo.win import toast
+from common2 import adb
 
 class Task:
-    def __init__(self, adb, cwd, ico, listGoTo):
-        self.adb = adb
+    def __init__(self, cwd, ico, listGoTo):
         self.cwd = cwd
         self.switch = False
         self.icon = ico
@@ -30,7 +30,7 @@ class Task:
         listGoToTemp = self.listGoTo.copy()
         tryCount = 0
         while self.switch:
-            screenshot = self.adb.getScreen_std()
+            screenshot = adb.getScreen_std()
             for eachStep in listGoToTemp:
                 bInfo = pictureFind.matchImg(screenshot, eachStep)
                 if bInfo != None:
@@ -46,20 +46,20 @@ class Task:
                 if bInfo['obj'] == 'act.png':
                     return True
                 else:
-                    self.adb.click(bInfo['result'][0], bInfo['result'][1])
+                    adb.click(bInfo['result'][0], bInfo['result'][1])
 
 
     def checkTask(self):
         tryCount = 0
-        cInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.task)
+        cInfo = pictureFind.matchImg(adb.getScreen_std(), self.task)
         if cInfo == None:
             print('无法检测到任务交付入口，中断任务交付后续')
             return False
         else:
             while self.switch:
-                self.adb.click(cInfo['result'][0], cInfo['result'][1])
+                adb.click(cInfo['result'][0], cInfo['result'][1])
                 
-                screenshot = self.adb.getScreen_std()
+                screenshot = adb.getScreen_std()
                 if pictureFind.matchImg(screenshot, self.daySel) != None:
                     return True
                 elif pictureFind.matchImg(screenshot, self.actSel) != None:
@@ -73,19 +73,19 @@ class Task:
         #交付当前栏的任务
         endCount = 0
         while self.switch:
-            screenshot = self.adb.getScreen_std()
+            screenshot = adb.getScreen_std()
             #gInfo = pictureFind.matchImg(screenshot, self.get, 0.9)
             collectAllInfo = pictureFind.matchImg(screenshot, self.collectAll, 0.8)
             backInfo = pictureFind.matchImg(screenshot, self.back, 0.9)
             #rewardFinishInfo = pictureFind.matchMultiImg(screenshot, self.rewardFinish, 
-            #                                            confidencevalue = self.adb.getTagConfidence())[0]
+            #                                            confidencevalue = adb.getTagConfidence())[0]
             #if rewardFinishInfo != None:
             #    rewardFinishInfo.sort(key = lambda x:x[1])
             #    if rewardFinishInfo[0][1] < 250:#该栏任务交付全部完成
             #        return True
             if collectAllInfo != None: #有任务待交付
                 endCount = 0
-                self.adb.click(collectAllInfo['result'][0], collectAllInfo['result'][1])
+                adb.click(collectAllInfo['result'][0], collectAllInfo['result'][1])
                 continue
             elif backInfo != None: #没有任务待交付
                 endCount += 1
@@ -95,18 +95,18 @@ class Task:
                     continue
             else: #获取了奖励
                 endCount = 0
-                self.adb.click(720, 120)
+                adb.click(720, 120)
                 continue
 
     def oneByOne(self):
-        #self.adb.screenShot()
+        #adb.screenShot()
         tryCount = 0
         self.submitTask()
         while self.switch:
             #切换到每周任务
-            wInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.weekUnSel)
-            self.adb.click(wInfo['result'][0], wInfo['result'][1])
-            wInfo = pictureFind.matchImg(self.adb.getScreen_std(), self.weekSel)
+            wInfo = pictureFind.matchImg(adb.getScreen_std(), self.weekUnSel)
+            adb.click(wInfo['result'][0], wInfo['result'][1])
+            wInfo = pictureFind.matchImg(adb.getScreen_std(), self.weekSel)
             if wInfo != None:
                 break
             else:
