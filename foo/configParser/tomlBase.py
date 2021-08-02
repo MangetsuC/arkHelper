@@ -5,7 +5,7 @@ from toml import dumps, loads
 
 syspath.append(getcwd())
 
-from foo.configParser import iniParser
+from foo.configParser import iniParser, jsonParser
 
 
 def defaultConfig():
@@ -95,11 +95,25 @@ def defaultSimulator():
     '''
     return loads(default)
 
-def ini2toml():
+def defaultSchedule():
+    default = '''
+    [[main]]
+    allplan = '未选择'
+    sel = []
+
+    [[main]]
+    未选择 = []
+    '''
+    return loads(default)
+
+def json2toml():
+    return jsonParser.jsonRead()
+
+def ini2toml_config():
     '将现有的ini转为toml'
     config_old = iniParser.ini2dict()
     config_new = dict()
-    if config_old != dict():
+    if config_old != dict(): #存在旧配置文件才进行以下操作
         config_new['simulator'] = config_old['connect']['simulator']
         config_new['notice'] = config_old['notice']['md5']
         config_new['theme'] = config_old['theme']
@@ -165,4 +179,3 @@ def dictUpdate(dict_base, dict_userData):
         elif key in userData_keys:
             temp[key] = dict_userData[key]
     return temp
-

@@ -30,7 +30,7 @@ from foo.ui.UIschedule import JsonEdit
 from foo.ui.messageBox import AMessageBox
 from foo.win.exitThread import forceThreadStop
 from foo.configParser.tomlParser import configToml, simulatorToml
-from common import user_data, simulator_data
+from common import user_data, simulator_data, config_path
 
 
 class App(QWidget):
@@ -54,7 +54,6 @@ class App(QWidget):
             tempScreenList.append(QDesktopWidget().availableGeometry(i))
         self.screen = Screen(tempScreenList)
 
-        self.initFile()
         self.initVar()
         self.initNormalPicRes()
         self.initUI()
@@ -82,186 +81,6 @@ class App(QWidget):
             rate = 2
         
         return int(size * rate)
-
-    def initFile(self):
-        self.userDataPath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper'
-        if path.exists(self.cwd + '/config.ini'):
-            self.userDataPath = self.cwd #便于调试时不改变实际使用的配置
-        elif not path.exists(self.userDataPath):
-            try:
-                mkdir(self.userDataPath)
-            except Exception as creatDirErr:
-                print(creatDirErr)
-                self.userDataPath = self.cwd
-        
-        if not path.exists(self.userDataPath + '/config.ini'):
-            with open(self.userDataPath + '/config.ini', 'w') as c:
-                c.write('')
-
-        self.configPath = self.userDataPath + '/config.ini'  #读
-        self.config = ConfigParser()
-        try:
-            self.config.read(filenames=self.configPath, encoding="UTF-8")
-        except UnicodeDecodeError:
-            self.config.read(filenames=self.configPath, encoding="gbk")
-
-        isNeedWrite = False
-        if not self.config.has_section('connect'):
-            self.config.add_section('connect')
-            isNeedWrite = True
-        if not self.config.has_option('connect', 'ip'):
-            self.config.set('connect','ip','127.0.0.1:5555')
-            isNeedWrite = True
-        #if not self.config.has_option('connect', 'port'):
-        #    self.config.set('connect','port','5555')
-        #    isNeedWrite = True
-        if not self.config.has_option('connect', 'simulator'):
-            self.config.set('connect','simulator','bluestacks')
-            isNeedWrite = True
-
-        if not self.config.has_section('function'):
-            self.config.add_section('function')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'battle'):
-            self.config.set('function','battle','True')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'schedule'):
-            self.config.set('function','schedule','False')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'autoPC'):
-            self.config.set('function','autoPC','False')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'autopc_skip23star'):
-            self.config.set('function','autopc_skip23star','False')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'autoPC_skip1Star'):
-            self.config.set('function','autoPC_skip1Star','True')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'autoPC_skip5Star'):
-            self.config.set('function','autoPC_skip5Star','True')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'task'):
-            self.config.set('function','task','True')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'credit'):
-            self.config.set('function','credit','False')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'logistic'):
-            self.config.set('function','logistic','False')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'shutdown'):
-            self.config.set('function','shutdown','False')
-            isNeedWrite = True
-        if not self.config.has_option('function', 'publiccall'):
-            self.config.set('function','publiccall','False')
-            isNeedWrite = True
-
-        if not self.config.has_section('medicament'):
-            self.config.add_section('medicament')
-            isNeedWrite = True
-        if not self.config.has_option('medicament', 'loop'):
-            self.config.set('medicament','loop','False')
-            isNeedWrite = True
-        if not self.config.has_option('medicament', 'schedule'):
-            self.config.set('medicament','schedule','False')
-            isNeedWrite = True
-
-        if not self.config.has_section('stone'):
-            self.config.add_section('stone')
-            isNeedWrite = True
-        if not self.config.has_option('stone', 'loop'):
-            self.config.set('stone','loop','False')
-            isNeedWrite = True
-        if not self.config.has_option('stone', 'schedule'):
-            self.config.set('stone','schedule','False')
-            isNeedWrite = True
-        if not self.config.has_option('stone', 'maxnum'):
-            self.config.set('stone','maxnum','0')
-            isNeedWrite = True
-
-        if not self.config.has_section('logistic'):
-            self.config.add_section('logistic')
-            isNeedWrite = True
-        if not self.config.has_option('logistic', 'defaultRule'):
-            self.config.set('logistic','defaultRule','示例配置')
-            isNeedWrite = True
-        if not self.config.has_option('logistic', 'manufactory'):
-            self.config.set('logistic','manufactory','True')
-            isNeedWrite = True
-        if not self.config.has_option('logistic', 'trade'):
-            self.config.set('logistic','trade','True')
-            isNeedWrite = True
-        if not self.config.has_option('logistic', 'powerRoom'):
-            self.config.set('logistic','powerRoom','True')
-            isNeedWrite = True
-        if not self.config.has_option('logistic', 'officeRoom'):
-            self.config.set('logistic','officeRoom','True')
-            isNeedWrite = True
-        if not self.config.has_option('logistic', 'receptionRoom'):
-            self.config.set('logistic','receptionRoom','True')
-            isNeedWrite = True
-        if not self.config.has_option('logistic', 'moodThreshold'):
-            self.config.set('logistic','moodThreshold','0')
-            isNeedWrite = True
-        if not self.config.has_option('logistic', 'dormThreshold'):
-            self.config.set('logistic','dormThreshold','24')
-            isNeedWrite = True
-
-        if not self.config.has_section('notice'):
-            self.config.add_section('notice')
-            isNeedWrite = True
-        if not self.config.has_option('notice', 'enable'):
-            self.config.set('notice','enable','True')
-            isNeedWrite = True
-        if not self.config.has_option('notice', 'md5'):
-            self.config.set('notice','md5','0')
-            isNeedWrite = True
-
-        if not self.config.has_section('theme'):
-            self.config.add_section('theme')
-            isNeedWrite = True
-        if not self.config.has_option('theme', 'themecolor'):
-            self.config.set('theme','themeColor','auto')
-            isNeedWrite = True
-        if not self.config.has_option('theme', 'fontcolor'):
-            self.config.set('theme','fontcolor','auto')
-            isNeedWrite = True
-        if not self.config.has_option('theme', 'checkedfontcolor'):
-            self.config.set('theme','checkedfontcolor','auto')
-            isNeedWrite = True
-        if not self.config.has_option('theme', 'bordercolor'):
-            self.config.set('theme','bordercolor','auto')
-            isNeedWrite = True
-        if not self.config.has_option('theme', 'fgcolor'):
-            self.config.set('theme','fgcolor','auto')
-            isNeedWrite = True
-        if not self.config.has_option('theme', 'bgcolor'):
-            self.config.set('theme','bgcolor','auto')
-            isNeedWrite = True
-        if not self.config.has_option('theme', 'pressedcolor'):
-            self.config.set('theme','pressedcolor','auto')
-            isNeedWrite = True
-        if not self.config.has_option('theme', 'selectedcolor'):
-            self.config.set('theme','selectedcolor','auto')
-            isNeedWrite = True
-
-        if isNeedWrite:
-            self.configUpdate()  #配置文件初始化结束
-
-        if not path.exists(self.userDataPath + '/schedule.json'):
-            with open(self.userDataPath + '/schedule.json', 'w', encoding = 'UTF-8') as j:
-                j.write('{\n\t\"main\": [\n\t\t{\n\t\t\t\"allplan\": \"未选择\",\n\t\t\t\"sel\": []\n\t\t},\n\t\t{\n\t\t\t\"未选择\": []\n\t\t}\n\t]\n}')
-        else:
-            with open(self.userDataPath + '/schedule.json', 'r', encoding = 'UTF-8') as j:
-                tempText = j.read()
-            if 'allplan' not in tempText:
-                oldJson = loads(tempText)
-                newJson = dict()
-                newJson['main'] = [{'allplan':'未选择','sel':oldJson['levels']},{'未选择':[]}]
-                newJson = dumps(newJson, sort_keys=True, indent=4, separators=(',', ': '), ensure_ascii=False)
-                with open(self.userDataPath + '/schedule.json', 'w', encoding = 'UTF-8') as j:
-                    j.write(newJson)
-                #计划json初始化结束
     
     def resizeUI(self, windowChangedScreen):
         if windowChangedScreen == self:
@@ -795,13 +614,13 @@ class App(QWidget):
         self.battle.noBootySignal.connect(self.battleWarning)
         self.battle.errorSignal.connect(self.errorDetect)
         
-        self.schedule = BattleSchedule(self.adb, self.cwd, self.userDataPath, self.ico) #处于测试
+        self.schedule = BattleSchedule(self.adb, self.cwd, self.ico) #处于测试
         self.schedule.errorSignal.connect(self.errorDetect)
         
         self.task = Task(self.adb, self.cwd, self.ico, self.listGoTo)
         self.credit = Credit(self.adb, self.cwd, self.listGoTo)
 
-        if path.exists(self.userDataPath + '/logisticRule.ahrule'):
+        if path.exists(config_path + '/logisticRule.ahrule'):
             self.logisticReady()
         else:
             self.logistic = None
@@ -818,7 +637,7 @@ class App(QWidget):
             #self.btnMonitorPublicCall.setEnabled(False)
         
         
-        self.schJsonEditer = JsonEdit(self.app, self.userDataPath, self.ico, theme = self.theme)
+        self.schJsonEditer = JsonEdit(self.app, self.ico)
         self.rateMonitor.addWidget(self.schJsonEditer)
 
         self.board = BlackBoard(theme = self.theme)
@@ -1249,7 +1068,7 @@ class App(QWidget):
                 self.schedule.isRecovered = True
 
     def logisticReady(self):
-        self.logistic = UILogistic(self.adb, self.userDataPath + '/logisticRule.ahrule', self.app, ico = self.ico)
+        self.logistic = UILogistic(self.adb, config_path + '/logisticRule.ahrule', self.app, ico = self.ico)
         self.logistic.configUpdate.connect(self.configUpdate)
         self.actLogisticConfig.triggered.connect(self.logistic.show)
         self.tbLogistic.setEnabled(True)

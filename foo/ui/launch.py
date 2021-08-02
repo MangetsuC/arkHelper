@@ -7,6 +7,7 @@ from time import sleep
 import requests
 from json import loads, dumps
 from hashlib import md5
+from common import config_path, user_data
 
 class Launch(QSplashScreen):
     def __init__(self):
@@ -90,9 +91,8 @@ class AfterInit(QThread):
     def run(self):
         self.getLogisticRule()
         self.checkPublicCallData()
-        if self.app.config.getboolean('notice', 'enable'):
-            self.checkMessage()
-            self.checkUpdate()
+        self.checkMessage()
+        self.checkUpdate()
 
     def getFileMd5(self, fileName):
         m = md5()   #创建md5对象
@@ -144,7 +144,7 @@ class AfterInit(QThread):
             self.app.noticeMd5 = noticeMd5.hexdigest()
             self.app._notice = noticeData.text
             self.widgetShow.emit(0)
-            if noticeMd5.hexdigest() != self.app.config.get('notice', 'md5'):
+            if noticeMd5.hexdigest() != user_data.get('notice'):
                 self.boardNeedShow.emit()
 
     def checkPublicCallData(self):
@@ -165,7 +165,7 @@ class AfterInit(QThread):
 
     def getLogisticRule(self):
         #自动下载基建规则文件
-        if not path.exists(self.app.userDataPath + '/logisticRule.ahrule'):
+        if not path.exists(config_path + '/logisticRule.ahrule'):
             rule = requests.get('http://www.mangetsuc.top/arkhelper/logisticRule.txt')
             if rule.status_code == 200:
                 rule.encoding = 'UTF-8'

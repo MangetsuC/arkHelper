@@ -9,15 +9,14 @@ from foo.configParser import tomlBase
 
 
 class Toml:
-    def __init__(self, filename, default_toml):
+    def __init__(self, filename, default_toml, old = None):
         self.releasePath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/' + filename
         self.devPath = './' + filename
         self.toml = tomlBase.tomlRead(filename)
-        if self.toml == dict():
-            ini = tomlBase.ini2toml()
-            self.toml = tomlBase.dictUpdate(default_toml, ini)
+        if self.toml == dict() and old != None: #将旧类型配置合并到新配置中
+            self.toml = tomlBase.dictUpdate(default_toml, old)
         else:
-            self.toml = tomlBase.dictUpdate(default_toml, self.toml)
+            self.toml = tomlBase.dictUpdate(default_toml, self.toml) #将用户先前的配置合并到新配置文件中
         self.write()
 
     def write(self):
@@ -64,7 +63,7 @@ class Toml:
 
 class configToml(Toml):
     def __init__(self):
-        super(configToml, self).__init__('config.toml', tomlBase.defaultConfig())
+        super(configToml, self).__init__('config.toml', tomlBase.defaultConfig(), tomlBase.ini2toml_config())
 
 class simulatorToml(Toml):
     def __init__(self):
@@ -72,6 +71,10 @@ class simulatorToml(Toml):
 
     def get_simulators(self):
         return self.toml.keys()
+
+class scheduleToml(Toml):
+    def __init__(self):
+        super(scheduleToml, self).__init__('schedule.toml', tomlBase.defaultSchedule(), tomlBase.json2toml())
 
 if __name__ == '__main__':
     test1 = configToml()

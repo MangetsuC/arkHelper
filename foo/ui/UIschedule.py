@@ -10,10 +10,11 @@ from PyQt5.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
 
 from foo.ui.screen import ScreenRateMonitor
 from foo.ui.messageBox import AMessageBox
+from common import schedule_data, theme
 
 
 class JsonEdit(QWidget):
-    def __init__(self, app, dataPath, ico, theme = None, parent = None, flags = Qt.WindowCloseButtonHint):
+    def __init__(self, app, ico, parent = None, flags = Qt.WindowCloseButtonHint):
         super(JsonEdit, self).__init__(parent, flags)
         if theme != None:
             self.setStyleSheet(f'''QWidget{{background:{theme.getBgColor()}}}QLabel{{color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;}}
@@ -55,7 +56,7 @@ class JsonEdit(QWidget):
 
         self.selPanel = BootyChoice(self, ico, theme = theme)
 
-        self.json = dataPath + '/schedule.json'
+        #self.json = dataPath + '/schedule.json'
         self.scheduleAdd = {'part':'MAIN', 'chap':'', 'objLevel':'', 'times':''}
         self.transEX = {'ex1':'切尔诺伯格','ex2':'龙门外环','ex3':'龙门市区','ex4':'当期委托'}
 
@@ -263,9 +264,9 @@ class JsonEdit(QWidget):
         
     
     def initJson(self):
-        with open(self.json,'r', encoding='UTF-8') as s:
-            data = s.read()
-        self.jsonAll = loads(data)["main"]
+        #with open(self.json,'r', encoding='UTF-8') as s:
+        #    data = s.read()
+        self.jsonAll = schedule_data.get('main')
         self.selPlan = self.jsonAll[0]
         self.allPlanList = self.selPlan['allplan'].split('|')
 
@@ -295,10 +296,11 @@ class JsonEdit(QWidget):
         self.jsonAll[0]['sel'] = self.selList.copy()
         self.jsonAll[0]['allplan'] = '|'.join(self.allPlanList)
         #self.jsonAll[0]['selno'] = str(self.selNo)
-        tempNewJson = {'main':self.jsonAll}
-        newData = dumps(tempNewJson, sort_keys=True, indent=4, separators=(',', ': '), ensure_ascii=False)
+        schedule_data.change('main', self.jsonAll)
+        '''newData = dumps(tempNewJson, sort_keys=True, indent=4, separators=(',', ': '), ensure_ascii=False)
         with open(self.json,'w', encoding = 'UTF-8') as j:
-            j.write(newData)
+            j.write(newData)'''
+
 
     def updateList(self):
         if self.listSchedule != self.listScheduleBefore:

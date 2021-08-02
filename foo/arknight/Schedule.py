@@ -7,16 +7,15 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from foo.pictureR import pictureFind
 from foo.pictureR import bootyCount
 from foo.win import toast
+from common import schedule_data
 
 class BattleSchedule(QObject):
     errorSignal = pyqtSignal(str)
-    def __init__(self, adb, cwd, dataPath, ico):
+    def __init__(self, adb, cwd, ico):
         super(BattleSchedule, self).__init__()
         self.cwd = cwd
         self.adb = adb
         self.ico = ico
-        self.json = dataPath + '/schedule.json'
-        self.levelSchedule = self.readJson()
         self.switch = False
         self.switchB = False
         self.autoRecMed = False
@@ -451,10 +450,11 @@ class BattleSchedule(QObject):
     def run(self, switchI):
         self.switch = switchI
         self.restStone = self.stoneMaxNum
-        print('正在获取用户配置的计划')
+        '''print('正在获取用户配置的计划')
         self.levelSchedule = self.readJson()
         print('用户配置读取成功')
-        levelList = self.levelSchedule['main'][0]['sel']
+        levelList = self.levelSchedule['main'][0]['sel']'''
+        levelList = schedule_data.get('main')[0]['sel']
         for eachLevel in levelList:
             if not self.switch:
                 break
