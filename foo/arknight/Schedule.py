@@ -175,11 +175,23 @@ class BattleSchedule(QObject):
             else:
                 return False
 
+    def backToOneLayer(self, layerMark):
+        '回到某一层'
+        startTime = time()
+        while pictureFind.matchImg(adb.getScreen_std(), layerMark, confidencevalue = 0.7) is None:
+            if not self.switch:
+                break
+            adb.click(100, 50)
+            if time() - startTime > 30:
+                return -1
+        return 0
 
     def chooseChap(self,chap):
         if chap == 'external' or chap == 'tempE':
             picChap = pictureFind.matchImg(adb.getScreen_std(), self.III['ex'])
             if picChap != None:
+                adb.click(picChap['result'][0], picChap['result'][1])
+                self.backToOneLayer(self.III['ex'])
                 adb.click(picChap['result'][0], picChap['result'][1])
                 return True
         elif chap.isdigit():
