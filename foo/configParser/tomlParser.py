@@ -25,8 +25,12 @@ class Toml:
             with open(self.devPath, 'w', encoding='UTF-8') as f:
                 f.write(dumps(self.toml))
         else:
-            with open(self.releasePath, 'w', encoding='UTF-8') as f:
-                f.write(dumps(self.toml))
+            try:
+                with open(self.releasePath, 'w', encoding='UTF-8') as f:
+                    f.write(dumps(self.toml))
+            except:
+                with open(self.devPath, 'w', encoding='UTF-8') as f:
+                    f.write(dumps(self.toml))
 
     def get(self, key):
         '获取值'
