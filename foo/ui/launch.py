@@ -170,7 +170,7 @@ class AfterInit(QThread):
             if rule.status_code == 200:
                 rule.encoding = 'UTF-8'
                 temp = rule.text.strip('\ufeff')
-                with open(self.app.userDataPath + '/logisticRule.ahrule', 'w', encoding = 'utf-8') as f:
+                with open(config_path + '/logisticRule.ahrule', 'w', encoding = 'utf-8') as f:
                     f.write('\n'.join([s for s in temp.splitlines() if s.strip()]))
                 self.logisticReady.emit()
 
