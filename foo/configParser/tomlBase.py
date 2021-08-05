@@ -114,45 +114,46 @@ def ini2toml_config():
     config_old = iniParser.ini2dict()
     config_new = dict()
     if config_old != dict(): #存在旧配置文件才进行以下操作
-        config_new['simulator'] = config_old['connect']['simulator']
-        config_new['notice'] = config_old['notice']['md5']
-        config_new['theme'] = config_old['theme']
-        config_new['logistic'] = config_old['logistic']
-        config_new['logistic'] = dict()
-        config_new['logistic']['default'] = config_old['function']['logistic']
-        config_new['logistic']['rule'] = config_old['logistic']['defaultrule']
-        config_new['logistic']['manufactory'] = {'default': config_old['logistic']['manufactory']}
-        config_new['logistic']['trade'] = {'default': config_old['logistic']['trade']}
-        config_new['logistic']['powerroom'] = {'default': config_old['logistic']['powerroom']}
-        config_new['logistic']['officeroom'] = {'default': config_old['logistic']['officeroom']}
-        config_new['logistic']['meetingroom'] = {'default': config_old['logistic']['receptionroom']}
-        config_new['logistic']['threshold'] = {'work': config_old['logistic']['moodthreshold'],
-                                            'dorm': config_old['logistic']['dormthreshold']}
-        config_new['function'] = dict()
-        config_new['function']['loop'] = {'default': config_old['function']['battle']}
-        config_new['function']['schedule'] = {'default': config_old['function']['schedule']}
-        config_new['function']['autopc'] = {'default': config_old['function']['autopc'],
-                                            'skip1star': config_old['function']['autopc_skip1star'],
-                                            'skip5star': config_old['function']['autopc_skip5star'],
-                                            'skip23star': config_old['function']['autopc_skip23star']}
-        config_new['function']['task'] = {'default': config_old['function']['task']}
-        config_new['function']['credit'] = {'default': config_old['function']['credit']}
-        config_new['function']['shutdown'] = {'default': config_old['function']['shutdown']}
-        config_new['recover'] = dict()
-        config_new['recover']['loop'] = dict()
-        config_new['recover']['loop']['medicine'] = dict()
-        config_new['recover']['loop']['medicine']['enable'] = config_old['medicament']['loop']
-        config_new['recover']['loop']['stone'] = dict()
-        config_new['recover']['loop']['stone']['enable'] = config_old['stone']['loop']
-        config_new['recover']['loop']['stone']['max'] = config_old['stone']['maxnum']
-        config_new['recover']['schedule'] = dict()
-        config_new['recover']['schedule']['medicine'] = dict()
-        config_new['recover']['schedule']['medicine']['enable'] = config_old['medicament']['schedule']
-        config_new['recover']['schedule']['stone'] = dict()
-        config_new['recover']['schedule']['stone']['enable'] = config_old['stone']['schedule']
-        config_new['recover']['schedule']['stone']['max'] = config_old['stone']['maxnum']
-    
-    
+        try:
+            config_new['simulator'] = config_old['connect']['simulator']
+            config_new['notice'] = config_old['notice']['md5']
+            config_new['theme'] = config_old['theme']
+            config_new['logistic'] = config_old['logistic']
+            config_new['logistic'] = dict()
+            config_new['logistic']['default'] = config_old['function']['logistic']
+            config_new['logistic']['rule'] = config_old['logistic']['defaultrule']
+            config_new['logistic']['manufactory'] = {'default': config_old['logistic']['manufactory']}
+            config_new['logistic']['trade'] = {'default': config_old['logistic']['trade']}
+            config_new['logistic']['powerroom'] = {'default': config_old['logistic']['powerroom']}
+            config_new['logistic']['officeroom'] = {'default': config_old['logistic']['officeroom']}
+            config_new['logistic']['meetingroom'] = {'default': config_old['logistic']['receptionroom']}
+            config_new['logistic']['threshold'] = {'work': config_old['logistic']['moodthreshold'],
+                                                'dorm': config_old['logistic']['dormthreshold']}
+            config_new['function'] = dict()
+            config_new['function']['loop'] = {'default': config_old['function']['battle']}
+            config_new['function']['schedule'] = {'default': config_old['function']['schedule']}
+            config_new['function']['autopc'] = {'default': config_old['function']['autopc'],
+                                                'skip1star': config_old['function']['autopc_skip1star'],
+                                                'skip5star': config_old['function']['autopc_skip5star'],
+                                                'skip23star': config_old['function']['autopc_skip23star']}
+            config_new['function']['task'] = {'default': config_old['function']['task']}
+            config_new['function']['credit'] = {'default': config_old['function']['credit']}
+            config_new['function']['shutdown'] = {'default': config_old['function']['shutdown']}
+            config_new['recover'] = dict()
+            config_new['recover']['loop'] = dict()
+            config_new['recover']['loop']['medicine'] = dict()
+            config_new['recover']['loop']['medicine']['enable'] = config_old['medicament']['loop']
+            config_new['recover']['loop']['stone'] = dict()
+            config_new['recover']['loop']['stone']['enable'] = config_old['stone']['loop']
+            config_new['recover']['loop']['stone']['max'] = config_old['stone']['maxnum']
+            config_new['recover']['schedule'] = dict()
+            config_new['recover']['schedule']['medicine'] = dict()
+            config_new['recover']['schedule']['medicine']['enable'] = config_old['medicament']['schedule']
+            config_new['recover']['schedule']['stone'] = dict()
+            config_new['recover']['schedule']['stone']['enable'] = config_old['stone']['schedule']
+            config_new['recover']['schedule']['stone']['max'] = config_old['stone']['maxnum']
+        except:
+            config_new = dict()
     return config_new
 
 def tomlRead(filename):
