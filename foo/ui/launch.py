@@ -161,7 +161,10 @@ class AfterInit(QThread):
                     self.reloadPcModule.emit()
                 while self.app._data == None:
                     sleep(0.1)
-                self.app.publicCall.updateTag()
+                if self.app.publicCall != None:
+                    self.app.publicCall.updateTag()
+                else:
+                    self.reloadPcModule.emit()
 
     def getLogisticRule(self):
         #自动下载基建规则文件
