@@ -591,6 +591,7 @@ class App(QWidget):
         self.themeEditor = ThemeEditor(self.app, ico = self.ico)
         self.rateMonitor.addWidget(self.themeEditor)
 
+        adb.changeSimulator(user_data)
         adb.adbErr.connect(self.stop)
         adb.adbNotice.connect(self.noticeFromOtherWidget)
 
