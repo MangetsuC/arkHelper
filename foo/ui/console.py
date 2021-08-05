@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import QDialog, QGridLayout, QTextBrowser, QDesktopWidget
 
 from common import theme
 
-
 class Console(QDialog):
     adbCloseError = pyqtSignal()
     def __init__(self, cwd, ver, parent=None, flags=Qt.WindowFlags(1)):
@@ -59,7 +58,7 @@ class Console(QDialog):
             cursor = self.textBrowser.textCursor()
             cursor.movePosition(QTextCursor.End)
             cursor.insertText(text)
-            with open(self.cwd + '/arkhelper.log', 'a') as log:
+            with open(self.cwd + '/arkhelper.log', 'a', encoding='UTF-8') as log:
                 log.write(text)
             self.textBrowser.setTextCursor(cursor)
 
