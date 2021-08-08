@@ -1053,7 +1053,7 @@ class App(QWidget):
     def simulator_add(self):
         '添加模拟器配置'
         simulator_new = AMessageBox.input(self, '请输入模拟器信息', 
-                '数据格式:名称;ID;adb来源[internal|external];IP地址\n\
+                '数据格式:名称;英文名称;adb来源[internal|external];IP地址\n\
 如:蓝叠模拟器;bluestacks;internal;127.0.0.1:5555\n\
 如:雷电模拟器;leidian;internal;emulator-5554')
         if simulator_new[1]:
