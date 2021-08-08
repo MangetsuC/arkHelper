@@ -931,10 +931,10 @@ class App(QWidget):
             self.publicCall.autoPCRun(self.doctorFlag)
         if self.doctorFlag and self.logisticFlag:
             self.logistic.run(self.doctorFlag)
-        if self.doctorFlag and self.taskFlag:
-            self.task.run(self.doctorFlag)
         if self.doctorFlag and self.creditFlag:
             self.credit.run(self.doctorFlag)
+        if self.doctorFlag and self.taskFlag:
+            self.task.run(self.doctorFlag)
         if self.shutdownFlag and self.doctorFlag:
             adb.cmd.shutdown(time=120)
             self.exitBeforeShutdown.emit()
