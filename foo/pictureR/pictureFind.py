@@ -4,8 +4,12 @@ from re import split as resplit
 from cv2 import (COLOR_BGR2GRAY, TM_CCOEFF_NORMED, Canny, copyTo, cvtColor,
                  fillConvexPoly, imdecode, imshow, matchTemplate, minMaxLoc, resize, imshow, waitKey)
 from cv2 import split as cvsplit
-from cv2 import waitKey
-from numpy import array, fromfile, zeros, ndarray
+from cv2 import SIFT_create, BFMatcher
+from numpy import array, fromfile, zeros, ndarray, sqrt, mat, power, random, shape, nonzero, mean, inf, where
+from numpy import sum as np_sum
+from numpy import int as np_int
+
+MODE = 'TEMPLATE'
 
 
 def imreadCH(filename):
@@ -13,6 +17,98 @@ def imreadCH(filename):
         return imdecode(fromfile(filename,dtype="uint8"),-1)
     elif isinstance(filename, ndarray):
         return filename
+
+def sift_match(img1, img2):
+    # Initiate SIFT detector
+    sift = SIFT_create()
+
+    # find the keypoints and descriptors with SIFT
+    kp1, des1 = sift.detectAndCompute(img1,None)
+    kp2, des2 = sift.detectAndCompute(img2,None)
+
+    # BFMatcher with default params
+    bf = BFMatcher()
+    matches = bf.knnMatch(des1,des2, k=2)
+
+    # Apply ratio test
+    good = []
+    for m,n in matches:
+        if m.distance < 0.5*n.distance:
+            good.append([m])
+
+    pts = []
+    for i in good:
+        pts.append(kp1[i[0].queryIdx].pt)
+
+    if len(pts) > 20:
+        return pts
+    else:
+        return None
+
+def dist(a, b): 
+    m = a.shape[0]
+    n = b.shape[0]
+    res = zeros((m, n))
+    for i in range(m):
+        res[i] = sqrt(np_sum((a[i] - b) ** 2, axis=1))
+    return res
+
+def dbscan(data, eps, minpts):
+    if data is None:
+        return None
+    dis = dist(data, data)  # 求两两之间距离
+    n = data.shape[0]  # 样本数
+    k = 0  # 类编号
+    visit = zeros(n)  # 是否被访问过
+    res = zeros(n).astype(np_int)  # 聚类结果
+    random_id = random.permutation(n)  # 随机排列
+    for s in random_id:
+        if visit[s] == 0:
+            visit[s] = 1
+            neps = list(where(dis[s] <= eps)[0])  # 找到 eps 范围邻域内所有点(包括了自己)
+            if len(neps)-1 < minpts:  # 数量不足 minpts 暂时设为噪声点
+                res[s] = -1
+            else:  
+                k += 1
+                res[s] = k  # 数量达到 minpts 归为 k 类
+                while len(neps) > 0:
+                    j = random.choice(neps)
+                    neps.remove(j)
+                    if res[j] == -1:  # 如果之前被标为噪声点，则归为该类, 也可以归为边界点
+                        res[j] = k
+                    if visit[j] == 0:  # 没有被访问过
+                        visit[j] = 1
+                        j_neps = list(where(dis[j] <= eps)[0])  # 找邻域
+                        if len(j_neps)-1 < minpts:
+                            res[j] = k  # 非核心点，可归为该类, 也可以归为边界点
+                        else:
+                            res[j] = k  # 核心点，加入集合
+                            neps = list(set(neps + j_neps))
+    ans = []
+    if k == 0:
+        return None
+    for i in range(k):
+        tempx = 0
+        tempy = 0
+        length = 0
+        i += 1
+        for j in range(len(res)):
+            if res[j] == i:
+                tempx += data[j][0]
+                tempy += data[j][1]
+                length += 1
+        ans.append((int(tempx/length), int(tempy/length)))
+
+    return ans
+
+def find_sift(im_source, im_search):
+    temp = sift_match(im_source, im_search)
+    if temp != None:
+        temp = array(temp)
+        return dbscan(temp, 20, 5)
+    else:
+        return None
+
 
 def find_template(im_source, im_search, threshold=0.5, rgb=False, bgremove=False):
     '''
@@ -161,11 +257,21 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
 
     if isinstance(confidencevalue, list):
         for i in confidencevalue:
-            match_result = find_template(imsrc,imobj,i)
+            if MODE == 'TEMPLATE':
+                match_result = find_template(imsrc,imobj,i)
+            else:
+                match_result = find_sift(imsrc, imobj)
+                if match_result != None:
+                    match_result = {'result': match_result[0]}
             if match_result != None:
                 break
     else:
-        match_result = find_template(imsrc,imobj,confidencevalue)
+        if MODE == 'TEMPLATE':
+            match_result = find_template(imsrc,imobj,confidencevalue)
+        else:
+            match_result = find_sift(imsrc, imobj)
+            if match_result != None:
+                match_result = {'result': match_result[0]}
     #match_result = None
     if match_result != None:
         if isinstance(imgobj, str):
