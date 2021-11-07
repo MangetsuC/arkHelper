@@ -76,7 +76,7 @@ class Task:
             screenshot = adb.getScreen_std()
             #gInfo = pictureFind.matchImg(screenshot, self.get, 0.9)
             collectAllInfo = pictureFind.matchImg(screenshot, self.collectAll, 0.8)
-            backInfo = pictureFind.matchImg(screenshot, self.back, 0.9)
+            homeInfo = pictureFind.matchImg(screenshot, self.home, 0.9)
             #rewardFinishInfo = pictureFind.matchMultiImg(screenshot, self.rewardFinish, 
             #                                            confidencevalue = adb.getTagConfidence())[0]
             #if rewardFinishInfo != None:
@@ -87,7 +87,7 @@ class Task:
                 endCount = 0
                 adb.click(collectAllInfo['result'][0], collectAllInfo['result'][1])
                 continue
-            elif backInfo != None: #没有任务待交付
+            elif homeInfo != None: #没有任务待交付
                 endCount += 1
                 if endCount > 3:
                     return True
@@ -105,7 +105,8 @@ class Task:
         while self.switch:
             #切换到每周任务
             wInfo = pictureFind.matchImg(adb.getScreen_std(), self.weekUnSel)
-            adb.click(wInfo['result'][0], wInfo['result'][1])
+            if wInfo != None:
+                adb.click(wInfo['result'][0], wInfo['result'][1])
             wInfo = pictureFind.matchImg(adb.getScreen_std(), self.weekSel)
             if wInfo != None:
                 break

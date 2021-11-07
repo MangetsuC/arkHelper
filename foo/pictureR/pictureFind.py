@@ -8,8 +8,9 @@ from cv2 import SIFT_create, BFMatcher
 from numpy import array, fromfile, zeros, ndarray, sqrt, mat, power, random, shape, nonzero, mean, inf, where
 from numpy import sum as np_sum
 from numpy import int as np_int
+from time import sleep
 
-MODE = 'TEMPLATE'
+MODE = 'SIFT'#'TEMPLATE'
 
 
 def imreadCH(filename):
@@ -25,6 +26,9 @@ def sift_match(img1, img2):
     # find the keypoints and descriptors with SIFT
     kp1, des1 = sift.detectAndCompute(img1,None)
     kp2, des2 = sift.detectAndCompute(img2,None)
+
+    if (des1 is None) or (des2 is None):
+        return None
 
     # BFMatcher with default params
     bf = BFMatcher()
@@ -87,17 +91,23 @@ def dbscan(data, eps, minpts):
     ans = []
     if k == 0:
         return None
+    tempPoint = []
     for i in range(k):
+        tempPoint.clear()
         tempx = 0
         tempy = 0
         length = 0
         i += 1
         for j in range(len(res)):
             if res[j] == i:
+                tempPoint.append((data[j]))
                 tempx += data[j][0]
                 tempy += data[j][1]
                 length += 1
-        ans.append((int(tempx/length), int(tempy/length)))
+        tempPoint.sort(key = lambda x:x[0]**2 + x[1]**2)
+        ans.append({'result' : (int(tempx/length), int(tempy/length)),
+                    'rectangle': (int(tempPoint[0][0]), int(tempPoint[0][1]), 
+                                    int(tempPoint[-1][0] - tempPoint[0][0]), int(tempPoint[-1][1] - tempPoint[-1][1]))})
 
     return ans
 
@@ -105,7 +115,7 @@ def find_sift(im_source, im_search):
     temp = sift_match(im_source, im_search)
     if temp != None:
         temp = array(temp)
-        return dbscan(temp, 20, 5)
+        return dbscan(temp, 20, 2)
     else:
         return None
 
@@ -262,7 +272,7 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
             else:
                 match_result = find_sift(imsrc, imobj)
                 if match_result != None:
-                    match_result = {'result': match_result[0]}
+                    match_result = match_result[0]
             if match_result != None:
                 break
     else:
@@ -271,7 +281,7 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
         else:
             match_result = find_sift(imsrc, imobj)
             if match_result != None:
-                match_result = {'result': match_result[0]}
+                match_result = match_result[0]
     #match_result = None
     if match_result != None:
         if isinstance(imgobj, str):
@@ -280,7 +290,8 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
             match_result['obj'] = imgobj['obj']
         else:
             match_result['obj'] = 'numpy'
-
+    
+    sleep(0.1) #降低占用
     return match_result
 
 
@@ -304,7 +315,12 @@ def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, targetSize = (1440, 810),
         imobj = imgobj
     matchRect = []
     matchPositionXY = []
-    while True:
+    match_result = find_sift(imsrc, imobj)
+    if match_result != None:
+        for i in match_result:
+            matchPositionXY.append(i['result'])
+            matchRect.append(i['rectangle'])
+    '''while True:
         match_result = find_template(imsrc,imobj,confidencevalue) 
         #match_result = None
         if match_result != None and maxReturn != 0:
@@ -317,7 +333,7 @@ def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, targetSize = (1440, 810),
             break
     if debugMode:
         imshow('img', imsrc)
-        waitKey(0)
+        waitKey(0)'''
     return [matchPositionXY,imsrc,matchRect] if matchPositionXY != [] else [None,imsrc,None]
     
 def levelOcr(imgsrc):

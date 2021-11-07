@@ -84,11 +84,14 @@ class PublicCall:
             if tInfo != None:
                 self.tagOnScreenList.append((tInfo['obj'][:-4], tInfo['result']))
                 tInfo['rectangle'] = list(tInfo['rectangle'])
-                for i in range(4):
+                '''for i in range(4):
                     tInfo['rectangle'][i] = list(tInfo['rectangle'][i])
                     tInfo['rectangle'][i][0] = int(tInfo['rectangle'][i][0]/1440*src.shape[1] + 0.5)
-                    tInfo['rectangle'][i][1] = int(tInfo['rectangle'][i][1]/810*src.shape[0] + 0.5)
-                rect = array([tInfo['rectangle'][0],tInfo['rectangle'][1],tInfo['rectangle'][3],tInfo['rectangle'][2]])
+                    tInfo['rectangle'][i][1] = int(tInfo['rectangle'][i][1]/810*src.shape[0] + 0.5)'''
+                rect = array([[tInfo['rectangle'][0],tInfo['rectangle'][1]],
+                                [tInfo['rectangle'][0],tInfo['rectangle'][1]+tInfo['rectangle'][3]+5],
+                                [tInfo['rectangle'][0]+tInfo['rectangle'][2]+5, tInfo['rectangle'][1]+tInfo['rectangle'][3]+5],
+                                [tInfo['rectangle'][0]+tInfo['rectangle'][2]+5, tInfo['rectangle'][1]]])
                 fillConvexPoly(src,rect,0)
                 #imshow('img', src)
                 #waitKey(0)

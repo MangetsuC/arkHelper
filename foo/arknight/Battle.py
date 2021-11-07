@@ -30,7 +30,7 @@ class BattleLoop(QObject):
         self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
         self.listActImg = pictureFind.picRead([self.cwd + "/res/actBattle/" + i for i in listdir(self.cwd + "/res/actBattle")])
         
-        self.listImg = self.listActImg + self.listBattleImg
+        self.listImg = self.listBattleImg#self.listActImg + self.listBattleImg
 
         self.startA = pictureFind.picRead(self.cwd + "/res/battle/startApart.png")
         self.startB = pictureFind.picRead(self.cwd + "/res/battle/startBpart.png")
@@ -100,7 +100,7 @@ class BattleLoop(QObject):
                 picStartA = pictureFind.matchImg(screenshot, self.startA, confidencevalue= 0.8)
                 if picStartA != None and self.switch:
                     picIsUseless = pictureFind.matchImg(screenshot, self.uselessLevel)
-                    if picIsUseless and (not self.isUselessContinue):
+                    if (picIsUseless == None) and (not self.isUselessContinue):
                         self.isWaitingUser = True
                         self.noBootySignal.emit()
                         while self.isWaitingUser:
