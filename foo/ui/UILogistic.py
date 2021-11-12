@@ -154,19 +154,23 @@ class UILogistic(QWidget):
             rate = 1.75
         else:
             rate = 2
-        self.btnRefresh.setMinimumSize(rate * 145, rate * 40)
-        self.btnEnableManufactory.setMinimumSize(rate * 110, rate * 40)
-        self.btnEnableTrade.setMinimumSize(rate * 110, rate * 40)
-        self.btnEnablePowerRoom.setMinimumSize(rate * 110, rate * 40)
-        self.btnEnableReceptionRoom.setMinimumSize(rate * 145, rate * 40)
-        self.btnEnableOfficeRoom.setMinimumSize(rate * 145, rate * 40)
-        self.comboBoxRuleNames.setMinimumHeight(rate * 40)
-        self.editDormThreshold.setMinimumSize(rate * 145, rate * 40)
-        self.editMoodThreshold.setMinimumSize(rate * 145, rate * 40)
-        self.btn_meetingRoom_use.setMinimumSize(rate * 145, rate * 40)
-        self.btn_meetingRoom_daily.setMinimumSize(rate * 145, rate * 40)
-        self.btn_meetingRoom_send.setMinimumSize(rate * 145, rate * 40)
-        self.btnOpenRuleFolder.setMinimumSize(rate * 145, rate * 40)
+        x0 = int(rate * 145)
+        x1 = int(rate * 110)
+        y = int(rate * 40)
+
+        self.btnRefresh.setMinimumSize(x0, y)
+        self.btnEnableManufactory.setMinimumSize(x1, y)
+        self.btnEnableTrade.setMinimumSize(x1, y)
+        self.btnEnablePowerRoom.setMinimumSize(x1, y)
+        self.btnEnableReceptionRoom.setMinimumSize(x0, y)
+        self.btnEnableOfficeRoom.setMinimumSize(x0, y)
+        self.comboBoxRuleNames.setMinimumHeight(y)
+        self.editDormThreshold.setMinimumSize(x0, y)
+        self.editMoodThreshold.setMinimumSize(x0, y)
+        self.btn_meetingRoom_use.setMinimumSize(x0, y)
+        self.btn_meetingRoom_daily.setMinimumSize(x0, y)
+        self.btn_meetingRoom_send.setMinimumSize(x0, y)
+        self.btnOpenRuleFolder.setMinimumSize(x0, y)
 
     def meetingRoom_function_ui_refresh(self):
         if user_data.get('logistic.meetingroom.send'):

@@ -211,7 +211,7 @@ class JsonEdit(QWidget):
         else:
             rate = 2
         
-        return size * rate
+        return int(size * rate)
 
     def resizeUI(self):
         self.setMaximumHeight(self.getRealSize(200))
