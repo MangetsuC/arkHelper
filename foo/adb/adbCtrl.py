@@ -103,6 +103,9 @@ class Adb(QObject):
         self.screenY = 810
         self.simulator_data = simulator_data
 
+        self.backPos = None
+        self.homePos = None
+
         self.submitting = pictureFind.picRead(getcwd() + '/res/logistic/general/submitting.png')
 
     def getResolution(self):
@@ -222,7 +225,7 @@ class Adb(QObject):
             for eachAdbPid in adbPidList:
                 self.cmd.killTask(eachAdbPid)
 
-    def getScreen_std(self):
+    def getScreen_std(self, isForOcr = False):
         submitCount = 0
         while True:
             tryCount = 0
@@ -233,6 +236,9 @@ class Adb(QObject):
                         pic = pic.replace(b'\r\n', b'\n')
                     elif pic[6] == 13:#CR
                         pic = pic.replace(b'\r\r\n', b'\n')
+                    if isForOcr:
+                        return pic
+
                 except IndexError:
                     tryCount += 1
                     if tryCount > 3:
@@ -264,8 +270,8 @@ class Adb(QObject):
                     return zeros((810, 1440, 3), dtype='uint8')
 
     def click(self, x, y, isSleep = True):
-        x = int((x / 1440) * self.screenX)
-        y = int((y / 810) * self.screenY)
+        x = int(x)#int((x / 1440) * self.screenX)
+        y = int(y)#int((y / 810) * self.screenY)
         self.cmd.run('adb -s {device} shell input tap {0} {1}'.format(x, y, device = self.ip))
         if isSleep:
             sleep(1)
@@ -298,6 +304,22 @@ class Adb(QObject):
 
     def mainToNextChap(self):
         self.swipe(1050, 400, 650, 400, 500)
+
+    def clickBack(self):
+        if self.backPos == None:
+            ans = pictureFind.matchImg(self.getScreen_std(), './res/panel/other/home.png', confidencevalue=0.3, targetSize=(0,0))
+            if ans != None:
+                self.backPos = [int(ans['result'][0]/3), int(ans['result'][1])]
+                self.homePos = [int(ans['result'][0]), int(ans['result'][1])]
+        self.click(self.backPos[0], self.backPos[1])
+        
+    def clickHome(self):
+        if self.homePos == None:
+            ans = pictureFind.matchImg(self.getScreen_std(), './res/panel/other/home.png', confidencevalue=0.3, targetSize=(0,0))
+            if ans != None:
+                self.backPos = [int(ans['result'][0]/3), int(ans['result'][1])]
+                self.homePos = [int(ans['result'][0]), int(ans['result'][1])]
+        self.click(self.homePos[0], self.homePos[1])
 
 class AdbError(Exception):
     pass
