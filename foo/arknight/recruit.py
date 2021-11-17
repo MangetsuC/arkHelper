@@ -1,13 +1,16 @@
 #公开招募功能实现部分代码
 #UI中应为单纯的UI部分
 import json
+from sys import path as syspath
+from os import getcwd
+syspath.append(getcwd())
 
 from foo.ocr.ocr import getText, findTextPos
 from foo.pictureR import pictureFind
 from common2 import adb
 
 class Recruit:
-    def __init__(self):
+    def __init__(self, priority = [-6, 5, 4]):
 
 
         temp = self.readData()
@@ -17,6 +20,8 @@ class Recruit:
 
         self.confirm_refresh_pos = None
         self.confirm_recruit_pos = None
+
+        self.priority = priority
 
     def readData(self):
         '获取公开招募的信息'
@@ -168,7 +173,7 @@ class Recruit:
 
         return ans
 
-    def doRecruit(self, priority = [-6, 5, 4]):
+    def doRecruit_once(self, priority = [-6, 5, 4]):
         '执行一次招募'
         tags = self.getTag()
         ans = list(self.getAns(tags).items())
@@ -203,5 +208,71 @@ class Recruit:
                     self.addTime()
                     self.confirm_recruit()
                     return True
+
+    def employ(self):
+        '聘用'
+        while True:
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+
+            ans = findTextPos(ocrResult, ['聘用候选人'], [])
+            if ans != None:
+                adb.click(ans[0][0], ans[0][1])
+                for i in range (20):
+                    adb.clickUpRight()
+
+                    img = adb.getScreen_std(True)
+                    ocrResult = getText(img)
+                    ans = findTextPos(ocrResult, ['公开招募'], [])
+                    if ans != None:
+                        return 
+            else:
+                return 
         
+
+    def doRecruit(self):
+        while True:
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+
+            ans = findTextPos(ocrResult, ['开始招募干员'], [])
+            if ans != None:
+                adb.click(ans[0][0], ans[0][1])
+                self.doRecruit_once(self.priority)
+            else:
+                return 
         
+    
+    def enter(self):
+        '进入自动公招页面'
+        while True:
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+
+            ans = findTextPos(ocrResult, ['采购中心'], [])
+            if ans != None:
+                ans = findTextPos(ocrResult, ['公开招募'], [])
+                for i in range(5):
+                    adb.click(ans[0][0], ans[0][1])
+                    if findTextPos(getText(adb.getScreen_std(True)), ['联络次数'], []) != None:
+                        return 
+            
+            adb.clickHome()
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+
+            ans = findTextPos(ocrResult, ['公开招募'], [])
+            adb.click(ans[1][0][0], ans[1][0][1])
+            for i in range(5):
+                if findTextPos(getText(adb.getScreen_std(True)), ['联络次数'], []) != None:
+                    return 
+            return 
+
+
+    def run(self):
+        '完整执行自动公招'
+        self.enter()
+        self.employ()
+        self.doRecruit()
+
+

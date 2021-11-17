@@ -26,7 +26,7 @@ class BattleLoop(QObject):
         self.isUselessContinue = False
         self.isRecovered = False
 
-        self.battleLoopTimes = -1
+        self.battleLoopTimes = -100
 
         self.screenShot = self.cwd + '/bin/adb/arktemp.png'
         self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
