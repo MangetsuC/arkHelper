@@ -2,140 +2,77 @@ from os import getcwd, listdir
 from sys import path
 
 from foo.pictureR import pictureFind
-from foo.win import toast
 from common2 import adb
+from foo.ocr.ocr import getText, findTextPos, findTextPos_withConficende
 
 class Task:
     def __init__(self, cwd, ico, listGoTo):
-        self.cwd = cwd
         self.switch = False
-        self.icon = ico
-        #self.screenShot = self.cwd + '/bin/adb/arktemp.png'
-        self.task = pictureFind.picRead(self.cwd + "/res/panel/other/task.png")
-        self.get = pictureFind.picRead(self.cwd + "/res/panel/other/get.png")
-        self.daySel = pictureFind.picRead(self.cwd + "/res/panel/other/dailyTaskSelect.png")
-        self.actSel = pictureFind.picRead(self.cwd + "/res/panel/other/actSelect.png")
-        self.weekUnSel = pictureFind.picRead(self.cwd + "/res/panel/other/weeklyTaskUnSelect.png")
-        self.weekSel = pictureFind.picRead(self.cwd + "/res/panel/other/weeklyTaskSelect.png")
-        self.back = pictureFind.picRead(self.cwd + '/res/panel/other/back.png')
-        self.rewardFinish = pictureFind.picRead(self.cwd + '/res/panel/other/rewardFinish.png')
-        self.collectAll = pictureFind.picRead(self.cwd + '/res/panel/other/collectAll.png')
 
-        self.listGoTo = listGoTo
-        self.mainpage = self.listGoTo[0]
-        self.home = self.listGoTo[1]
-        self.mainpageMark = self.listGoTo[2]
+    def enter(self):
+        '进入任务交付页面'
+        while True:
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
 
-    def goToMainpage(self):
-        listGoToTemp = self.listGoTo.copy()
-        tryCount = 0
-        while self.switch:
-            screenshot = adb.getScreen_std()
-            for eachStep in listGoToTemp:
-                bInfo = pictureFind.matchImg(screenshot, eachStep)
-                if bInfo != None:
-                    listGoToTemp.remove(eachStep)
-                    break
-            else:
-                listGoToTemp = self.listGoTo.copy()
-                tryCount += 1
-                if tryCount > 5:
-                    return False
+            ans = findTextPos(ocrResult, ['采购中心'], [])
+            if ans != None:
+                ans = findTextPos(ocrResult, ['任务'], [])
+                for i in range(5):
+                    adb.click(ans[0][0], ans[0][1])
+                    temp = findTextPos_withConficende(getText(adb.getScreen_std(True)), ['日常任务'], [], 0.7)
+                    if temp != None:
+                        adb.click(temp[0][0], temp[0][1])
+                        return 
+            
+            adb.clickHome()
+            img = adb.getScreen_std()
+            ans = pictureFind.matchImg(img, './res/panel/other/taskIcon.png', confidencevalue=0.3, targetSize=(0,0))
+            if ans != None:
+                adb.click(ans['result'][0], ans['result'][1])
+            
+            for i in range(5):
+                temp = findTextPos_withConficende(getText(adb.getScreen_std(True)), ['日常任务'], [], 0.7)
+                if temp != None:
+                    adb.click(temp[0][0], temp[0][1])
+                    return 
+            return 
 
-            if bInfo != None:
-                if bInfo['obj'] == 'act.png':
-                    return True
-                else:
-                    adb.click(bInfo['result'][0], bInfo['result'][1])
-
-
-    def checkTask(self):
-        tryCount = 0
-        cInfo = pictureFind.matchImg(adb.getScreen_std(), self.task)
-        if cInfo == None:
-            print('无法检测到任务交付入口，中断任务交付后续')
-            return False
-        else:
-            while self.switch:
-                adb.click(cInfo['result'][0], cInfo['result'][1])
-                
-                screenshot = adb.getScreen_std()
-                if pictureFind.matchImg(screenshot, self.daySel) != None:
-                    return True
-                elif pictureFind.matchImg(screenshot, self.actSel) != None:
-                    return True
-                else:
-                    tryCount += 1
-                    if tryCount > 5:
-                        return False
 
     def submitTask(self):
         #交付当前栏的任务
-        endCount = 0
+        count = 0
         while self.switch:
-            screenshot = adb.getScreen_std()
-            #gInfo = pictureFind.matchImg(screenshot, self.get, 0.9)
-            collectAllInfo = pictureFind.matchImg(screenshot, self.collectAll, 0.8)
-            homeInfo = pictureFind.matchImg(screenshot, self.home, 0.9)
-            #rewardFinishInfo = pictureFind.matchMultiImg(screenshot, self.rewardFinish, 
-            #                                            confidencevalue = adb.getTagConfidence())[0]
-            #if rewardFinishInfo != None:
-            #    rewardFinishInfo.sort(key = lambda x:x[1])
-            #    if rewardFinishInfo[0][1] < 250:#该栏任务交付全部完成
-            #        return True
-            if collectAllInfo != None: #有任务待交付
-                endCount = 0
-                adb.click(collectAllInfo['result'][0], collectAllInfo['result'][1])
-                continue
-            elif homeInfo != None: #没有任务待交付
-                endCount += 1
-                if endCount > 3:
-                    return True
-                else:
-                    continue
-            else: #获取了奖励
-                endCount = 0
-                adb.click(720, 120)
-                continue
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
 
-    def oneByOne(self):
-        #adb.screenShot()
-        tryCount = 0
-        self.submitTask()
-        while self.switch:
-            #切换到每周任务
-            wInfo = pictureFind.matchImg(adb.getScreen_std(), self.weekUnSel)
-            if wInfo != None:
-                adb.click(wInfo['result'][0], wInfo['result'][1])
-            wInfo = pictureFind.matchImg(adb.getScreen_std(), self.weekSel)
-            if wInfo != None:
-                break
+            ans = findTextPos(ocrResult, ['收集全部', '获得物资'], [])
+            if ans != None:
+                adb.click(ans[0][0], ans[0][1])
             else:
-                tryCount += 1
-                if tryCount > 5:
-                    return False
+                count += 1
+                if count > 3:
+                    break
+
+    def run(self, switch):
+        self.switch = switch
+
+        self.enter()
+        if not self.switch: return 
+
+        self.submitTask()
+        if not self.switch: return 
+
+        img = adb.getScreen_std(True)
+        ocrResult = getText(img)
+
+        ans = findTextPos(ocrResult, ['周常任务'], [])
+        if ans != None:
+            adb.click(ans[0][0], ans[0][1])
+        if not self.switch: return 
+
         self.submitTask()
 
-
-
-    def run(self, switchI):
-        self.switch = switchI
-        condition0 = self.goToMainpage()
-        if condition0:
-            condition1 = self.checkTask()
-            if condition1:
-                self.oneByOne()
-        if self.switch and (not condition0):
-            toast.broadcastMsg("ArkHelper", "任务交付出错", self.icon)
-
-        elif self.switch and (not condition1):
-            toast.broadcastMsg("ArkHelper", "无需任务交付", self.icon)
-            
-        elif self.switch:
-            self.goToMainpage()
-            toast.broadcastMsg("ArkHelper", "任务交付完成", self.icon)
-            
-        self.switch = False
 
     def stop(self):
         self.switch = False
