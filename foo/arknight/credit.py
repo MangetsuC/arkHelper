@@ -2,8 +2,11 @@ from os import getcwd, listdir
 from sys import path
 
 from foo.pictureR import pictureFind
+from foo.pictureR.colorDetect import findColorBlock
 from foo.win import toast
 from common2 import adb
+
+from foo.ocr.ocr import getText, findTextPos, findTextPos_withConficende
 
 class Credit:
     def __init__(self, cwd, listGoTo):
@@ -18,7 +21,7 @@ class Credit:
         self.visitNext = pictureFind.picRead(self.cwd + '/res/panel/other/visitNext.png')
         self.visitFinish = pictureFind.picRead(self.cwd + '/res/panel/other/visitFinish.png')
         self.friends = pictureFind.picRead(self.cwd + '/res/panel/other/friends.png')
-        self.visit = pictureFind.picRead(self.cwd + '/res/panel/other/visit.png')
+        self.visits = pictureFind.picRead(self.cwd + '/res/panel/other/visit.png')
 
         self.listGoTo = listGoTo
         self.mainpage = self.listGoTo[0]
@@ -26,6 +29,67 @@ class Credit:
         self.mainpageMark = self.listGoTo[2]
         self.listGetCredit = [self.visitNext, self.visitFinish]
         
+
+    def enter(self):
+        '进入好友页面'
+        while True:
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+
+            ans = findTextPos(ocrResult, ['采购中心'], [])
+            if ans != None:
+                ans = findTextPos(ocrResult, ['好反', '好屁'], []) #试了几次 就这两个结果 总之是出不了好友
+                for i in range(5):
+                    adb.click(ans[0][0], ans[0][1])
+                    temp = findTextPos(getText(adb.getScreen_std(True)), ['好友列表'], [])
+                    if temp != None:
+                        adb.click(temp[0][0], temp[0][1])
+                        if findTextPos(getText(adb.getScreen_std(True)), ['访问基建'], []) != None:
+                            return
+            
+            adb.clickHome()
+            img = adb.getScreen_std()
+            ans = pictureFind.matchImg(img, './res/panel/other/friendIcon.png', confidencevalue=0.3, targetSize=(0,0))
+            if ans != None:
+                adb.click(ans['result'][0], ans['result'][1])
+            
+            for i in range(5):
+                temp = findTextPos(getText(adb.getScreen_std(True)), ['好友列表'], [])
+                if temp != None:
+                    adb.click(temp[0][0], temp[0][1])
+                    if findTextPos(getText(adb.getScreen_std(True)), ['访问基建'], []) != None:
+                        return 
+            return 
+
+    def visit(self):
+        '访问基建'
+        img = adb.getScreen_std(True)
+        ocrResult = getText(img)
+        ans = findTextPos(ocrResult, ['访问基建'], [])
+        if ans != None:
+            for i in range(5):
+                adb.click(ans[0][0], ans[0][1])
+                if findTextPos(getText(adb.getScreen_std(True)), ['访问下位'], []) != None:
+                    break
+
+        lastAns = ''
+        while True:
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+            ans = findTextPos(ocrResult, ['会客室'], [])
+            if ans == lastAns:
+                ans = None
+
+            if ans != None:
+                if findTextPos(getText(adb.getScreen_std(True)), ['访问下位'], []) != None:
+                    lastAns = ans[2]
+                    img = adb.getScreen_std()
+                    ans = findColorBlock(img, [(200, 225), (85, 100), (5, 20)])
+                    if ans != None:
+                        adb.click(ans[0], ans[1])
+                    else:
+                        break
+
 
     def goToMainpage(self):
         listGoToTemp = self.listGoTo.copy()
@@ -69,7 +133,7 @@ class Credit:
         tryTime = 0
         while self.switch:
             adb.click(fInfo['result'][0], fInfo['result'][1])
-            vInfo = pictureFind.matchImg(adb.getScreen_std(), self.visit)
+            vInfo = pictureFind.matchImg(adb.getScreen_std(), self.visits)
             if vInfo != None:
                 return vInfo
             elif tryTime > 10:
@@ -115,28 +179,10 @@ class Credit:
                     if gInfo != None:
                         break
 
-    def run(self, switchI):
-        self.switch = switchI
-        isNormal = True
-        flag = self.goToMainpage()
-        if self.switch and flag:
-            infoFlag = self.openCard()
-            if self.switch and infoFlag != None:
-                infoFlag2 = self.openFriendList(infoFlag)
-                if self.switch and infoFlag2 != None:
-                    self.enterCons(infoFlag2)
-                else:
-                    isNormal = False
-            else:
-                isNormal = False
-        else:
-            isNormal = False
-
-        self.goToMainpage()
-        if isNormal and self.switch:
-            toast.broadcastMsg("ArkHelper", "获取信用点成功", self.icon)
-        elif self.switch:
-            toast.broadcastMsg("ArkHelper", "获取信用点出错", self.icon)
+    def run(self, switch):
+        self.switch = switch
+        self.enter()
+        self.visit()
 
         self.switch = False
     
