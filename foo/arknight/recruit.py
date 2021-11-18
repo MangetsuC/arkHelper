@@ -211,6 +211,7 @@ class Recruit:
 
     def employ(self):
         '聘用'
+        count = 0
         while True:
             img = adb.getScreen_std(True)
             ocrResult = getText(img)
@@ -227,10 +228,13 @@ class Recruit:
                     if ans != None:
                         break
             else:
-                return 
+                count += 1
+                if count > 3:
+                    return 
         
 
     def doRecruit(self):
+        count = 0
         while True:
             img = adb.getScreen_std(True)
             ocrResult = getText(img)
@@ -240,7 +244,9 @@ class Recruit:
                 adb.click(ans[0][0], ans[0][1])
                 self.doRecruit_once(self.priority)
             else:
-                return 
+                count += 1
+                if count > 3:
+                    return 
         
     
     def enter(self):
