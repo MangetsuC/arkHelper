@@ -225,7 +225,7 @@ class Recruit:
                     ocrResult = getText(img)
                     ans = findTextPos(ocrResult, ['公开招募'], [])
                     if ans != None:
-                        return 
+                        break
             else:
                 return 
         
@@ -235,7 +235,7 @@ class Recruit:
             img = adb.getScreen_std(True)
             ocrResult = getText(img)
 
-            ans = findTextPos(ocrResult, ['开始招募干员'], [])
+            ans = findTextPos(ocrResult, ['开始招募'], [])
             if ans != None:
                 adb.click(ans[0][0], ans[0][1])
                 self.doRecruit_once(self.priority)
@@ -254,7 +254,7 @@ class Recruit:
                 ans = findTextPos(ocrResult, ['公开招募'], [])
                 for i in range(5):
                     adb.click(ans[0][0], ans[0][1])
-                    if findTextPos(getText(adb.getScreen_std(True)), ['联络次数'], []) != None:
+                    if findTextPos(getText(adb.getScreen_std(True)), ['开始招募', '聘用候选人', '停止招募'], []) != None:
                         return 
             
             adb.clickHome()
@@ -264,7 +264,7 @@ class Recruit:
             ans = findTextPos(ocrResult, ['公开招募'], [])
             adb.click(ans[1][0][0], ans[1][0][1])
             for i in range(5):
-                if findTextPos(getText(adb.getScreen_std(True)), ['联络次数'], []) != None:
+                if findTextPos(getText(adb.getScreen_std(True)), ['开始招募', '聘用候选人', '停止招募'], []) != None:
                     return 
             return 
 
