@@ -11,7 +11,7 @@ class Task:
 
     def enter(self):
         '进入任务交付页面'
-        while True:
+        while self.switch:
             img = adb.getScreen_std(True)
             ocrResult = getText(img)
 
@@ -20,7 +20,7 @@ class Task:
                 ans = findTextPos(ocrResult, ['任务'], [])
                 for i in range(5):
                     adb.click(ans[0][0], ans[0][1])
-                    temp = findTextPos_withConficende(getText(adb.getScreen_std(True)), ['日常任务'], [], 0.7)
+                    temp = findTextPos(getText(adb.getScreen_std(True)), ['日'], [])
                     if temp != None:
                         adb.click(temp[0][0], temp[0][1])
                         return 
@@ -32,7 +32,7 @@ class Task:
                 adb.click(ans['result'][0], ans['result'][1])
             
             for i in range(5):
-                temp = findTextPos_withConficende(getText(adb.getScreen_std(True)), ['日常任务'], [], 0.7)
+                temp = findTextPos(getText(adb.getScreen_std(True)), ['日'], [])
                 if temp != None:
                     adb.click(temp[0][0], temp[0][1])
                     return 
