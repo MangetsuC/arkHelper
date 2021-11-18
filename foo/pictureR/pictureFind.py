@@ -19,7 +19,7 @@ def imreadCH(filename):
     elif isinstance(filename, ndarray):
         return filename
 
-def sift_match(img1, img2):
+def sift_match(img1, img2, confidence = 0.5):
     # Initiate SIFT detector
     sift = SIFT_create()
 
@@ -37,14 +37,14 @@ def sift_match(img1, img2):
     # Apply ratio test
     good = []
     for m,n in matches:
-        if m.distance < 0.5*n.distance:
+        if m.distance < confidence*n.distance:
             good.append([m])
 
     pts = []
     for i in good:
         pts.append(kp1[i[0].queryIdx].pt)
 
-    if len(pts) > 20:
+    if pts != []:#len(pts) > 1:
         return pts
     else:
         return None
@@ -111,11 +111,11 @@ def dbscan(data, eps, minpts):
 
     return ans
 
-def find_sift(im_source, im_search):
-    temp = sift_match(im_source, im_search)
+def find_sift(im_source, im_search, confidence = 0.5):
+    temp = sift_match(im_source, im_search, confidence)
     if temp != None:
         temp = array(temp)
-        return dbscan(temp, 20, 2)
+        return dbscan(temp, 20, 1)
     else:
         return None
 
@@ -245,7 +245,7 @@ def matchMultiImg_roi(imgsrc, imgobj, roi, confidencevalue=0.8, targetSize=(1440
                 ansReal.append([eachPos[0] + x0, eachPos[1] + y0])
     return ansReal
 
-def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc=原始图像，imgobj=待查找的图片
+def matchImg(imgsrc,imgobj,confidencevalue=0.5,targetSize=(1440, 810)):  #imgsrc=原始图像，imgobj=待查找的图片
     '用于查找原始图片中的单一目标图片，如果原始图片中可找到多个目标图片，则随机返回一个匹配的结果，返回值为一个字典'
     try:
         if isinstance(imgsrc,str):
@@ -263,14 +263,15 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
         imobj = imgobj
 
     if targetSize != (0,0):
-        imsrc = resize(imsrc, targetSize)
+        #改为只调整纵向分辨率
+        imsrc = resize(imsrc, (int(imsrc.shape[1]*targetSize[1]/imsrc.shape[0]), targetSize[1]))
 
     if isinstance(confidencevalue, list):
         for i in confidencevalue:
             if MODE == 'TEMPLATE':
                 match_result = find_template(imsrc,imobj,i)
             else:
-                match_result = find_sift(imsrc, imobj)
+                match_result = find_sift(imsrc, imobj, confidencevalue)
                 if match_result != None:
                     match_result = match_result[0]
             if match_result != None:
@@ -279,9 +280,42 @@ def matchImg(imgsrc,imgobj,confidencevalue=0.8,targetSize=(1440, 810)):  #imgsrc
         if MODE == 'TEMPLATE':
             match_result = find_template(imsrc,imobj,confidencevalue)
         else:
-            match_result = find_sift(imsrc, imobj)
+            match_result = find_sift(imsrc, imobj, confidencevalue)
             if match_result != None:
                 match_result = match_result[0]
+    #match_result = None
+    if match_result != None:
+        if isinstance(imgobj, str):
+            match_result['obj'] = resplit(r'[\\ /]', imgobj)[-1]
+        elif isinstance(imgobj, dict):
+            match_result['obj'] = imgobj['obj']
+        else:
+            match_result['obj'] = 'numpy'
+    
+    sleep(0.1) #降低占用
+    return match_result
+
+def matchImg_T(imgsrc,imgobj,confidencevalue=0.7,targetSize=810):  #imgsrc=原始图像，imgobj=待查找的图片
+    '用于查找原始图片中的单一目标图片，如果原始图片中可找到多个目标图片，则随机返回一个匹配的结果，返回值为一个字典'
+    try:
+        if isinstance(imgsrc,str):
+            imsrc = imreadCH(imgsrc)
+        else:
+            imsrc = imgsrc
+    except RuntimeError:
+        return None
+    #imobj = imread(imgobj)
+    if isinstance(imgobj,str):
+        imobj = imreadCH(imgobj)
+    elif isinstance(imgobj, dict):
+        imobj = imgobj['pic']    #现在此情况传入的一定是字典
+    else:
+        imobj = imgobj
+
+    #改为只调整纵向分辨率
+    imsrc = resize(imsrc, (int(imsrc.shape[1]*targetSize/imsrc[0]), targetSize))
+
+    match_result = find_template(imsrc,imobj,confidencevalue)
     #match_result = None
     if match_result != None:
         if isinstance(imgobj, str):

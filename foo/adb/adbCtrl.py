@@ -259,7 +259,7 @@ class Adb(QObject):
                 self.adbErr.emit(True)
                 print('截取屏幕失败：未知原因')
                 return zeros((810, 1440, 3), dtype='uint8')
-            if pictureFind.matchImg_roi(pic, self.submitting, (0, 700, 1440, 110), confidencevalue = 0.7) == None:
+            '''if pictureFind.matchImg_roi(pic, self.submitting, (0, 700, 1440, 110), confidencevalue = 0.7) == None:
                 return pic
             else:
                 submitCount += 1
@@ -267,7 +267,8 @@ class Adb(QObject):
                 if submitCount > 10:
                     self.adbErr.emit(True)
                     print('长时间提示正在连接至神经网络，请检查网络连接')
-                    return zeros((810, 1440, 3), dtype='uint8')
+                    return zeros((810, 1440, 3), dtype='uint8')'''
+            return pic
 
     def click(self, x, y, isSleep = True):
         x = int(x)#int((x / 1440) * self.screenX)
@@ -311,7 +312,9 @@ class Adb(QObject):
             if ans != None:
                 self.backPos = [int(ans['result'][0]/3), int(ans['result'][1])]
                 self.homePos = [int(ans['result'][0]), int(ans['result'][1])]
-        self.click(self.backPos[0], self.backPos[1])
+                self.click(self.backPos[0], self.backPos[1])
+        else:
+            self.click(self.backPos[0], self.backPos[1])
         
     def clickHome(self):
         if self.homePos == None:
@@ -319,7 +322,12 @@ class Adb(QObject):
             if ans != None:
                 self.backPos = [int(ans['result'][0]/3), int(ans['result'][1])]
                 self.homePos = [int(ans['result'][0]), int(ans['result'][1])]
-        self.click(self.homePos[0], self.homePos[1])
+                self.click(self.homePos[0], self.homePos[1])
+        else:
+            self.click(self.homePos[0], self.homePos[1])
+
+    def clickUpRight(self):
+        self.click(self.screenX - 10, 10)
 
 class AdbError(Exception):
     pass
