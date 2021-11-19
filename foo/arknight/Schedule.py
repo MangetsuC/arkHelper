@@ -1,14 +1,17 @@
+from json import loads
 from os import getcwd, listdir
 from sys import path
 from time import sleep, time
-from json import loads
-from PyQt5.QtCore import pyqtSignal, QObject
 
-from foo.pictureR import pictureFind
-from foo.pictureR import bootyCount
-from foo.win import toast
 from common import schedule_data
 from common2 import adb
+from foo.ocr.ocr import findTextPos, getText, findTextPos_all
+from foo.pictureR import bootyCount, pictureFind
+from foo.pictureR.squreDetect import find_squares
+from foo.pictureR.spoils import spoilsCheck
+from foo.win import toast
+from PyQt5.QtCore import QObject, pyqtSignal
+
 
 class BattleSchedule(QObject):
     errorSignal = pyqtSignal(str)
@@ -70,52 +73,154 @@ class BattleSchedule(QObject):
                     'ex4':self.cwd + "/res/panel/level/III/e04.png", 'exSwitch':self.cwd + "/res/panel/level/III/exSwitch.png"}
         self.exSymbol = self.cwd + "/res/panel/other/exSymbol.png"
 
+        self.resTrans = {'A':'固若金汤', 'B':'摧枯拉朽',\
+                        'C':'势不可挡', 'D':'身先士卒',\
+                        'AP':'粉碎防御', 'CA':'空中威胁',\
+                        'CE':'货物运送', 'SK':'资源保障',\
+                        'LS':'战术演习'}
+
+    def enter(self):
+        '进入终端界面'
+        while self.switch:
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+
+            ans = findTextPos(ocrResult, ['采购中心'], [])
+            if ans != None:
+                ans = findTextPos(ocrResult, ['理智'], [])
+                for i in range(5):
+                    adb.click(ans[0][0], ans[0][1])
+                    temp = findTextPos(getText(adb.getScreen_std(True)), ['终端'], [])
+                    if temp != None:
+                        isEnter = True
+                        return 
+
+            adb.clickHome()
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+
+            ans = findTextPos(ocrResult, ['终端'], [])
+            if ans != None:
+                adb.click(ans[0][0], ans[0][1])
+            
+            for i in range(5):
+                temp = findTextPos(getText(adb.getScreen_std(True)), ['终端'], [])
+                if temp != None:
+                    return 
+
+    def enter2(self, part):
+        '进入主线、资源或剿灭的二级界面'
+        class Enter2Error(Exception):
+            def __init__(self, info) -> None:
+                self.info = info
+            def __str__(self) -> str:
+                return self.info
+
+        img = adb.getScreen_std()
+        if part == 'MAIN':
+            ans = pictureFind.matchImg(img, './res/panel/level/mainIcon.png', confidencevalue=0.3, targetSize=(0,0))
+            if ans != None:
+                for i in range(5):
+                    adb.click(ans['result'][0], ans['result'][1])
+                    temp = findTextPos(getText(adb.getScreen_std(True)), ['主题曲'], [])
+                    if temp != None:
+                        break 
+            else:
+                raise Enter2Error('无法找到主题曲Icon')
+        elif part == 'EX':
+            ans = pictureFind.matchImg(img, './res/panel/level/exIcon.png', confidencevalue=0.3, targetSize=(0,0))
+            if ans != None:
+                for i in range(5):
+                    adb.click(ans['result'][0], ans['result'][1])
+                    temp = findTextPos(getText(adb.getScreen_std(True)), ['每周部署'], [])
+                    if temp != None:
+                        break 
+            else:
+                raise Enter2Error('无法找到每周部署Icon')
+        elif part == 'RS' or part == 'PR':
+            ans = pictureFind.matchImg(img, './res/panel/level/resIcon.png', confidencevalue=0.3, targetSize=(0,0))
+            if ans != None:
+                for i in range(5):
+                    adb.click(ans['result'][0], ans['result'][1])
+                    temp = findTextPos(getText(adb.getScreen_std(True)), ['资源收集'], [])
+                    if temp != None:
+                        break 
+            else:
+                raise Enter2Error('无法找到资源收集Icon')
+        else:
+            raise Enter2Error('part信息错误')
+
+    def enter4(self, objLevel):
+        '前往关卡'
+        class Enter4Error(Exception):
+            def __init__(self, info) -> None:
+                self.info = info
+            def __str__(self) -> str:
+                return self.info
+
+        if objLevel[0] == 'e':
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+
+            if objLevel == 'e01':
+                ans = findTextPos(ocrResult, ['切尔诺伯格'], [])
+            elif objLevel == 'e02':
+                ans = findTextPos(ocrResult, ['龙门外环'], [])
+            elif objLevel == 'e03':
+                ans = findTextPos(ocrResult, ['龙门市区'], [])
+            else:
+                ans = findTextPos(ocrResult, ['委托'], ['期'])
+            
+            if ans != None:
+                adb.click(ans[0][0], ans[0][1])
+                return 
+            else:
+                raise Enter4Error('未发现剿灭关卡')
+
+        else:
+            adb.speedToLeft()
+            for i in range(25):
+                if not self.switch:
+                    break
+
+                img = adb.getScreen_std(True)
+                ocrResult = getText(img)
+                ans = []
+                temp = findTextPos_all(ocrResult, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], [])
+                for i in temp:
+                    if '-' in i[2]:
+                        ans.append(i)
+                
+                if ans == []:
+                    raise Enter4Error('未发现任何关卡')
+
+                levelOnScreen = dict()
+                for i in ans:
+                    levelOnScreen[i[2]] = i[0]
+
+                if objLevel in levelOnScreen.keys():
+                    adb.click(levelOnScreen[objLevel][0],levelOnScreen[objLevel][1])
+                    img = adb.getScreen_std(True)
+                    ocrResult = getText(img)
+                    ans = findTextPos(ocrResult, ['开始行动'], [])
+                    if ans != None:
+                        return True
+                else:
+                    adb.onePageRight()
+            else:
+                raise Enter4Error('未发现指定关卡，可能是关卡输入错误')
+
+
     def goLevel(self, level):
-        tempCount = 0
         part = level['part']
         chap = level['chap']
         objLevel = level['objLevel']
 
-        #前往一级菜单
-        while self.switch:
-            picTh = pictureFind.matchImg(adb.getScreen_std(), self.sign)
-            if picTh != None:
-                break
-
-            picAct = pictureFind.matchImg(adb.getScreen_std(), self.act)
-            if picAct != None:
-                posAct = picAct['result']
-                adb.click(posAct[0], posAct[1])
-            else:
-                picHome = pictureFind.matchImg(adb.getScreen_std(), self.home)
-                if picHome != None:
-                    posHome = picHome['result']
-                    adb.click(posHome[0], posHome[1])
-
-                    picBattle = pictureFind.matchImg(adb.getScreen_std(), self.battle)
-                    if picBattle != None:
-                        posBattle = picBattle['result']
-                        adb.click(posBattle[0], posBattle[1])
-                    else:
-                        continue
-                else:
-                    tempCount += 1
-                    if tempCount > 5:
-                        print('unable to init')
-                        return False
-                    else:
-                        continue
-
+        #前往终端界面/一级菜单
+        self.enter()
 
         #二级菜单的选择
-        if part == 'MAIN':
-            adb.click(305,750)
-        elif part == 'EX':
-            adb.click(1125,750)
-        elif part == 'RS' or part == 'PR':
-            adb.click(920,750)
-        else:
-            return False
+        self.enter2(part)
 
         sleep(1)
         #三级菜单的选择
@@ -124,56 +229,8 @@ class BattleSchedule(QObject):
             return False
 
         #关卡选择
-        if part == 'EX':
-            for i in range(5):
-                picEx = pictureFind.matchImg(adb.getScreen_std(), self.exSymbol)
-                if picEx != None:
-                    break
-            else:
-                return False
-            for i in range(5):
-                adb.click(720, 405) #存在不小心点开剿灭关卡无法切换关卡的可能性
-                sleep(1)
-                picExChap = pictureFind.matchImg(adb.getScreen_std(), self.exIV["exSwitch"])
-                if picExChap != None:
-                    adb.click(picExChap['result'][0], picExChap['result'][1])
-                    sleep(0.5)
-                    break
-            else:
-                return False
-            for i in range(5):
-                screenshot = adb.getScreen_std()
-                picLevelOn = pictureFind.matchImg(screenshot,self.startA)
-                if picLevelOn != None:
-                    return True
-                picExObj = pictureFind.matchImg(screenshot, self.exIV[objLevel])
-                if picExObj != None:
-                    if objLevel == 'ex4':
-                        adb.click(picExObj['result'][0], picExObj['result'][1] + 80)
-                    else:
-                        adb.click(picExObj['result'][0], picExObj['result'][1])
-                    return True
-            else:
-                return False
-        else:
-            adb.speedToLeft()
-            for i in range(25):
-                if not self.switch:
-                    break
-                levelOnScreen = pictureFind.levelOcr(adb.getScreen_std())
-                if levelOnScreen != None:
-                    if objLevel in levelOnScreen:
-                        adb.click(levelOnScreen[objLevel][0],levelOnScreen[objLevel][1])
-                        picLevelOn = pictureFind.matchImg(adb.getScreen_std(),self.startA)
-                        if picLevelOn != None:
-                            return True
-                    else:
-                        adb.onePageRight()
-                else:
-                    print(f'skip {objLevel}')
-                    return False
-            else:
-                return False
+        self.enter4(objLevel)
+        return True
 
     def backToOneLayer(self, layerMark):
         '回到某一层'
@@ -187,271 +244,241 @@ class BattleSchedule(QObject):
         return 0
 
     def chooseChap(self,chap):
+        '进入到关卡页面'
         if chap == 'external' or chap == 'tempE':
-            picChap = pictureFind.matchImg(adb.getScreen_std(), self.III['ex'])
-            if picChap != None:
-                adb.click(picChap['result'][0], picChap['result'][1])
-                self.backToOneLayer(self.III['ex'])
-                adb.click(picChap['result'][0], picChap['result'][1])
-                return True
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+
+            ans = findTextPos(ocrResult, ['当期委托'], [])
+            if ans != None:
+                adb.click(ans[0][0], ans[0][1])
+
+            for i in range(5):
+                temp = findTextPos(getText(adb.getScreen_std(True)), ['开始行动'], [])
+                if temp != None:
+                    break 
+            adb.clickBack()
+            for i in range(5):
+                temp = findTextPos(getText(adb.getScreen_std(True)), ['开始行动'], [])
+                if temp == None:
+                    break 
+            adb.clickDownRight()
+            for i in range(5):
+                temp = findTextPos(getText(adb.getScreen_std(True)), ['当期委托'], [])
+                if temp != None:
+                    return True  #确认来到剿灭选单界面
+
+
         elif chap.isdigit():
             #主线
             nowChap = -1
             if int(chap) <= 3:
-                adb.click(165, 160)
+                ans = findTextPos(getText(adb.getScreen_std(True)), ['幻灭', 'SHATTEROFAVISION'], [])
+                if ans != None:
+                    adb.click(ans[0][0], ans[0][1]) 
+                ans = findTextPos(getText(adb.getScreen_std(True)), ['觉醒'], [])
+                if ans != None:
+                    adb.click(ans[0][0], ans[0][1]) 
             elif int(chap) <= 8:
-                adb.click(165, 595)
-            for eachChap in range(0, 9): #0-8章
-                picChap = pictureFind.matchImg(adb.getScreen_std(), self.III[str(eachChap)])
-                if picChap != None:
-                    nowChap = eachChap
-                    break
-            if nowChap < 0:
-                adb.mainToLeft()
-            else:
-                if int(chap) == nowChap:
-                    adb.click(1050, 400)
+                ans = findTextPos(getText(adb.getScreen_std(True)), ['幻灭', 'SHATTEROFAVISION'], [])
+                if ans != None:
+                    adb.click(ans[0][0], ans[0][1]) 
+            elif int(chap) > 8:
+                ans = findTextPos(getText(adb.getScreen_std(True)), ['幻灭', 'SHATTEROFAVISION'], [])
+                if ans != None:
+                    adb.click(ans[0][0], ans[0][1]) 
+                ans = findTextPos(getText(adb.getScreen_std(True)), ['残阳'], [])
+                if ans != None:
+                    adb.click(ans[0][0], ans[0][1]) 
+            
+            ans = find_squares(adb.getScreen_std())
+            if ans != []:
+                adb.click(ans[0][0][0], ans[0][0][1])
+
+            while True:
+                img = adb.getScreen_std(True)
+                ocrResult = getText(img)
+
+                center = findTextPos(ocrResult, ['当前进度'], [])
+                if center == None:
+                    continue
+
+                ans = []
+                temp = findTextPos_all(ocrResult, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], [])
+                for i in temp:
+                    if i[2].isdigit():
+                        ans.append(i)
+                ans.sort(key = lambda x:int(x[2]))
+
+                thisLevel = None
+                xDistance = adb.screenX
+                for i in range(len(ans)):
+                    if abs(ans[i][0][0] - center[0][0]) < xDistance:
+                        xDistance = abs(ans[i][0][0] - center[0][0])
+                        thisLevel = i
+                
+                if int(chap) == int(ans[thisLevel][2]):
                     return True
-                elif int(chap) > nowChap:
-                    for i in range(10):
-                        if not self.switch:
-                            break
-                        picChap = pictureFind.matchImg(adb.getScreen_std(), self.III[chap])
-                        if not self.switch:
-                            break
-                        elif picChap == None:
-                            adb.mainToNextChap()
-                        else:
-                            adb.click(1050, 400)
-                            return True
-                elif int(chap) < nowChap:
-                    for i in range(10):
-                        if not self.switch:
-                            break
-                        picChap = pictureFind.matchImg(adb.getScreen_std(), self.III[chap])
-                        if not self.switch:
-                            break
-                        elif picChap == None:
-                            adb.mainToPreChap()
-                        else:
-                            adb.click(1050, 400)
-                            return True
+                elif int(chap) > int(ans[thisLevel][2]):
+                    adb.click(ans[thisLevel + 1][0][0], ans[thisLevel + 1][0][1])
+                else:
+                    adb.click(ans[thisLevel - 1][0][0], ans[thisLevel - 1][0][1])
+
+            
         else:
             #各类资源
             adb.swipe(1050, 400, 1440, 400, 200) #左滑，避免关卡全开的情况
             for i in range(20):
                 if not self.switch:
                     break
-                picChap = pictureFind.matchImg(adb.getScreen_std(), self.III[chap])
+                img = adb.getScreen_std(True)
+                ocrResult = getText(img)
+
+                ans = findTextPos(ocrResult, [self.resTrans[chap]], [])
                 if not self.switch:
                     break
-                elif picChap == None:
+                elif ans == None:
                     adb.onePageRight()
                 else:
-                    adb.click(picChap['result'][0],picChap['result'][1])
+                    adb.click(ans[0][0],ans[0][1])
                     return True
         return False
 
     def runTimes(self, times = 1):
-        bootyName = None
+        spoilName = 'NULL'
         if isinstance(times, dict):
-            bootyMode = True
-            bootyName = times['bootyName']
-            times = int(times['bootyNum'])
+            spoilName = times['bootyName']
+            restSpoilNum = int(times['bootyNum'])
+            restLoopTime = -100
         else:
-            bootyMode = False
-            times = int(times)
+            restSpoilNum = -100
+            restLoopTime = int(times)
 
-        isInBattle = False
-        countStep = 0
-        totalCount = 0
-        bootyTotalCount = 0
-        errorCount = 0
+        isAutoMode = 0 #是否代理指挥标志位
+        stepFinishOneLevel = 0
+        restStoneNum = self.stoneMaxNum
+        while self.switch:
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
 
-        sleepTime = None
-        isFirstWait = False
-        while self.switch and self.switchB:
-            
-            screenshot = adb.getScreen_std()
-            #判断代理指挥是否勾选
-            picAutoOn = pictureFind.matchImg(screenshot, self.autoOn)
-            if picAutoOn == None and self.switch and self.switchB:
-                picAutoOff = pictureFind.matchImg(screenshot, self.autoOff)
-                if picAutoOff != None and self.switch and self.switchB:
-                    posAutoOff = picAutoOff['result']
-                    adb.click(posAutoOff[0], posAutoOff[1])
+            if isAutoMode < 3:
+                ans = findTextPos(ocrResult, ['配置不可更改'], [])
+                if ans != None:
+                    #检测到处于代理状态
+                    isAutoMode = 3
                     continue
 
-            #sleep(1)
-            for eachObj in self.listBattleImg:
-                if self.switch and self.switchB:
-                    confidence = adb.getTagConfidence()
-                    picInfo = pictureFind.matchImg(screenshot, eachObj, confidence)
-                    #print(eachObj+ '：', picInfo)
-                    if picInfo != None:
-                        if 'startApart' in picInfo['obj']:
-                            BInfo = pictureFind.matchImg(screenshot, self.startB, confidence)
-                                #避免是因为匹配到了队伍配置界面低栏上的行动二字
-                            if BInfo != None:
-                                picInfo = BInfo
-                        if picInfo['result'][1] < 270:
-                            continue
+            if isAutoMode == 1:
+                ans = findTextPos(ocrResult, ['代理指挥'], [])
+                if ans != None:
+                    #点击代理指挥
+                    adb.click(ans[0][0], ans[0][1])
+                    isAutoMode = 2
+                    continue
 
-                        if picInfo['obj'] == "error.png" or picInfo['obj'] == "giveup.png":
-                            errorCount += 1
-                            if errorCount > 2:
-                                self.errorSignal.emit('schedule')
-                                sleep(1)
-                                while self.isWaitingUser:
-                                    sleep(5)
-                                if not self.isRecovered:
-                                    self.switch = False
-                                    self.switchB = False
-                                self.isRecovered = False
-                            break
-                        else:
-                            errorCount = 0
+            ans = findTextPos(ocrResult, ['开始行动'], [])
+            if ans != None:
+                #检测到第一个开始行动
+                if stepFinishOneLevel == 1:
+                    stepFinishOneLevel = 2
+                
+                if stepFinishOneLevel == 2:
+                    restLoopTime -= 1
+                    stepFinishOneLevel = 0
 
-                        if picInfo['obj'] == "startBpart.png":
-                            isInBattle = True
-                            isFirstWait = True
-                            startTime = time()
-                        else:
-                            if sleepTime == None and isInBattle:
-                                sleepTime = int(time() - startTime)
-                            isInBattle = False
-
-                        picPos = picInfo['result']
-                        if countStep == 0:
-                            if picInfo['obj'] == 'startBpart.png':
-                                countStep += 1
-                        elif countStep == 1:
-                            if picInfo['obj'] == 'endNormal.png':
-                                countStep += 1
-                                if bootyMode:
-                                    lastPic = None
-                                    for i in range(10):
-                                        nowPic = nowPic = adb.getScreen_std()
-                                        if lastPic is not None:
-                                            if pictureFind.matchImg(lastPic, nowPic, confidencevalue=0.99) != None:
-                                                break
-                                        lastPic = nowPic
-                                        sleep(1)
-                                    bootyTotalCount += self.BootyDetect.bootyCheck(bootyName, nowPic)
-                                    print(f'{bootyName} 应获得：{times} 实获得：{bootyTotalCount}')
-                                    
-                        elif countStep == 2:
-                            if picInfo['obj'] == 'startApart.png':
-                                countStep += 1
-                        if countStep == 3:
-                            countStep =0
-                            totalCount += 1
-                        if (totalCount == times) and (not bootyMode):
-                            self.switchB = False
-                            return True
-                        if (bootyTotalCount >= times) and bootyMode:
-                            adb.click(picPos[0], picPos[1], isSleep = True)
-                            self.switchB = False
-                            return True
-                        if picInfo['obj'] == "cancel.png":
-                            if self.autoRecMed or self.autoRecStone:
-                                screenshot = adb.getScreen_std()
-                                medInfo = pictureFind.matchImg(screenshot, self.recMed)
-                                stoneInfo = pictureFind.matchImg(screenshot, self.recStone)
-                                confirmInfo = pictureFind.matchImg(screenshot, self.confirm)
-                                if (not self.autoRecMed) and (self.autoRecStone):
-                                    if medInfo != None and stoneInfo == None:
-                                        adb.click(medInfo['result'][0]+350, medInfo['result'][1], isSleep= True)
-                                        screenshot = adb.getScreen_std()
-                                        medInfo = pictureFind.matchImg(screenshot, self.recMed)
-                                        stoneInfo = pictureFind.matchImg(screenshot, self.recStone)
-                                        if medInfo == None and stoneInfo != None:
-                                            if self.restStone >0:
-                                                adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
-                                                self.restStone -= 1
-                                                break
-                                    elif medInfo == None and stoneInfo != None:
-                                        if self.restStone >0:
-                                                adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
-                                                self.restStone -= 1
-                                                break
-                                    adb.click(picPos[0], picPos[1], isSleep = True)
-                                    self.switch = False
-                                    self.switchB = False
-                                    toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
-                                    return False
-                                else:
-                                    if self.autoRecMed:
-                                        if medInfo != None:
-                                            adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
-                                            break
-                                    if self.autoRecStone:
-                                        if stoneInfo != None:
-                                            if self.restStone >0:
-                                                adb.click(confirmInfo['result'][0], confirmInfo['result'][1], isSleep= True)
-                                                self.restStone -= 1
-                                                break
-                                    adb.click(picPos[0], picPos[1], isSleep = True)
-                                    self.switch = False
-                                    self.switchB = False
-                                    toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
-                                    return False
-                            else:
-                                adb.click(picPos[0], picPos[1], isSleep = True)
-                                self.switch = False
-                                self.switchB = False
-                                toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
-                                return False
-                        elif picInfo['obj'] == "stoneLack.png":
-                            adb.click(picPos[0], picPos[1], isSleep = True)
-                            self.switch = False
-                            self.switchB = False
-                            toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
-                            return False
-                        elif picInfo['obj'] == 'levelup.png':
-                                lackTem = False
-                                for eachTem in self.listBattleImg:
-                                    if eachTem['obj'] == 'stoneLack.png':
-                                        lackTem = eachTem
-                                        break
-                                if lackTem:
-                                    picLackInfo = pictureFind.matchImg(screenshot, lackTem, 0.9)
-                                    if picLackInfo:
-                                        adb.click(picLackInfo['result'][0], picLackInfo['result'][1], isSleep = True)
-                                        self.switch = False
-                                        toast.broadcastMsg("ArkHelper", "理智耗尽", self.ico)
-                                    else:
-                                        adb.click(picPos[0], picPos[1], isSleep = True)
-                                        if picInfo['obj'] == 'startApartOF.png':
-                                            OFend = pictureFind.matchImg(adb.getScreen_std(), self.cwd + '/res/act/OFend.png', 0.8)
-                                            if OFend != None:
-                                                self.switch = False
-                                                toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
-                                else:
-                                    adb.click(picPos[0], picPos[1], isSleep = True)
-                                    if picInfo['obj'] == 'startApartOF.png':
-                                        OFend = pictureFind.matchImg(adb.getScreen_std(), self.cwd + '/res/act/OFend.png', 0.8)
-                                        if OFend != None:
-                                            self.switch = False
-                                            toast.broadcastMsg("ArkHelper", "黑曜石节门票不足", self.ico)
-                        else:
-                            adb.click(picPos[0], picPos[1], isSleep = True)
-                        break
-                else:
+                if (restLoopTime <= 0 and (not restLoopTime <= -100)):
                     break
-            if isInBattle:
-                if sleepTime == None:
-                    sleep(1)
+
+                adb.click(ans[0][0], ans[0][1])
+                continue
+
+            ans = findTextPos(ocrResult, ['开始'], ['行动'])
+            if ans != None:
+                #检测到第二个开始行动
+                if isAutoMode == 3:
+                    adb.click(ans[0][0], ans[0][1])
                 else:
-                    if not isFirstWait:
-                        sleep(1)
+                    #不处于代理指挥状态
+                    isAutoMode = 1
+                    #应当点击返回
+                    adb.clickBack()
+                continue
+
+            ans = findTextPos(ocrResult, ['攻入敌方数', '理智恢复'], [])
+            if ans != None:
+                #检测到升级或剿灭
+                adb.click(ans[0][0], ans[0][1])
+                continue
+            
+            ans = findTextPos(ocrResult, ['行动结束'], [])
+            if ans != None:
+                #检测到正常关卡结束
+                if restSpoilNum != -100:
+                    #掉落物模式
+                    #等待掉落物显示完
+                    for i in range(5):
+                        if findTextPos(getText(adb.getScreen_std(True)), ['额外物资'], []) != None:
+                            break
                     else:
-                        for i in range(sleepTime):
-                            sleep(1)
-                            if not self.switch:
-                                return
-                        else:
-                            isFirstWait = False
+                        for i in range(5):
+                            if findTextPos(getText(adb.getScreen_std(True)), ['常规掉落'], []) != None:
+                                break
+                    spoils = spoilsCheck()
+                    if spoils != dict():
+                        print(f'本次行动共获得:{spoils}')
+
+                    if spoilName in spoils.keys():
+                        restSpoilNum -= int(spoils[spoilName])
+                        print(f'距离{spoilName}的目标个数还有:{restSpoilNum}个')
+
+                    if restSpoilNum <= 0:
+                        restLoopTime = 0 #使其跳出
+
+                adb.click(ans[0][0], ans[0][1])
+                if stepFinishOneLevel == 0:
+                    stepFinishOneLevel = 1
+                continue
+
+            ans = findTextPos(ocrResult, ['是否花费'], [])
+            if ans != None:
+                #检测到使用源石或理智药剂
+                #获取确认按钮的位置
+                confirmPos = pictureFind.matchImg(adb.getScreen_std(), './res/panel/recovery/confirm.png', confidencevalue=0.3, targetSize=(0,0))
+                if confirmPos == None:
+                    continue
+                confirmPos = confirmPos['result']
+                cancelPos = [ans[1][0][0], confirmPos[1]]
+                if (not self.autoRecMed) and (not self.autoRecStone):
+                    adb.click(cancelPos[0], cancelPos[1]) #取消按钮的位置
+                    break
+                if self.autoRecMed:
+                    #使用药剂
+                    if '源石' in ans[3]:
+                        #已经没有药剂剩余
+                        pass
+                    else:
+                        #使用药剂
+                        adb.click(confirmPos[0], confirmPos[1])
+                        continue
+                if self.autoRecStone:
+                    #使用源石
+                    if restStoneNum > 0:
+                        #在允许范围内
+                        ans = findTextPos(ocrResult, ['使用至纯源石恢复'], [])
+                        adb.click(ans[0][0], ans[0][1])
+                        adb.click(confirmPos[0], confirmPos[1])
+                        continue
+                    else:
+                        adb.click(cancelPos[0], cancelPos[1])
+                else:
+                    adb.click(cancelPos[0], cancelPos[1])
+                break
+
+            ans = findTextPos(ocrResult, ['源石不足'], [])
+            if ans != None:
+                #检测到源石也没有了
+                adb.click(ans[0][0], ans[0][1])
+                break
                 
     def readJson(self):
         with open(self.json,'r', encoding='UTF-8') as s:

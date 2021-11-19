@@ -313,7 +313,8 @@ def matchImg_T(imgsrc,imgobj,confidencevalue=0.7,targetSize=810):  #imgsrc=原�
         imobj = imgobj
 
     #改为只调整纵向分辨率
-    imsrc = resize(imsrc, (int(imsrc.shape[1]*targetSize/imsrc[0]), targetSize))
+    if targetSize != 0:
+        imsrc = resize(imsrc, (int(imsrc.shape[1]*targetSize/imsrc.shape[0]), targetSize))
 
     match_result = find_template(imsrc,imobj,confidencevalue)
     #match_result = None
@@ -329,7 +330,7 @@ def matchImg_T(imgsrc,imgobj,confidencevalue=0.7,targetSize=810):  #imgsrc=原�
     return match_result
 
 
-def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, targetSize = (1440, 810), maxReturn=-1, isResize = True, colorSpace = (0,0,0), debugMode = False):
+def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, targetSize = 810, maxReturn=-1, isResize = True, colorSpace = (0,0,0), debugMode = False):
     '用于查找原始图片中的多个目标图片，若不存在图片则返回None，否则返回一个目标图片坐标构成的元组；imgsrc为原始图片路径，imgobj为目标图片路径，confidencevalue为置信度，maxReturn在非负的情况下只会返回相应数值的坐标，为0则永远返回None]'
     maxReturn = int(maxReturn)
     if isinstance(imgsrc,str):
@@ -339,8 +340,8 @@ def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, targetSize = (1440, 810),
             return None
     else:
         imsrc = imgsrc
-    if isResize:
-        imsrc = resize(imsrc, targetSize)
+    if targetSize != 0:
+        imsrc_resize = resize(imsrc, (int(imsrc.shape[1]*targetSize/imsrc.shape[0]), targetSize))
     if isinstance(imgobj,str):
         imobj = imreadCH(imgobj)
     elif isinstance(imgobj, dict):
@@ -349,26 +350,26 @@ def matchMultiImg(imgsrc, imgobj, confidencevalue=0.8, targetSize = (1440, 810),
         imobj = imgobj
     matchRect = []
     matchPositionXY = []
-    match_result = find_sift(imsrc, imobj)
-    if match_result != None:
-        for i in match_result:
-            matchPositionXY.append(i['result'])
-            matchRect.append(i['rectangle'])
-    '''while True:
-        match_result = find_template(imsrc,imobj,confidencevalue) 
+    while True:
+        match_result = find_template(imsrc_resize,imobj,confidencevalue) 
         #match_result = None
         if match_result != None and maxReturn != 0:
-            matchPositionXY.append(list(match_result['result']))
+            matchPositionXY.append([int(match_result['result'][0]/targetSize*imsrc.shape[0]), int(match_result['result'][1]/targetSize*imsrc.shape[0])])
             maxReturn -= 1
-            matchRect.append(match_result['rectangle'])
+            matchRect.append([
+                [int(match_result['rectangle'][0][0]/targetSize*imsrc.shape[0]), int(match_result['rectangle'][0][1]/targetSize*imsrc.shape[0])],
+                [int(match_result['rectangle'][1][0]/targetSize*imsrc.shape[0]), int(match_result['rectangle'][1][1]/targetSize*imsrc.shape[0])],
+                [int(match_result['rectangle'][3][0]/targetSize*imsrc.shape[0]), int(match_result['rectangle'][3][1]/targetSize*imsrc.shape[0])],
+                [int(match_result['rectangle'][2][0]/targetSize*imsrc.shape[0]), int(match_result['rectangle'][2][1]/targetSize*imsrc.shape[0])]
+                            ])
             rect = array([match_result['rectangle'][0],match_result['rectangle'][1],match_result['rectangle'][3],match_result['rectangle'][2]])
-            fillConvexPoly(imsrc,rect,0)
+            fillConvexPoly(imsrc_resize,rect,0)
         else:
             break
     if debugMode:
-        imshow('img', imsrc)
-        waitKey(0)'''
-    return [matchPositionXY,imsrc,matchRect] if matchPositionXY != [] else [None,imsrc,None]
+        imshow('img', imsrc_resize)
+        waitKey(0)
+    return [matchPositionXY,imsrc,matchRect] if matchPositionXY != [] else [[],imsrc,[]]
     
 def levelOcr(imgsrc):
     allNumList = []

@@ -72,4 +72,26 @@ def findTextPos_withConficende(ocrResult, textInclude, textExcept, confidence = 
     else:
         return None
 
+def findTextPos_all(ocrResult, textInclude, textExcept):
+    ans = []
+    isFound = False
+    if ocrResult != -1:
+        for i in range(len(ocrResult)):
+            for j in textInclude:
+                if j in ocrResult[i][1]:
+                    if textExcept != []:
+                        for k in textExcept:
+                            if k in ocrResult[i][1]:
+                                break
+                        else:
+                            isFound = True
+                    else:
+                        isFound = True
+            if isFound:
+                centerPoint = (int((ocrResult[i][0][0][0] + ocrResult[i][0][1][0])/2), int((ocrResult[i][0][0][1] + ocrResult[i][0][2][1])/2))
+                ans.append([centerPoint, ocrResult[i][0], ocrResult[i][1].split('、')[1].strip()])
+                isFound = False
+    
+    return ans
+
 

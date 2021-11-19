@@ -62,7 +62,7 @@ class JsonEdit(QWidget):
 
         self.partList = ['主线','物资筹备','芯片搜索','剿灭作战','选定关卡']
         self.partListJson = ['MAIN','RS','PR','EX','THIS']
-        self.mainChapList = ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章']
+        self.mainChapList = ['序章','第一章','第二章','第三章','第四章','第五章','第六章','第七章','第八章','第九章']
         self.rsChapList = ['战术演习','粉碎防御','空中威胁','货物运送','资源保障']
         self.prChapList = ['医疗重装','术士狙击','辅助先锋','特种近卫']
         self.exChapList = ['切尔诺伯格','龙门外环','龙门市区','当期委托']
@@ -105,6 +105,10 @@ class JsonEdit(QWidget):
         self.level1Cb.setFixedWidth(self.getRealSize(60))
         self.level1Cb.setMinimumHeight(self.getRealSize(40))
         self.level1Cb.setView(QListView())
+
+        self.level1Edit = QLineEdit()
+        self.level1Edit.setFixedWidth(self.getRealSize(60))
+        self.level1Edit.setMinimumHeight(self.getRealSize(40))
 
         self.lineLable = QLabel()
         self.lineLable.setText('-')
@@ -176,7 +180,7 @@ class JsonEdit(QWidget):
         self.grid.addWidget(self.lsv,0,0,3,1)
         self.grid.addWidget(self.partCb,0,1,1,1)
         self.grid.addWidget(self.chapCb,0,2,1,1)
-        self.grid.addWidget(self.level1Cb,0,3,1,1)
+        self.grid.addWidget(self.level1Edit,0,3,1,1)
         self.grid.addWidget(self.lineLable,0,4,1,1)
         self.grid.addWidget(self.level2Edit,0,5,1,1)
         self.grid.addWidget(self.timesLable,0,6,1,1)
@@ -222,6 +226,8 @@ class JsonEdit(QWidget):
         self.chapCb.setMinimumHeight(self.getRealSize(40))
         self.level1Cb.setFixedWidth(self.getRealSize(60))
         self.level1Cb.setMinimumHeight(self.getRealSize(40))
+        self.level1Edit.setFixedWidth(self.getRealSize(60))
+        self.level1Edit.setMinimumHeight(self.getRealSize(40))
         self.level2Edit.setFixedWidth(self.getRealSize(60))
         self.level2Edit.setMinimumHeight(self.getRealSize(40))
         self.timeEdit.setFixedWidth(self.getRealSize(50))
@@ -315,6 +321,8 @@ class JsonEdit(QWidget):
             self.chapCb.setEnabled(False)
             self.level1Cb.clear()
             self.level1Cb.setEnabled(False)
+            self.level1Edit.clear()
+            self.level1Edit.setReadOnly(True)
             self.level2Edit.clear()
             self.level2Edit.setReadOnly(True)
             self.scheduleAdd['chap'] = 'this'
@@ -391,6 +399,8 @@ class JsonEdit(QWidget):
                 self.scheduleAdd['chap'] = 'external'
                 self.scheduleAdd['objLevel'] = 'ex4'
 
+            self.level1Edit.clear()
+            self.level1Edit.setReadOnly(True)
             self.level2Edit.clear()
             self.level2Edit.setReadOnly(True)
 
@@ -403,7 +413,7 @@ class JsonEdit(QWidget):
         tempTimes = self.timeEdit.text()
         self.scheduleAdd['times'] = ''
         if tempLevel != '':
-            part1 = self.level1Cb.currentText()
+            part1 = self.level1Edit.text()
             if part1 == 'LS':
                 part1 = 'S'
             if tempLevel.isdecimal():

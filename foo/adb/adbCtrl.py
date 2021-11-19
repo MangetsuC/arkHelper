@@ -329,5 +329,8 @@ class Adb(QObject):
     def clickUpRight(self):
         self.click(self.screenX - 10, 10)
 
+    def clickDownRight(self):
+        self.click(self.screenX - 10, self.screenY - 10)
+
 class AdbError(Exception):
     pass
