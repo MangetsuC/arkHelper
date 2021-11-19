@@ -118,7 +118,7 @@ class BattleLoop(QObject):
                     restLoopTime -= 1
                     stepFinishOneLevel = 0
 
-                if (restLoopTime <= 0 and restLoopTime != -100):
+                if (restLoopTime <= 0 and (not restLoopTime <= -100)):
                     break
 
                 adb.click(ans[0][0], ans[0][1])
