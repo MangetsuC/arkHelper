@@ -22,6 +22,7 @@ class Recruit:
         self.confirm_recruit_pos = None
 
         self.priority = priority
+        self.switch = True
 
     def readData(self):
         '获取公开招募的信息'
@@ -183,7 +184,7 @@ class Recruit:
         
         ans.sort(key = lambda x:x[1][0][0], reverse=True)#从高星级组合往低星级排序
 
-        while True:
+        while self.switch:
             for i in priority:
                 for j in ans:
                     if j[1][0][0] == abs(i):
@@ -205,14 +206,16 @@ class Recruit:
                 if self.refresh():
                     continue
                 else:
+                    if not self.switch: return 
                     self.addTime()
+                    if not self.switch: return 
                     self.confirm_recruit()
                     return True
 
     def employ(self):
         '聘用'
         count = 0
-        while True:
+        while self.switch:
             img = adb.getScreen_std(True)
             ocrResult = getText(img)
 
@@ -220,6 +223,7 @@ class Recruit:
             if ans != None:
                 adb.click(ans[0][0], ans[0][1])
                 for i in range (20):
+                    if not self.switch: return 
                     adb.clickUpRight()
 
                     img = adb.getScreen_std(True)
@@ -235,7 +239,7 @@ class Recruit:
 
     def doRecruit(self):
         count = 0
-        while True:
+        while self.switch:
             img = adb.getScreen_std(True)
             ocrResult = getText(img)
 
@@ -251,7 +255,7 @@ class Recruit:
     
     def enter(self):
         '进入自动公招页面'
-        while True:
+        while self.switch:
             img = adb.getScreen_std(True)
             ocrResult = getText(img)
 
@@ -270,6 +274,7 @@ class Recruit:
             ans = findTextPos(ocrResult, ['公开招募'], [])
             adb.click(ans[1][0][0], ans[1][0][1])
             for i in range(5):
+                if not self.switch: return 
                 if findTextPos(getText(adb.getScreen_std(True)), ['开始招募', '聘用候选人', '停止招募'], []) != None:
                     return 
             return 
@@ -281,4 +286,5 @@ class Recruit:
         self.employ()
         self.doRecruit()
 
-
+    def stop(self):
+        self.switch = False
