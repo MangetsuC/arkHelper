@@ -36,7 +36,6 @@ class Task:
                 if temp != None:
                     adb.click(temp[0][0], temp[0][1])
                     return 
-            return 
 
 
     def submitTask(self):

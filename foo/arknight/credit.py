@@ -59,7 +59,6 @@ class Credit:
                     adb.click(temp[0][0], temp[0][1])
                     if findTextPos(getText(adb.getScreen_std(True)), ['访问基建'], []) != None:
                         return 
-            return 
 
     def visit(self):
         '访问基建'
