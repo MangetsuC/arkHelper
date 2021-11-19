@@ -27,6 +27,10 @@ class Console(QDialog):
             sys.stderr = EmittingStr(sgnConsole=self.outputWritten)
         else:
             self.textBrowser.setText('In DEV')
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+            print('IN DEV')
+
         self.applyStyleSheet(theme)
 
     def applyStyleSheet(self, theme):
