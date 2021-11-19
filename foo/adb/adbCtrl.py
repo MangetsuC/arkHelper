@@ -3,6 +3,8 @@ from sys import path as syspath
 from os import path, remove
 from re import findall as refind
 from re import split as resplit
+from re import match as rematch
+from re import compile as recompile
 from subprocess import PIPE, Popen, call
 from time import sleep
 from PyQt5.QtWidgets import QFileDialog
@@ -201,18 +203,24 @@ class Adb(QObject):
             screenMsg = screenMsg.replace(' ', '')
             screenMsg = screenMsg.replace('\n', '')
             print(screenMsg)
-            temp = screenMsg.partition('size:')
-            temp = temp[2].split('x')
-            self.screenX = int(temp[0])
-            self.screenY = int(temp[1])
-            if (self.screenX / self.screenY) != (16/9):
-                self.adbNotice.emit('检测到模拟器分辨率非16:9或为竖屏，请检查分辨率')
-                #toast.broadcastMsg('ArkHelper', '检测到模拟器分辨率非16:9或为竖屏，请检查分辨率', self.ico)
-            else:
-                if self.screenX > 1920:
-                    self.adbNotice.emit('模拟器分辨率设置较高，可能出现无法正常工作的问题，发现请及时反馈。')
-                    #toast.broadcastMsg('ArkHelper', '模拟器分辨率设置较高，可能出现无法正常工作的问题，发现请及时反馈。', self.ico)
-            #print(temp, self.screenX, self.screenY)
+
+            pattern = recompile('[0-9]+x[0-9]+')
+            ans = pattern.findall(screenMsg)
+            minArea = None
+            realReso = None
+            for i in ans:
+                if minArea == None:
+                    minArea = int(i.split('x')[0])*int(i.split('x')[1])
+                    realReso = i.split('x')
+                else:
+                    tempArea = int(i.split('x')[0])*int(i.split('x')[1])
+                    if tempArea < minArea:
+                        minArea = tempArea
+                        realReso = i.split('x') 
+
+            self.screenX = int(realReso[0])
+            self.screenY = int(realReso[1])
+            print(f'识别到安卓分辨率为{self.screenX}x{self.screenY}')
             return True
         else:
             self.killAdb()
