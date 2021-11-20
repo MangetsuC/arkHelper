@@ -210,7 +210,7 @@ def matchImg_roi(imgsrc, imgobj, roi, confidencevalue=0.8,targetSize=(1440, 810)
         y1 = imsrc.shape[0]
 
     imsrc = imsrc[y0:y1, x0:x1]
-    return matchImg(imsrc, imgobj, confidencevalue, targetSize = (0, 0))
+    return matchImg_T(imsrc, imgobj, confidencevalue, targetSize = 0)
 
 def matchMultiImg_roi(imgsrc, imgobj, roi, confidencevalue=0.8, targetSize=(1440, 810)):
     '返回真实位置'

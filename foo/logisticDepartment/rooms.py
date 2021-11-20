@@ -10,11 +10,15 @@ from foo.pictureR import pictureFind, ocr, wordsTemplate
 from foo.adb import adbCtrl
 from foo.logisticDepartment import ruleEncoder
 from common import user_data
+from foo.pictureR.colorDetect import findColorBlock
+from common2 import adb
+
+from foo.ocr.ocr import getText, findTextPos, findTextPos_all
 
 
 class Room:
     def __init__(self, adb, roomName, roomDirect):
-        self.adb = adb
+        adb = adb
 
         self.roomName = roomName
         self.roomDirect = roomDirect
@@ -23,13 +27,13 @@ class Room:
         self.runFlag = False
 
     def click(self, picResult):
-        self.adb.click(picResult[0], picResult[1])
+        adb.click(picResult[0]/1440*adb.screenX, picResult[1]/810*adb.screenY)
 
     def swipe(self, startPoint, endPoint, lastTime = 200):
-        self.adb.swipe(startPoint[0], startPoint[1], endPoint[0], endPoint[1], lastTime = lastTime)
+        adb.swipe(startPoint[0], startPoint[1], endPoint[0], endPoint[1], lastTime = lastTime)
 
     def clickCenter(self):
-        self.click((720, 405))
+        adb.click(adb.screenX/2, adb.screenY/2)
 
     def clickBack(self):
         self.click((100,50))
@@ -44,7 +48,7 @@ class Room:
         while True:
             if not self.runFlag:
                 break
-            if pictureFind.matchImg(self.adb.getScreen_std(), submitting, confidencevalue = 0.7) == None: #等待提交完成
+            if pictureFind.matchImg(adb.getScreen_std(), submitting, confidencevalue = 0.7) == None: #等待提交完成
                 break
 
     def getRealName(self, name):
@@ -63,15 +67,15 @@ class Room:
             if lastScreen is not None:
                 self.swipe((500, 400), (1300, 400))
                 sleep(2)
-                screenShot = self.adb.getScreen_std()
-                isScreenStop = pictureFind.matchImg(screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
+                screenShot = adb.getScreen_std()
+                isScreenStop = pictureFind.matchImg_T(screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
                 if isScreenStop != None:
                     break
                 else:
                     lastScreen = screenShot
                     sleep(0.5)
             else:
-                lastScreen = self.adb.getScreen_std()
+                lastScreen = adb.getScreen_std()
         return 0
 
     def swipeToNextOperatorPage(self):
@@ -83,33 +87,33 @@ class Room:
             #判断滑动已完全停止
             if not self.runFlag:
                 break
-            screenShot = self.adb.getScreen_std()
+            screenShot = adb.getScreen_std()
             if lastScreen is not None:
-                isScreenStop = pictureFind.matchImg(screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
+                isScreenStop = pictureFind.matchImg_T(screenShot, lastScreen, confidencevalue=0.99, targetSize = (0,0))
                 if isScreenStop != None:
                     break
                 else:
                     lastScreen = screenShot
                     sleep(0.5)
             else:
-                lastScreen = self.adb.getScreen_std()
+                lastScreen = adb.getScreen_std()
         return 0
 
     def backToOneLayer(self, layerMark):
         '回到某一层'
         startTime = time()
-        while pictureFind.matchImg(self.adb.getScreen_std(), layerMark, confidencevalue = 0.7) is None:
+        while findTextPos(getText(adb.getScreen_std(True)), [layerMark], []) == None:
             if not self.runFlag:
                 break
-            self.clickBack()
+            adb.clickBack()
             if time() - startTime > 30:
                 return -1
         return 0
 
     def findOpOnScreen(self, operatorName):
         '找到指定干员在屏幕上的位置'
-        fontsize = wordsTemplate.getFontSize_name(self.adb.getResolution())
-        picInfo = pictureFind.matchImg(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(operatorName, fontsize[0]),
+        fontsize = wordsTemplate.getFontSize_name(adb.getResolution())
+        picInfo = pictureFind.matchImg(adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(operatorName, fontsize[0]),
                                         targetSize = fontsize[1], confidencevalue = 0.6)
         if picInfo != None:
             return ((int(picInfo['result'][0]/fontsize[1][0]*1440), int(picInfo['result'][1]/fontsize[1][0]*1440)), 
@@ -118,7 +122,7 @@ class Room:
             return False
 
     def checkOpAvailable(self, basePoint):
-        screenShot = self.adb.getScreen_std()
+        screenShot = adb.getScreen_std()
         workingPic = pictureFind.matchImg_roi(screenShot, working,
                                                 roi = (basePoint[0] - 130, basePoint[1] - 162, 135, 85),
                                                 confidencevalue = 0.6)#以干员名称右下角为基准点的偏移量
@@ -133,7 +137,7 @@ class Room:
 
     def checkSwipeEnd(self, operatorList):
         '判断是否还需要继续右划'
-        screenShot = self.adb.getScreen_std()
+        screenShot = adb.getScreen_std()
         workingPic = pictureFind.matchImg(screenShot, working, confidencevalue = 0.7)
         restingPic = pictureFind.matchImg(screenShot, resting, confidencevalue = 0.7)
         if workingPic != None:
@@ -154,17 +158,14 @@ class Room:
     def backToMain(self):
         '回到基建首页'
         print('正在回到基建首页...')
-        return self.backToOneLayer(overviewEntry)
+        return self.backToOneLayer('进驻总览')
 
     def findAllRooms(self):
         '找到本类所有房间'
         self.swipeScreen()
-        picInfo = pictureFind.matchMultiImg(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(self.roomName, 27),
-                                            confidencevalue = 0.6)
-        if picInfo != None:
-            picInfo = picInfo[0]
-            if picInfo != None:
-                self.roomCoor.extend(picInfo)
+        ans = findTextPos_all(getText(adb.getScreen_std(True)), [self.roomName], [])
+        for i in ans:
+            self.roomCoor.append(i[0])
 
         return 0
 
@@ -193,9 +194,8 @@ class Room:
                     break
                 if time() - startTime > 5:
                     return 2 #房间名称不匹配
-                self.click(oneRoom)
-                if pictureFind.matchImg_roi(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(self.roomName, 28),
-                                            roi = (465, 15, 190, 55), confidencevalue = 0.7) != None:
+                adb.click(oneRoom[0], oneRoom[1])
+                if findTextPos(getText(adb.getScreen_std(True)), ['设施信息'], []) != None:
                     self.clickCenter()
                     break
             return 1
@@ -203,20 +203,36 @@ class Room:
 
     def checkRoomVacancy(self):
         '检查房间有几个空位'
-        self.click((75, 325))
-        vacancyCoor = pictureFind.matchMultiImg(self.adb.getScreen_std(), operatorEnter, confidencevalue = 0.7)
-        if vacancyCoor != None:
-            vacancyCoor = vacancyCoor[0]
-            if vacancyCoor != None:
-                return len(vacancyCoor)
-        return 0
+        ocrResult = getText(adb.getScreen_std(True))
+        ans = findTextPos(ocrResult, ['进驻信息'], [])
+        if ans != None:
+            adb.click(ans[0][0], ans[0][1])
+        
+        for i in range(5):
+            if findTextPos(getText(adb.getScreen_std(True)), ['当前房间入住'], []) != None:
+                break
+
+        ocrResult = getText(adb.getScreen_std(True))
+        ans = findTextPos_all(ocrResult, ['进驻'], ['信', '息', '人'])
+        if ans != None:
+            return len(ans)
+        else:
+            return 0
 
     def dispatchOperator(self, roomRule, roomType, needNum):
-        self.click((1170, 155))
+        ocrResult = getText(adb.getScreen_std(True))
+        ans = findTextPos(ocrResult, ['进驻'], ['信息'])
+        if ans != None:
+            adb.click(ans[0][0], ans[0][1])
+        else:
+            return 
+
         unFit = []
         searched = []
         myRuleList = roomRule.copy()
         myRuleList.reverse()
+
+        ocrResult = getText(adb.getScreen_std(True))
         while needNum != 0:
             if not self.runFlag:
                 break
@@ -224,6 +240,7 @@ class Room:
                 opFinding = myRuleList.pop()
             except IndexError:
                 break
+
             if '+' in opFinding:
                 availableNum = 0
                 tempOpList = [opFinding]
@@ -243,35 +260,13 @@ class Room:
                                 availableNum = -1 #组合类型与房间类型不匹配 为什么不能让我方便的跳出双层循环！
                                 break
                         realName = self.getRealName(eachOp)
-                        print(f'正在检查干员{realName}的可用状态...')
-                        self.swipeToOperatorHead()
-                        opCoor = self.findOpOnScreen(realName) #先寻找一次
-                        if opCoor:
-                            if self.checkOpAvailable(opCoor[1]):
-                                availableNum += 1
-                            else:
-                                print(f'干员{realName}正在工作或休息，组合{tempOpList}不可用')
-                                break
+
+                        ans = findTextPos(ocrResult, [realName], [])
+                        if ans != None:
+                            availableNum += 1
                         else:
-                            isAvailable = True
-                            while self.checkSwipeEnd(myRuleList): #初次找不到再继续右划
-                                if not self.runFlag:
-                                    break
-                                self.swipeToNextOperatorPage()
-                                opCoor = self.findOpOnScreen(opFinding)
-                                if opCoor:
-                                    if self.checkOpAvailable(opCoor[1]):
-                                        availableNum += 1
-                                        break
-                                    else:
-                                        isAvailable = False
-                                        print(f'干员{realName}正在工作或休息，组合{tempOpList}不可用')
-                                        break
-                            else:
-                                print(f'干员{realName}暂不可用，组合{tempOpList}不可用')
-                                break
-                            if not isAvailable:
-                                break #有组合内的干员不可选取 不再检查其它角色
+                            availableNum = -1
+                            break
                     if availableNum == -1:
                         unFit.extend(tempOpList)
                         continue
@@ -288,37 +283,24 @@ class Room:
                         unFit.append(opFinding)
                         continue
                 opFinding = self.getRealName(opFinding)
-                print(f'正在寻找干员{opFinding}...')
-                self.swipeToOperatorHead()
-                opCoor = self.findOpOnScreen(opFinding) #先寻找一次
-                if opCoor:
-                    if self.checkOpAvailable(opCoor[1]):
-                        self.click(opCoor[0])
-                        needNum -= 1
-                        print(f'干员{opFinding}可用，已选定')
-                    else:
-                        print(f'发现干员{opFinding}正在工作或休息，跳过')
-                else:
-                    while self.checkSwipeEnd(myRuleList): #初次找不到再继续右划
-                        if not self.runFlag:
-                            break
-                        self.swipeToNextOperatorPage()
-                        opCoor = self.findOpOnScreen(opFinding)
-                        if opCoor:
-                            if self.checkOpAvailable(opCoor[1]):
-                                self.click(opCoor[0])
-                                needNum -= 1
-                                print(f'干员{opFinding}可用，已选定')
-                            else:
-                                print(f'发现干员{opFinding}正在工作或休息，跳过')
-                            break
-                    else:
-                        print(f'干员{opFinding}不可用')
+                ans = findTextPos(ocrResult, [opFinding], [])
+                if ans != None:
+                    adb.click(ans[0][0], ans[0][1])
+                    if findTextPos(getText(adb.getScreen_std(True)), ['点击干员', '查看详情'], []) != None:
+                        adb.click(ans[0][0], ans[0][1])
+                        continue
+                    needNum -= 1
+                    print(f'在{self.roomName}布置了干员{opFinding}')
+                
         while self.runFlag: #确认
-            self.click((1325, 760))
-            if pictureFind.matchImg_roi(self.adb.getScreen_std(), wordsTemplate.getTemplatePic_CH(self.roomName, 28),
-                                        roi = (465, 15, 190, 55), confidencevalue = 0.7) != None:
+            ocrResult = getText(adb.getScreen_std(True))
+            ans = findTextPos(ocrResult, ['确认'], [])
+            if ans != None:
+                adb.click(ans[0][0], ans[0][1])
+            
+            if findTextPos(getText(adb.getScreen_std(True)), [self.roomName], []) != None:
                 break
+
         myRuleList.extend(reversed(unFit))
         return list(reversed(myRuleList))
 
@@ -336,10 +318,10 @@ class Manufactory(Room):
 
     def checkType(self):
         trans = {'作战记录':'|', '赤金':'$', '源石':'*'}
-        screenShot = self.adb.getScreen_std()
+        img = adb.getScreen_std(True)
+        ocrResult = getText(img)
         for i in ['作战记录', '赤金', '源石']:
-            if pictureFind.matchImg_roi(screenShot, wordsTemplate.getTemplatePic_CH(i, 28),
-                                        roi = (150, 685, 200, 50), confidencevalue = 0.7) != None:
+            if findTextPos(ocrResult, [i], []) != None:
                 return trans[i]
         else:
             return False
@@ -355,19 +337,20 @@ class Trade(Room):
     def checkType(self):
         ans = False
         for i in range(5):
-            self.click((80, 700))
-            screenShot = self.adb.getScreen_std()
-            isMoney = pictureFind.matchImg_roi(screenShot, self.money, roi = (1060, 625, 255, 165),
-                                                confidencevalue = 0.7)
-            isStone = pictureFind.matchImg_roi(screenShot, self.stone, roi = (1060, 625, 255, 165),
-                                                confidencevalue = 0.7)
-            if isMoney != None:
-                ans = '$'
+            adb.click(10, adb.screenY - 10)
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+
+            temp = findTextPos(ocrResult, ['龙门', '开采'], [])
+            if temp != None:
+                if '龙门' in temp[2]:
+                    ans = '$'
+                else:
+                    ans = '*'
                 break
-            if isStone != None:
-                ans = '*'
-                break
-        self.backToOneLayer(self.layer1Mark) #认为不会出错
+            else:
+                ans = '$' #默认龙门币
+        self.backToOneLayer('设施信息') #认为不会出错
         return ans
 
 class PowerRoom(Room):
@@ -397,49 +380,28 @@ class ReceptionRoom(Room):
 
         self.sendBtn = [(1340, 145), (1340, 315), (1340, 470), (1340, 645)]
 
-    def checkRoomVacancy(self):
-        '检查房间有几个空位'
-        self.click((75, 325))
-        while True:
-            screenshot = self.adb.getScreen_std()
-            if pictureFind.matchImg(screenshot, self.opened, confidencevalue = 0.7) == None:
-                self.click((75, 325))
-            else:
-                if pictureFind.matchImg(screenshot, self.clear, confidencevalue = 0.7) != None:
-                    break
-        vacancyCoor = pictureFind.matchMultiImg(self.adb.getScreen_std(), operatorEnter, confidencevalue = 0.7)
-        if vacancyCoor != None:
-            vacancyCoor = vacancyCoor[0]
-            if vacancyCoor != None:
-                return len(vacancyCoor)
-        return 0
-
     def bactToMeetingIndex(self, point = (350, 700)):
-        while pictureFind.matchImg(self.adb.getScreen_std(), self.confidential, confidencevalue = 0.7) == None:
-            self.click(point)
-            if pictureFind.matchImg(self.adb.getScreen_std(), self.communication, confidencevalue = 0.7) != None:
-                self.backToOneLayer(self.confidential)
+        self.backToOneLayer('设施信息')
+        adb.click(10, adb.screenY - 10)
 
     def setClue(self):
-        clueNotExit = 0
-        isUIDeviate= False
-        for clue in self.clues: #添加线索
-            if not self.runFlag:
-                break
-            lackClue = pictureFind.matchImg(self.adb.getScreen_std(), clue, confidencevalue = 0.7)
-            if lackClue != None:
-                isUIDeviate = True
-                self.click(lackClue['result'])
-                if pictureFind.matchImg_roi(self.adb.getScreen_std(), self.noClue, (1080, 350, 240, 110), 
-                    confidencevalue = 0.7) == None:
-                    self.click((1150, 270))
-                else:
-                    clueNotExit += 1
-        if isUIDeviate:
-            returnPoint = (450, 735)
-        else:
-            returnPoint = (780, 735)
-        return (clueNotExit, returnPoint)
+        img = adb.getScreen_std(True)
+        ocrResult = getText(img)
+
+        ans = findTextPos_all(ocrResult, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], [])
+        lackClues = []
+        for i in ans:
+            if i[2].isdigit():
+                lackClues.append(i)
+        
+        for i in lackClues:
+            adb.click(i[0][0], i[0][1])
+            img = adb.getScreen_std(True)
+            ocrResult = getText(img)
+            ans = findTextPos(ocrResult, ['相关搜集者', '暂无线索'], [])
+            if ans != None:
+                adb.click(ans[0][0], ans[0][1])
+            self.bactToMeetingIndex()
 
     def uniqueFunc(self):
         self.bactToMeetingIndex()
@@ -449,14 +411,14 @@ class ReceptionRoom(Room):
 
         if user_data.get('logistic.meetingroom.send'):
             #线索赠送
-            while pictureFind.matchImg(self.adb.getScreen_std(), self.sendClue, confidencevalue = 0.7) == None:
+            while pictureFind.matchImg(adb.getScreen_std(), self.sendClue, confidencevalue = 0.7) == None:
                 if not self.runFlag:
                     return 
                 self.click((1350, 440))
 
             luckyFriend = self.sendBtn.copy()
             maxPages = 3 #最多只有10个线索，每页4个好友
-            while pictureFind.matchImg(self.adb.getScreen_std(), self.noExtraClue, confidencevalue = 0.6) == None:
+            while pictureFind.matchImg(adb.getScreen_std(), self.noExtraClue, confidencevalue = 0.6) == None:
                 if maxPages == 0:
                     break
                 if not self.runFlag:
@@ -467,7 +429,7 @@ class ReceptionRoom(Room):
                     maxPages -= 1
                 self.click((100, 250))
                 self.click(luckyFriend.pop(randint(0, len(luckyFriend) - 1)))
-            while pictureFind.matchImg(self.adb.getScreen_std(), self.confidential, confidencevalue = 0.7) == None:
+            while pictureFind.matchImg(adb.getScreen_std(), self.confidential, confidencevalue = 0.7) == None:
                 if not self.runFlag:
                     return 
                 self.click((1400, 40)) #返回
@@ -489,11 +451,10 @@ class ReceptionRoom(Room):
 
         self.bactToMeetingIndex((750, 700))
 
-        cluesCondition = self.setClue()#添加线索
-        if not self.runFlag:
-            return 
-        if (cluesCondition[0] == 0) and user_data.get('logistic.meetingroom.use'):
-            self.click(cluesCondition[1])
+        self.setClue()#添加线索
+        if not self.runFlag: return 
+        if user_data.get('logistic.meetingroom.use'):
+            adb.click(adb.screenX/2, 810/900*adb.screenY)
             #开启线索交流
 
 operatorEnter = pictureFind.picRead(getcwd() + '/res/logistic/general/operatorEnter.png') #进驻界面的空位
