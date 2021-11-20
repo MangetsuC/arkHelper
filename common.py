@@ -31,6 +31,7 @@ class EmittingStr(QObject):
 beforeLaunch()
 config_path = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper' #如果非开发模式则创建配置文件目录
 if not (path.exists('./config.ini') or path.exists('./config.toml')):
+    #正常用户模式
     if not path.exists(config_path):
         try:
             mkdir(config_path)
@@ -38,6 +39,7 @@ if not (path.exists('./config.ini') or path.exists('./config.toml')):
             print(creatDirErr)
             config_path = getcwd()
 else:
+    #开发者模式
     config_path = getcwd()
 
 user_data = configToml()

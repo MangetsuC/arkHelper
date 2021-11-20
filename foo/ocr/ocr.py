@@ -2,6 +2,9 @@
 import requests
 import json
 from base64 import b64encode
+from os import path, startfile, getcwd
+from foo.adb.adbCtrl import Cmd
+from time import sleep
 
 
 def getPid():
@@ -16,8 +19,19 @@ def getText(img):
     b64str = b64encode(img)
     try:
         res = requests.post(url='http://localhost:1616/api/tr-run/', data={'compress': 960, 'img': b64str})
-    except ConnectionError:
-        return -1
+    except:
+        tempCmd = Cmd(getcwd())
+
+        pids = tempCmd.getTaskList('ocrForArkhelper.exe')
+        if pids != []:
+            for i in pids:
+                tempCmd.killTask(i)
+        
+        if path.exists('./ocrForArkhelper.exe'):
+            startfile('./ocrForArkhelper.exe')
+            sleep(5)
+            res = requests.post(url='http://localhost:1616/api/tr-run/', data={'compress': 960, 'img': b64str})
+
     ans = json.loads(res.text)
     return ans['data']['raw_out']
 

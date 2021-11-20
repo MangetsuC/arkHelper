@@ -911,6 +911,12 @@ class App(QWidget):
         #self.schJsonEditer.rateMonitor.stop()
         self.rateMonitor.stop()
 
+        tempCmd = Cmd(getcwd()) #退出ocr
+        pids = tempCmd.getTaskList('ocrForArkhelper.exe')
+        if pids != []:
+            for i in pids:
+                tempCmd.killTask(i)
+
         sys.exit() #为了解决Error in atexit._run_exitfuncs:的问题，实际上我完全不知道这为什么出现
 
     def minimize(self):
@@ -990,7 +996,8 @@ class App(QWidget):
         if self.publicCall != None:
             self.publicCall.autoPCStop()
         
-        self.recruit.stop()
+        if self.recruit != None:
+            self.recruit.stop()
 
         self.schedule.stop()
         self.battle.stop()
