@@ -40,39 +40,6 @@ class BattleSchedule(QObject):
             self.stoneMaxNum = inputData
 
     def imgInit(self):
-        self.recMed = pictureFind.picRead(self.cwd + "/res/panel/recovery/medicament.png")
-        self.recStone = pictureFind.picRead(self.cwd + "/res/panel/recovery/stone.png")
-        self.confirm = pictureFind.picRead(self.cwd + "/res/panel/recovery/confirm.png")
-        self.sign = pictureFind.picRead(self.cwd + "/res/panel/level/sign.png")
-
-        #self.exPos = {'ex1':(220,280),'ex2':(845,580),'ex3':(1230,340)}
-        #self.screenShot = self.cwd + '/bin/adb/arktemp.png'
-        self.act = self.cwd + "/res/panel/other/act.png"
-        self.battle = self.cwd + "/res/panel/other/battle.png"
-        self.home = self.cwd + "/res/panel/other/home.png"
-        self.visitNext = self.cwd + "/res/panel/other/visitNext.png"
-        self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
-        self.startA = pictureFind.picRead(self.cwd + "/res/battle/startApart.png")
-        self.startB = pictureFind.picRead(self.cwd + "/res/battle/startBpart.png")
-        self.autoOff = pictureFind.picRead(self.cwd + "/res/panel/other/autoOff.png")
-        self.autoOn = pictureFind.picRead(self.cwd + "/res/panel/other/autoOn.png")
-        self.II = {'MAIN':self.cwd + "/res/panel/level/I/main.png", 'EX':self.cwd + "/res/panel/level/I/exterminate.png",\
-            'RS':self.cwd + "/res/panel/level/I/resource.png", 'PR':self.cwd + "/res/panel/level/I/chip.png"}
-        self.III = {'A':self.cwd + "/res/panel/level/II/A.png", 'B':self.cwd + "/res/panel/level/II/B.png",\
-                'C':self.cwd + "/res/panel/level/II/C.png", 'D':self.cwd + "/res/panel/level/II/D.png",\
-                'AP':self.cwd + "/res/panel/level/II/AP.png", 'CA':self.cwd + "/res/panel/level/II/CA.png",\
-                'CE':self.cwd + "/res/panel/level/II/CE.png", 'SK':self.cwd + "/res/panel/level/II/SK.png",\
-                'LS':self.cwd + "/res/panel/level/II/LS.png", \
-                '0':self.cwd + "/res/panel/level/II/ep0.png", '1':self.cwd + "/res/panel/level/II/ep1.png",\
-                '2':self.cwd + "/res/panel/level/II/ep2.png", '3':self.cwd + "/res/panel/level/II/ep3.png",\
-                '4':self.cwd + "/res/panel/level/II/ep4.png", '5':self.cwd + "/res/panel/level/II/ep5.png",\
-                '6':self.cwd + "/res/panel/level/II/ep6.png", '7':self.cwd + "/res/panel/level/II/ep7.png",\
-                '8':self.cwd + "/res/panel/level/II/ep8.png",\
-                'ex': self.cwd + "/res/panel/level/II/EX.png"}
-        self.exIV = {'ex1':self.cwd + "/res/panel/level/III/e01.png",'ex2':self.cwd + "/res/panel/level/III/e02.png", 'ex3':self.cwd + "/res/panel/level/III/e03.png",\
-                    'ex4':self.cwd + "/res/panel/level/III/e04.png", 'exSwitch':self.cwd + "/res/panel/level/III/exSwitch.png"}
-        self.exSymbol = self.cwd + "/res/panel/other/exSymbol.png"
-
         self.resTrans = {'A':'固若金汤', 'B':'摧枯拉朽',\
                         'C':'势不可挡', 'D':'身先士卒',\
                         'AP':'粉碎防御', 'CA':'空中威胁',\
@@ -92,7 +59,6 @@ class BattleSchedule(QObject):
                     adb.click(ans[0][0], ans[0][1])
                     temp = findTextPos(getText(adb.getScreen_std(True)), ['终端'], [])
                     if temp != None:
-                        isEnter = True
                         return 
 
             adb.clickHome()

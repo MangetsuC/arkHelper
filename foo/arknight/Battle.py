@@ -4,7 +4,6 @@ from time import sleep, time
 from PyQt5.QtCore import center, pyqtSignal, QObject
 from foo.ocr.ocr import getText, findTextPos
 
-
 from foo.pictureR import pictureFind
 from foo.win import toast
 from common2 import adb
@@ -27,23 +26,6 @@ class BattleLoop(QObject):
         self.isRecovered = False
 
         self.battleLoopTimes = -100
-
-        self.screenShot = self.cwd + '/bin/adb/arktemp.png'
-        self.listBattleImg = pictureFind.picRead([self.cwd + "/res/battle/" + i for i in listdir(self.cwd + "/res/battle")])
-        self.listActImg = pictureFind.picRead([self.cwd + "/res/actBattle/" + i for i in listdir(self.cwd + "/res/actBattle")])
-        
-        self.listImg = self.listBattleImg#self.listActImg + self.listBattleImg
-
-        self.startA = pictureFind.picRead(self.cwd + "/res/battle/startApart.png")
-        self.startB = pictureFind.picRead(self.cwd + "/res/battle/startBpart.png")
-        self.autoOff = pictureFind.picRead(self.cwd + "/res/panel/other/autoOff.png")
-        self.autoOn = pictureFind.picRead(self.cwd + "/res/panel/other/autoOn.png")
-
-        self.recMed = pictureFind.picRead(self.cwd + "/res/panel/recovery/medicament.png")
-        self.recStone = pictureFind.picRead(self.cwd + "/res/panel/recovery/stone.png")
-        self.confirm = pictureFind.picRead(self.cwd + "/res/panel/recovery/confirm.png")
-
-        self.uselessLevel = pictureFind.picRead(self.cwd + "/res/panel/other/uselessLevel.png")
     
     def setLoopTimes(self, times):
         if times < 0:

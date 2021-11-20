@@ -21,8 +21,7 @@ class PublicCall:
         self.adb = adb
         self.regAns = None
         self.cwd = cwd
-        self.tag = pictureFind.picRead([self.cwd + '/res/publicCall/' + i for i in listdir(self.cwd + '/res/publicCall')])
-        self.tag.sort(key = lambda x:len(x['obj']), reverse = True)
+
         self.tagOnScreenList = []
         self.refresh = pictureFind.picRead(self.cwd + '/res/panel/publicCall/refresh.png')
         self.confirm = pictureFind.picRead(self.cwd + '/res/panel/other/confirm.png')
