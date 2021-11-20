@@ -351,6 +351,8 @@ class BattleSchedule(QObject):
                 if stepFinishOneLevel == 2:
                     restLoopTime -= 1
                     stepFinishOneLevel = 0
+                    if restLoopTime > -100:
+                        print(f'剩余作战次数{restLoopTime}')
 
                 if (restLoopTime <= 0 and (not restLoopTime <= -100)):
                     break
