@@ -128,11 +128,11 @@ class BattleSchedule(QObject):
             img = adb.getScreen_std(True)
             ocrResult = getText(img)
 
-            if objLevel == 'e01':
+            if '1' in objLevel:
                 ans = findTextPos(ocrResult, ['切尔诺伯格'], [])
-            elif objLevel == 'e02':
+            elif '2' in objLevel:
                 ans = findTextPos(ocrResult, ['龙门外环'], [])
-            elif objLevel == 'e03':
+            elif '3' in objLevel:
                 ans = findTextPos(ocrResult, ['龙门市区'], [])
             else:
                 ans = findTextPos(ocrResult, ['委托'], ['期'])
