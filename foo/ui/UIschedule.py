@@ -130,6 +130,11 @@ class JsonEdit(QWidget):
         self.bootyModeBtn.setMinimumHeight(self.getRealSize(40))
         self.bootyModeBtn.clicked[bool].connect(self.setBootMode)
 
+        self.bootySelEdit = QLineEdit()
+        self.bootySelEdit.setText('非素材模式')
+        self.bootySelEdit.setEnabled(False)
+        self.bootySelEdit.setMinimumHeight(self.getRealSize(40))
+
         self.bootySelBtn = QPushButton()
         self.bootySelBtn.setText('——')
         self.bootySelBtn.setMinimumHeight(self.getRealSize(40))
@@ -186,7 +191,7 @@ class JsonEdit(QWidget):
         self.grid.addWidget(self.timesLable,0,6,1,1)
         self.grid.addWidget(self.timeEdit,0,7,1,1)
         self.grid.addWidget(self.bootyModeBtn,1,1,1,1)
-        self.grid.addWidget(self.bootySelBtn,1,2,1,4)
+        self.grid.addWidget(self.bootySelEdit,1,2,1,4)
         self.grid.addWidget(self.addBtn,1,6,1,2)
         self.grid.addWidget(self.delBtn,2,1,1,4)
         self.grid.addWidget(self.clearBtn,2,5,1,3)
@@ -233,6 +238,7 @@ class JsonEdit(QWidget):
         self.timeEdit.setFixedWidth(self.getRealSize(50))
         self.timeEdit.setMinimumHeight(self.getRealSize(40))
         self.bootyModeBtn.setMinimumHeight(self.getRealSize(40))
+        self.bootySelEdit.setMinimumHeight(self.getRealSize(40))
         self.bootySelBtn.setMinimumHeight(self.getRealSize(40))
         self.delBtn.setMinimumHeight(self.getRealSize(40))
         self.clearBtn.setMinimumHeight(self.getRealSize(40))
@@ -420,7 +426,8 @@ class JsonEdit(QWidget):
                 self.scheduleAdd['objLevel'] = part1 + '-' + tempLevel
         if tempTimes.isdecimal():
             if self.isBootyMode:
-                self.scheduleAdd['times'] = {'bootyName':self.bootyName,'bootyNum':tempTimes}
+                #self.scheduleAdd['times'] = {'bootyName':self.bootyName,'bootyNum':tempTimes}
+                self.scheduleAdd['times'] = {'bootyName':self.bootySelEdit.text(),'bootyNum':tempTimes}
             else:
                 self.scheduleAdd['times'] = tempTimes
         if self.scheduleAdd['objLevel'] != '' and self.scheduleAdd['times'] != '':
@@ -502,9 +509,13 @@ class JsonEdit(QWidget):
         if self.isBootyMode:
             self.timesLable.setText('个数:')
             self.bootySelBtn.setText('选择掉落物')
+            self.bootySelEdit.setText('请输入掉落物')
+            self.bootySelEdit.setEnabled(True)
         else:
             self.timesLable.setText('次数:')
             self.bootySelBtn.setText('———')
+            self.bootySelEdit.setText('非素材模式')
+            self.bootySelEdit.setEnabled(False)
     
 
 class BootyChoice(QWidget):
