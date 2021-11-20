@@ -17,6 +17,7 @@ from foo.arknight.Battle import BattleLoop
 from foo.arknight.credit import Credit
 from foo.arknight.Schedule import BattleSchedule
 from foo.arknight.task import Task
+from foo.arknight.recruit import Recruit
 from foo.pictureR import pictureFind
 from foo.ui.console import Console
 from foo.ui.launch import AfterInit, BlackBoard, Launch
@@ -27,6 +28,7 @@ from foo.ui.UIPublicCall import UIPublicCall
 from foo.ui.UIschedule import JsonEdit
 from foo.ui.messageBox import AMessageBox
 from foo.win.exitThread import forceThreadStop
+from foo.pictureR.spoils import spoilsCheck
 from common import user_data, simulator_data, config_path, theme
 from common2 import adb
 
@@ -173,6 +175,9 @@ class App(QWidget):
         self.tbAutoPC.clicked[bool].connect(self.functionSel)
         self.tbAutoPC.setToolTip('自动进行公开招募，在右键菜单中进行配置')
 
+
+        self.actRecruitSet = QAction('配置自动公招')
+        self.actRecruitSet.triggered.connect(self.setRecruit)
         self.actAutoSearch = QAction('自动招募')
         self.actAutoSearch.triggered.connect(self.setAutoPCFunc)
         self.actAutoSearch.setIcon(QIcon(self.theme.getSelectedIcon()))
@@ -618,6 +623,7 @@ class App(QWidget):
         else:
             self._data = None
             self.publicCall = None
+            self.recruit = None
             self.tbAutoPC.setEnabled(False)
             #self.btnMonitorPublicCall.setEnabled(False)
         
@@ -647,8 +653,13 @@ class App(QWidget):
         self.publicCall.setStar(1, 1, user_data.get('function.autopc.skip1star')) #自动公招保留一星设定
         self.publicCall.setStar(5, 1, user_data.get('function.autopc.skip5star'))
         self.publicCall.skip23Star = user_data.get('function.autopc.skip23star')
+
         self.tbAutoPC.setEnabled(True)
         #self.btnMonitorPublicCall.setEnabled(True)
+
+        self.recruit = Recruit()
+        self.recruit.priority = user_data.get('function.recruit.priority')
+        self.recruit.refreshData()
 
     def initSlrSel(self):
         '初始化模拟器选择'
@@ -718,13 +729,14 @@ class App(QWidget):
             else:
                 text = '设为默认开启'
             #自动招募和自动聘用
-            self.rightClickMenu.addAction(self.actAutoSearch)
-            self.rightClickMenu.addAction(self.actAutoEmploy)
-            self.rightClickMenu.addAction(self.actSkipStar23)
-            self.rightClickMenu.addAction(self.actSkipStar1)
-            self.rightClickMenu.addAction(self.actSkipStar5)
-            self.rightClickMenu.addAction(self.line)
-            self.rightClickMenu.addAction(self.actPcCalculate)
+            self.rightClickMenu.addAction(self.actRecruitSet)
+            #self.rightClickMenu.addAction(self.actAutoSearch)
+            #self.rightClickMenu.addAction(self.actAutoEmploy)
+            #self.rightClickMenu.addAction(self.actSkipStar23)
+            #self.rightClickMenu.addAction(self.actSkipStar1)
+            #self.rightClickMenu.addAction(self.actSkipStar5)
+            #self.rightClickMenu.addAction(self.line)
+            #self.rightClickMenu.addAction(self.actPcCalculate)
         elif self.source.text() == '任务交付':
             if user_data.get('function.task.default'):
                 text = '设为默认关闭'
@@ -796,6 +808,36 @@ class App(QWidget):
             self.publicCall.employFlag = isChecked
         elif source == self.tbLogistic:
             self.logisticFlag = isChecked
+
+    def setRecruit(self):
+        if self.recruit != None:
+            temp = self.recruit.priority
+            temp1 = []
+            for i in temp:
+                temp1.append(str(i))
+            temp2 = '>'.join(temp1)
+            temp2 = temp2.replace('10', '1') #小车实际上对应的级别数为10
+            ans = AMessageBox.input(self, '输入配置', '{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n当前配置为：{}'
+                                                        .format('配置示例:-6>5>4>-3', '其代表按6、5、4、3的优先级进行招募', 
+                                                                '如果有必出6星的tag组合则不招募', '如果有必出5、4星的tag组合则随机选择进行招募(优先5星)',
+                                                                '如果没必出6、5、4星的tag组合，仅有3星tag组则不招募', 
+                                                                '如果出3星的tag组合都没有(不可能)则不选择tag进行招募',
+                                                                '其中数字代表星级，负号-代表出现则保留', 
+                                                                '看不懂就别改！',
+                                                                temp2))
+            if ans[1]:
+                ans = ans[0]
+                ans = ans.replace('1', '10')
+                ans = ans.split('>')
+                temp = []
+                if ans != []:
+                    for i in ans:
+                        try:
+                            temp.append(int(i))
+                        except:
+                            return 
+                    self.recruit.priority = temp
+                    user_data.change('function.recruit.priority', temp)
 
     def setAutoPCFunc(self):
         source = self.sender()
@@ -891,7 +933,9 @@ class App(QWidget):
         self.themeEditor.show()
 
     def startUpdate(self):
-        if path.exists(self.cwd + '/update.exe'):
+        AMessageBox.warning(self, '提示', '因为程序变动较大，自动更新暂不提供')
+        self.openUpdate()
+        '''if path.exists(self.cwd + '/update.exe'):
             selfPidList = adb.cmd.getTaskList('arkhelper.exe')
             exceptions = self._updateData['exception'].split(',') #不再排除update.exe自身
             if 'update.exe' in exceptions:
@@ -904,7 +948,7 @@ class App(QWidget):
                             'exceptionFile': self._updateData['exception']}
             with open('updateData.json', 'w', encoding='UTF-8') as f:
                 f.write(dumps(updateJson, sort_keys=True, indent=4, separators=(',', ': '), ensure_ascii=False))
-            startfile('update.exe')
+            startfile('update.exe')'''
     
     def battleWarning(self):
         reply = AMessageBox.question(self, '警告', '发现您选中的关卡可能无掉落，是否继续？')
@@ -928,7 +972,7 @@ class App(QWidget):
         if self.doctorFlag and self.battleFlag:
             self.battle.run(self.doctorFlag)
         if (self.publicCall != None) and self.doctorFlag and self.autoPCFlag:
-            self.publicCall.autoPCRun(self.doctorFlag)
+            self.recruit.run()
         if self.doctorFlag and self.logisticFlag:
             self.logistic.run(self.doctorFlag)
         if self.doctorFlag and self.creditFlag:
@@ -945,6 +989,9 @@ class App(QWidget):
         self.doctorFlag = False
         if self.publicCall != None:
             self.publicCall.autoPCStop()
+        
+        self.recruit.stop()
+
         self.schedule.stop()
         self.battle.stop()
         self.task.stop()

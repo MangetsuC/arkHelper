@@ -157,14 +157,7 @@ class AfterInit(QThread):
             if tempData != self.app._data:
                 with open(self.cwd + '/data.json', 'w', encoding='UTF-8') as f:
                     f.write(dumps(tempData, ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ': ')))
-                if self.app._data == None:
-                    self.reloadPcModule.emit()
-                while self.app._data == None:
-                    sleep(0.1)
-                if self.app.publicCall != None:
-                    self.app.publicCall.updateTag()
-                else:
-                    self.reloadPcModule.emit()
+                self.reloadPcModule.emit()
 
     def getLogisticRule(self):
         #自动下载基建规则文件

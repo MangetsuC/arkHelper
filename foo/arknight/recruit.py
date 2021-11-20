@@ -31,6 +31,10 @@ class Recruit:
             data = json.loads(f.read())['data'][0]
         return (data['normal'], data['high'])
     
+    def refreshData(self):
+        temp = self.readData()
+        self.normal = temp[0]
+        self.high = temp[1]
 
     def getTag(self):
         '获取屏幕上的5个tag与他们的坐标'

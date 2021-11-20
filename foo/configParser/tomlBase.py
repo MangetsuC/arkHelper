@@ -50,6 +50,7 @@ def defaultConfig():
     autopc.skip5star = true #自动公招保留5星tag组合
     autopc.skip23star = false #自动公招保留2，3星tag组合
     #自动公招始终会保留6星tag高级资深干员
+    recruit.priority = [-6,5,4]
     
     task.default = true #自动交付任务
     credit.default = false #自动访问好友获取信用点

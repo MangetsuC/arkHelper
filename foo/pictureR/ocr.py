@@ -44,11 +44,9 @@ def ocr_operatorMood(pic, roi = (0, 0, 0, 0), isDorm = False):
                 ans.append(-2)
     return ans
 
-def ocr_roomName(pic, basePoint):
+def ocr_roomName(ocrResult):
     for eachRoom in ['控制中枢', '会客室', '贸易站', '制造站', '发电站', '宿舍', '加工站', '办公室', '训练室']:
-        if pictureFind.matchImg_roi(pic, wordsTemplate.getTemplatePic_CH(eachRoom, 28), 
-                                    roi = (basePoint[0]-884, basePoint[1]-73, 222, 53),
-                                    confidencevalue = 0.7) != None:
+        if eachRoom in ocrResult:
             return eachRoom
     else:
         return ''
