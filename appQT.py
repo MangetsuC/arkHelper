@@ -977,7 +977,7 @@ class App(QWidget):
             self.schedule.run(self.doctorFlag)
         if self.doctorFlag and self.battleFlag:
             self.battle.run(self.doctorFlag)
-        if (self.publicCall != None) and self.doctorFlag and self.autoPCFlag:
+        if (self.recruit != None) and self.doctorFlag and self.autoPCFlag:
             self.recruit.run()
         if self.doctorFlag and self.logisticFlag:
             self.logistic.run(self.doctorFlag)

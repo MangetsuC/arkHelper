@@ -15,10 +15,10 @@ def getPid():
     ans = json.loads(res.text)
     return ans['pid']
 
-def getText(img):
+def getText(img, compress = 960):
     b64str = b64encode(img)
     try:
-        res = requests.post(url='http://localhost:1616/api/tr-run/', data={'compress': 960, 'img': b64str})
+        res = requests.post(url='http://localhost:1616/api/tr-run/', data={'compress': compress, 'img': b64str})
     except:
         tempCmd = Cmd(getcwd())
 
@@ -30,7 +30,7 @@ def getText(img):
         if path.exists('./ocrForArkhelper.exe'):
             startfile('ocrForArkhelper.exe')
             sleep(5)
-            res = requests.post(url='http://localhost:1616/api/tr-run/', data={'compress': 960, 'img': b64str})
+            res = requests.post(url='http://localhost:1616/api/tr-run/', data={'compress': compress, 'img': b64str})
 
     ans = json.loads(res.text)
     return ans['data']['raw_out']

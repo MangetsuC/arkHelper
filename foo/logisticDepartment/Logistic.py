@@ -227,7 +227,7 @@ class Logistic:
         img = adb.getScreen_std(True)
         ocrResult = getText(img)
 
-        ans = findTextPos(ocrResult, ['下干员'], [])
+        ans = findTextPos(ocrResult, ['撤下干员', '撒下千员', '撤下千员', '撒下干员'], [])
         if ans != None:
             adb.click(ans[0][0], ans[0][1])
             if self.opPos == None:
@@ -308,7 +308,7 @@ class Logistic:
                                 continue
                         adb.click(eachRoom[0][0], eachRoom[0][1])
 
-                        ocrResult = getText(adb.getScreen_std(True))
+                        ocrResult = getText(adb.getScreen_std(True), 1600)
                         temp = findTextPos_all(ocrResult, ['/24', '未进驻', '注意力'], [])
                         ans = []
                         for i in temp:
@@ -323,8 +323,11 @@ class Logistic:
                             elif '注意力' in i[2]:
                                 moods.append(0)
                             else:
+                                i[2] = i[2].replace('@', '0')
                                 moods.append(int(pattern.findall(i[2])[0].split('/')[0]))
 
+                        if len(moods) > 5:
+                            moods = moods[0:5] #草率处理出现重复的情况
                         moodsForPrint = []
                         for printMood in range(len(moods)):
                             if moods[printMood] > -1:
@@ -546,7 +549,7 @@ class Logistic:
 
     def run(self, flag):
         self.runFlag = flag
-        '''self.enterLogisticPanel()
+        self.enterLogisticPanel()
         if not self.runFlag: return 0
         print('正在重新进入，以刷新右上角弹出的信息')
         self.backToHome() #重新进入，刷新掉右上角弹出的提示
@@ -571,7 +574,7 @@ class Logistic:
 
         if not self.runFlag: return 0
         print('返回基建主页')
-        self.enterLogisticPanel()'''
+        self.enterLogisticPanel()
 
         if not self.runFlag: return 0
         for eachRoom in self.enableRooms:
