@@ -232,7 +232,13 @@ class Room:
         myRuleList = roomRule.copy()
         myRuleList.reverse()
 
-        ocrResult = getText(adb.getScreen_std(True))
+        temp = getText(adb.getScreen_std(True))
+        leftLine = adb.homePos[0]
+        ocrResult = []
+        for i in temp:
+            if i[0][0][0] > leftLine:
+                ocrResult.append(i)
+
         while needNum != 0:
             if not self.runFlag:
                 break
@@ -404,6 +410,8 @@ class ReceptionRoom(Room):
             self.bactToMeetingIndex()
 
     def uniqueFunc(self):
+        #会客室特殊操作先暂停使用
+        return 
         self.bactToMeetingIndex()
 
         self.setClue()#先添加一次线索，以便于线索赠送
