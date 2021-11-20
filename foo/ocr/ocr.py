@@ -28,7 +28,7 @@ def getText(img):
                 tempCmd.killTask(i)
         
         if path.exists('./ocrForArkhelper.exe'):
-            startfile('./ocrForArkhelper.exe')
+            startfile('ocrForArkhelper.exe')
             sleep(5)
             res = requests.post(url='http://localhost:1616/api/tr-run/', data={'compress': 960, 'img': b64str})
 
