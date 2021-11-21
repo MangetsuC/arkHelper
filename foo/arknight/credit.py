@@ -55,7 +55,7 @@ class Credit:
         if ans != None:
             for i in range(5):
                 if not self.switch: return 
-                adb.click(ans[0][0], ans[0][1])
+                adb.click(ans[1][0][0], ans[0][1])
                 if findTextPos(getText(adb.getScreen_std(True)), ['访问下位'], []) != None:
                     break
 
