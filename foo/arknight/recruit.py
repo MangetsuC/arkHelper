@@ -101,7 +101,7 @@ class Recruit:
             img = adb.getScreen_std(True)
             ocrResult = getText(img)
 
-            temp1 = findTextPos(ocrResult, ['点击刷新标签', '人脉资源联络中'], [])
+            temp1 = findTextPos(ocrResult, ['点击刷新标签', '人脉资源', '可获得的干员'], [])
             temp2 = findTextPos(ocrResult, ['招募预算'], [])
             self.confirm_recruit_pos =[temp1[0][0], temp2[0][1]]
         adb.click(self.confirm_recruit_pos[0], self.confirm_recruit_pos[1])
@@ -144,7 +144,7 @@ class Recruit:
     def ans_set(self, tagData, tagOnScreenList):
         tags = tuple(
             set(tuple(x) for x in tagData[tagOnScreenList[i]])
-            for i in range(5)
+            for i in range(len(tagOnScreenList))
         )
         ans = dict()
 
@@ -173,6 +173,8 @@ class Recruit:
         if '高级资深干员' in tagOnScreenList:
             for eachTag in self.high.keys():
                 applyTagDict[eachTag].extend(self.high[eachTag])
+
+        print(f'识别到的屏幕上的tag有:{tagOnScreenList}')
 
         ans = self.ans_set(applyTagDict, tagOnScreenList)
 
