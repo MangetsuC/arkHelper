@@ -33,7 +33,13 @@ def getText(img, compress = 960):
             res = requests.post(url='http://localhost:1616/api/tr-run/', data={'compress': compress, 'img': b64str})
 
     ans = json.loads(res.text)
-    return ans['data']['raw_out']
+    ans = ans.get('data', None) #识别异常
+    if ans == None:
+        print('ocr识别异常！')
+        print(f'ocr返回的原始数据为:{res.text}')
+        return []
+    else:
+        return ans['raw_out']
 
 def findTextPos(ocrResult, textInclude, textExcept):
     isFound = False
