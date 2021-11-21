@@ -1,6 +1,6 @@
 from cv2 import (CHAIN_APPROX_SIMPLE, COLOR_BGR2GRAY, RETR_EXTERNAL, Canny,
                  GaussianBlur, approxPolyDP, arcLength, contourArea, cvtColor,
-                 findContours, isContourConvex, moments)
+                 findContours, isContourConvex, moments, blur, HoughCircles, HOUGH_GRADIENT)
 from numpy import dot
 from numpy import max as npmax
 from numpy import sqrt as npsqrt
@@ -39,4 +39,16 @@ def find_squares(img):
     
     squares.sort(key = lambda x:x[1], reverse = True)
     return squares
+
+def find_circles(img):
+    result = blur(img, (5,5))
+    gray=cvtColor(result,COLOR_BGR2GRAY)
+
+    #霍夫变换圆检测
+    circles= HoughCircles(gray,HOUGH_GRADIENT,1,50,param1=80,param2=30,minRadius=int(img.shape[0]*15/864),maxRadius=int(img.shape[0]*30/864))
+    if not circles is None:
+        return list(circles[0])
+    else:
+        return []
+
 

@@ -7,7 +7,7 @@ from common import schedule_data
 from common2 import adb
 from foo.ocr.ocr import findTextPos, getText, findTextPos_all
 from foo.pictureR import bootyCount, pictureFind
-from foo.pictureR.squreDetect import find_squares
+from foo.pictureR.squreDetect import find_squares, find_circles
 from foo.pictureR.spoils import spoilsCheck
 from foo.win import toast
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -237,25 +237,53 @@ class BattleSchedule(QObject):
 
         elif chap.isdigit():
             #主线
-            nowChap = -1
+            def getChapCircles():
+                ans = find_circles(adb.getScreen_std())
+                temp = []
+                for i in ans:
+                    temp.append(0)
+
+                for i in range(len(ans)):
+                    for j in ans:
+                        if (ans[i][0] - j[0]) < 10:
+                            temp[i] += 1
+                maxTimes = 0
+                for i in range(len(temp)):
+                    if temp[i] > maxTimes:
+                        maxTimes = temp[i]
+                temp1 = []
+                for i in range(len(temp)):
+                    if temp[i] == maxTimes:
+                        temp1.append(ans[i])
+                return temp1
+
+
+            tryCount = 0
+            for i in range(5):
+                ans = getChapCircles()
+                ans.sort(key = lambda x:x[1])
+                if len(ans) == 3:
+                    adb.click(ans[1][0], ans[1][1])
+                    break
+                elif len(ans) == 2:
+                    if tryCount < 2:
+                        adb.click(ans[0][0], ans[0][1])
+                    else:
+                        adb.click(ans[1][0], ans[1][1])
+                    tryCount += 1
+            else:
+                return False
+
+            ans = getChapCircles()
+            ans.sort(key = lambda x:x[1])
+            if len(ans) != 3:
+                return False
             if int(chap) <= 3:
-                ans = findTextPos(getText(adb.getScreen_std(True)), ['幻灭', 'SHATTEROFAVISION'], [])
-                if ans != None:
-                    adb.click(ans[0][0], ans[0][1]) 
-                ans = findTextPos(getText(adb.getScreen_std(True)), ['觉醒'], [])
-                if ans != None:
-                    adb.click(ans[0][0], ans[0][1]) 
+                adb.click(ans[0][0], ans[0][1])
             elif int(chap) <= 8:
-                ans = findTextPos(getText(adb.getScreen_std(True)), ['幻灭', 'SHATTEROFAVISION'], [])
-                if ans != None:
-                    adb.click(ans[0][0], ans[0][1]) 
+                adb.click(ans[1][0], ans[1][1])
             elif int(chap) > 8:
-                ans = findTextPos(getText(adb.getScreen_std(True)), ['幻灭', 'SHATTEROFAVISION'], [])
-                if ans != None:
-                    adb.click(ans[0][0], ans[0][1]) 
-                ans = findTextPos(getText(adb.getScreen_std(True)), ['残阳'], [])
-                if ans != None:
-                    adb.click(ans[0][0], ans[0][1]) 
+                adb.click(ans[2][0], ans[2][1])
             
             ans = find_squares(adb.getScreen_std())
             if ans != []:
