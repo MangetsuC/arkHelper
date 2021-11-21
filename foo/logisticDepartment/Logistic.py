@@ -3,6 +3,8 @@ from sys import path
 from time import sleep, time
 from re import compile as recompile
 
+from cv2 import TermCriteria_COUNT
+
 path.append(getcwd())
 from foo.adb import adbCtrl
 from foo.pictureR import pictureFind, ocr
@@ -324,10 +326,16 @@ class Logistic:
                                 moods.append(0)
                             else:
                                 i[2] = i[2].replace('@', '0')
-                                moods.append(int(pattern.findall(i[2])[0].split('/')[0]))
+                                temp = pattern.findall(i[2])
+                                if len(temp) > 0:
+                                    moods.append(int(temp[0].split('/')[0]))
 
                         if len(moods) > 5:
                             moods = moods[0:5] #草率处理出现重复的情况
+                        elif len(moods) < 5:
+                            while len(moods) != 5:
+                                moods.append(-1)
+                        
                         moodsForPrint = []
                         for printMood in range(len(moods)):
                             if moods[printMood] > -1:
