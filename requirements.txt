@@ -1,6 +1,6 @@
-win10toast==0.9
-opencv_python==4.4.0.42
-numpy==1.19.2
-PyQt5==5.15.1
-requests==2.25.1
+numpy==1.21.4
+opencv_python==4.5.4.58
+Pillow==8.4.0
+PyQt5==5.15.6
+requests==2.26.0
 toml==0.10.2
