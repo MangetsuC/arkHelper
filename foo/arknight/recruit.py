@@ -157,7 +157,7 @@ class Recruit:
         def recursive_check(history=None, parent=0):
             # 最多只有 5 个标签
             if len(history) == 5: return
-            for i in range(parent, 5):
+            for i in range(parent, len(tagOnScreenList)):
                 new = history + [i]
                 check_combination(new)
                 recursive_check(new, i + 1)
