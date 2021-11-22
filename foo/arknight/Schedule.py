@@ -449,7 +449,7 @@ class BattleSchedule(QObject):
                     break
                 if self.autoRecMed:
                     #使用药剂
-                    if '源石' in ans[3]:
+                    if '源石' in ans[2]:
                         #已经没有药剂剩余
                         pass
                     else:
