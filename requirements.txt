@@ -1,6 +1,7 @@
-numpy==1.21.4
-opencv_python==4.5.4.58
-Pillow==8.4.0
-PyQt5==5.15.6
-requests==2.26.0
+numpy==1.22.1
+opencv-python==4.5.5.62
+Pillow==9.0.0
+PySide6==6.2.2.1
+requests==2.27.1
 toml==0.10.2
+urllib3==1.26.8
