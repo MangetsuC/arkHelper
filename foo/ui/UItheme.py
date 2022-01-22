@@ -1,9 +1,9 @@
-from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
+from PySide6.QtWidgets import (QWidgetAction, QApplication, #QDesktopWidget,
                              QFileDialog, QGridLayout, QHBoxLayout,
                              QInputDialog, QLabel, QMenu, QMessageBox,
                              QPushButton, QVBoxLayout, QWidget, QLineEdit, QColorDialog)
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QIcon, QColor
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QIcon, QColor
 from common import user_data, theme
 
 class ThemeEditor(QWidget):
@@ -138,7 +138,7 @@ class ThemeEditor(QWidget):
                                 ''')
 
     def resizeUI(self):
-        rate = self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
+        rate = 1#self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
         if rate < 1.1:
             rate = 1.0
         elif rate < 1.4:

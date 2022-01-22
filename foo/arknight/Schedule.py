@@ -10,11 +10,11 @@ from foo.pictureR import bootyCount, pictureFind
 from foo.pictureR.squreDetect import find_squares, find_circles
 from foo.pictureR.spoils import spoilsCheck
 from foo.win import toast
-from PyQt5.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import QObject, Signal
 
 
 class BattleSchedule(QObject):
-    errorSignal = pyqtSignal(str)
+    errorSignal = Signal(str)
     def __init__(self, cwd, ico):
         super(BattleSchedule, self).__init__()
         self.cwd = cwd

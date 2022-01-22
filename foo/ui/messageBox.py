@@ -1,6 +1,6 @@
 from os import getcwd, path, getlogin
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QDialog,
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (QDialog,
                              QHBoxLayout,
                              QLabel,
                              QPushButton, QVBoxLayout, QLineEdit)

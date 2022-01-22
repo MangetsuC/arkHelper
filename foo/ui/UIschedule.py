@@ -2,11 +2,11 @@ import sys
 from json import dumps, loads
 from os import getcwd
 
-from PyQt5.QtCore import QStringListModel, Qt, QTimer
-from PyQt5.QtGui import QIcon, QCursor
-from PyQt5.QtWidgets import (QApplication, QComboBox, QDesktopWidget,
+from PySide6.QtCore import QStringListModel, Qt, QTimer
+from PySide6.QtGui import QIcon, QCursor, QAction
+from PySide6.QtWidgets import (QApplication, QComboBox, #QDesktopWidget,
                              QGridLayout, QInputDialog, QLabel, QLineEdit,
-                             QListView, QMenu, QPushButton, QWidget, QAction)
+                             QListView, QMenu, QPushButton, QWidget)
 
 from foo.ui.screen import ScreenRateMonitor
 from foo.ui.messageBox import AMessageBox
@@ -210,7 +210,7 @@ class JsonEdit(QWidget):
         self.setMaximumHeight(self.getRealSize(200))
 
     def getRealSize(self, size):
-        rate = self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
+        rate = 1#self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
         if rate < 1.1:
             rate = 1.0
         elif rate < 1.4:
@@ -251,8 +251,8 @@ class JsonEdit(QWidget):
     def editerShow(self):
         if not self.isVisible():
             self.show()
-            cp = QDesktopWidget().availableGeometry().center()
-            self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
+            #cp = QDesktopWidget().availableGeometry().center()
+            #self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
 
     def myTimer(self):
         self.updateTimer = QTimer()
@@ -722,6 +722,7 @@ class BootyChoice(QWidget):
 
     def center(self):
         #显示到屏幕中心
-        cp = QDesktopWidget().availableGeometry().center()
-        self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
+        pass
+        #cp = QDesktopWidget().availableGeometry().center()
+        #self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
 

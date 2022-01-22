@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QThread
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QDesktopWidget
+from PySide6.QtCore import QThread
+from PySide6.QtCore import Signal
+#from PySide6.QtWidgets import QDesktopWidget
 from time import sleep
 
 class Screen:
@@ -190,7 +190,7 @@ class Screen:
         return newPos
 
 class ScreenRateMonitor(QThread):
-    rateChanged = pyqtSignal(object)
+    rateChanged = Signal(object)
     def __init__(self, windows):
         super(ScreenRateMonitor, self).__init__()
         self.windows = windows
@@ -203,6 +203,7 @@ class ScreenRateMonitor(QThread):
         self.windows.append(window)
 
     def run(self):
+        pass
         desktop = QDesktopWidget()
         self.runFlag = True
         lastScreens = dict()

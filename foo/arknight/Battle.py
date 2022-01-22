@@ -1,7 +1,7 @@
 from os import getcwd, listdir
 from sys import path
 from time import sleep, time
-from PyQt5.QtCore import center, pyqtSignal, QObject
+from PySide6.QtCore import Signal, QObject
 from foo.ocr.ocr import getText, findTextPos
 
 from foo.pictureR import pictureFind
@@ -9,8 +9,8 @@ from foo.win import toast
 from common2 import adb
 
 class BattleLoop(QObject):
-    noBootySignal = pyqtSignal()
-    errorSignal = pyqtSignal(str)
+    noBootySignal = Signal()
+    errorSignal = Signal(str)
     def __init__(self, cwd, ico):
         super(BattleLoop, self).__init__()
         self.cwd = cwd

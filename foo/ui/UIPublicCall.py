@@ -4,15 +4,15 @@ from time import sleep, perf_counter
 from foo.arknight.PublicCall import PublicCall
 from foo.pictureR import pictureFind
 
-from PyQt5.QtWidgets import QDialog, QGridLayout, QPushButton, QLabel, QWidget, QScrollArea
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, QTimer
+from PySide6.QtWidgets import QDialog, QGridLayout, QPushButton, QLabel, QWidget, QScrollArea
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt, QTimer
 from common import theme
 from common2 import adb
 
 class UIPublicCall(QDialog):
     def __init__(self, battle, cwd, listGoTo, normal, high, parent=None, flags=Qt.WindowFlags(1)):
-        super().__init__(parent=parent, flags=flags)
+        super().__init__()
         self.initVar(battle, cwd, normal, high)
         self.initAuto(listGoTo)
         self.initUI(theme)

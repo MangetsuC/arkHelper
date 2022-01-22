@@ -1,6 +1,6 @@
 from platform import platform
 from winreg import OpenKey, CloseKey, QueryValueEx, HKEY_CURRENT_USER
-from PyQt5.QtGui import QIcon
+from PySide6.QtGui import QIcon
 from os import getcwd
 #FileNotFoundError
 

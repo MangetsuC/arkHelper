@@ -1,16 +1,16 @@
 import sys
 from time import localtime, strftime, time
 
-from PyQt5.QtCore import QObject, Qt, pyqtSignal
-from PyQt5.QtGui import QIcon, QTextCursor
-from PyQt5.QtWidgets import QDialog, QGridLayout, QTextBrowser, QDesktopWidget
+from PySide6.QtCore import QObject, Qt, Signal
+from PySide6.QtGui import QIcon, QTextCursor
+from PySide6.QtWidgets import QDialog, QGridLayout, QTextBrowser, QWidget#, QDesktopWidget
 
 from common import theme
 
-class Console(QDialog):
-    adbCloseError = pyqtSignal()
+class Console(QWidget):
+    adbCloseError = Signal()
     def __init__(self, cwd, ver, parent=None, flags=Qt.WindowFlags(1)):
-        super().__init__(parent=parent, flags=flags)
+        super().__init__()
         self.cwd = cwd
         self.setWindowIcon(QIcon(self.cwd + '/res/ico.ico'))
         self.isShow = False
@@ -69,11 +69,11 @@ class Console(QDialog):
     def showOrHide(self):
         if not self.isVisible():
             self.show()
-            cp = QDesktopWidget().availableGeometry().center()
-            self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
+            #cp = QDesktopWidget().availableGeometry().center()
+            #self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
 
 class EmittingStr(QObject):
-    sgnConsole = pyqtSignal(str)
+    sgnConsole = Signal(str)
 
     def write(self, text):
         if text != '\n':

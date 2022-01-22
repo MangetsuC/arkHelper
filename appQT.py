@@ -5,14 +5,14 @@ from os import getcwd, getlogin, mkdir, path, startfile
 from threading import Thread
 from webbrowser import open as openUrl
 
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QCursor, QIcon
-from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget,
+from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtGui import QCursor, QIcon, QScreen, QAction
+from PySide6.QtWidgets import (QApplication, #QDesktopWidget,
                              QFileDialog, QGridLayout, QHBoxLayout,
                              QInputDialog, QLabel, QMenu, QMessageBox,
                              QPushButton, QVBoxLayout, QWidget)
 
-from foo.adb.adbCtrl import Cmd
+from foo.adb.adbCtrl import Cmd, someone
 from foo.arknight.Battle import BattleLoop
 from foo.arknight.credit import Credit
 from foo.arknight.Schedule import BattleSchedule
@@ -32,10 +32,14 @@ from foo.pictureR.spoils import spoilsCheck
 from common import user_data, simulator_data, config_path, theme
 from common2 import adb
 
+@Slot(str)
+def test_trigger(text):
+    print(text)
+    print('test success')
 
 class App(QWidget):
-    exitBeforeShutdown = pyqtSignal()
-    startBtnPressed = pyqtSignal(str)
+    exitBeforeShutdown = Signal()
+    startBtnPressed = Signal(str)
     def __init__(self, app):
         super(App, self).__init__()
         self.app = app
@@ -50,9 +54,9 @@ class App(QWidget):
         self.totalWidth = 0
         self.totalHeight = 0
         tempScreenList = []
-        for i in range(QDesktopWidget().screenCount()):
-            tempScreenList.append(QDesktopWidget().availableGeometry(i))
-        self.screen = Screen(tempScreenList)
+        #for i in range(QDesktopWidget().screenCount()):
+        #    tempScreenList.append(QDesktopWidget().availableGeometry(i))
+        #self.screen = Screen(tempScreenList)
 
         self.initVar()
         self.initNormalPicRes()
@@ -70,7 +74,8 @@ class App(QWidget):
         self.show()
 
     def getRealSize(self, size):
-        rate = self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
+        return size
+        '''rate = self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
         if rate < 1.1:
             rate = 1.0
         elif rate < 1.4:
@@ -80,7 +85,7 @@ class App(QWidget):
         else:
             rate = 2
         
-        return int(size * rate)
+        return int(size * rate)'''
     
     def resizeUI(self, windowChangedScreen):
         if windowChangedScreen == self:
@@ -106,7 +111,7 @@ class App(QWidget):
 
         self.resize(self.getRealSize(420), self.getRealSize(150))
 
-        self.line = QAction()
+        self.line = QAction(self)
         self.line.setSeparator(True)
 
         self.setWindowFlag(Qt.FramelessWindowHint) #隐藏边框
@@ -597,15 +602,15 @@ class App(QWidget):
         self.rateMonitor.addWidget(self.themeEditor)
 
         adb.changeSimulator(user_data)
-        adb.adbErr.connect(self.stop)
-        adb.adbNotice.connect(self.noticeFromOtherWidget)
+        #adb.adbErr.connect(self.stop)
+        #adb.adbNotice.connect(self.noticeFromOtherWidget)
 
         self.battle = BattleLoop(self.cwd, self.ico)
-        self.battle.noBootySignal.connect(self.battleWarning)
-        self.battle.errorSignal.connect(self.errorDetect)
+        #self.battle.noBootySignal.connect(self.battleWarning)
+        #self.battle.errorSignal.connect(self.errorDetect)
         
         self.schedule = BattleSchedule(self.cwd, self.ico) #处于测试
-        self.schedule.errorSignal.connect(self.errorDetect)
+        #self.schedule.errorSignal.connect(self.errorDetect)
         
         self.task = Task(self.cwd, self.ico, self.listGoTo)
         self.credit = Credit(self.cwd, self.listGoTo)
@@ -678,8 +683,9 @@ class App(QWidget):
 
     def center(self):
         #显示到屏幕中心
-        cp = QDesktopWidget().availableGeometry().center()
-        self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
+        pass
+        #cp = (int(QScreen.size().width()/2), int(QScreen.size().height()/2))
+        #self.move(int(cp[0] - self.width()/2), int(cp[1] - self.height()/2))
 
 
     def mousePressEvent(self, event):
@@ -991,6 +997,7 @@ class App(QWidget):
         else:
             self.stop(isExit = True)
 
+    @Slot()
     def stop(self, isErrStop = False, isExit = False):
         self.doctorFlag = False
         if self.publicCall != None:

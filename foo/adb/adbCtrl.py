@@ -7,13 +7,14 @@ from re import match as rematch
 from re import compile as recompile
 from subprocess import PIPE, Popen, call
 from time import sleep
-from PyQt5.QtWidgets import QFileDialog
+from xmlrpc.client import boolean
+from PySide6.QtWidgets import QFileDialog
 
 from cv2 import imdecode, merge
 from foo.win import toast
 from numpy import frombuffer, zeros, ones
-from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtWidgets import QMessageBox, QWidget
+from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QMessageBox, QWidget
 
 syspath.append(getcwd())
 from foo.pictureR import pictureFind
@@ -92,10 +93,17 @@ class Cmd:
     def shutdown(self, time = 60):
         self.run(f'shutdown /s /t {time}')
         
+class Communicate(QObject):                                                 
+ # create a new signal on the fly and name it 'speak'                       
+    speak = Signal(str)  
+
+
+someone = Communicate()  
 
 class Adb(QObject):
-    adbErr = pyqtSignal(bool)
-    adbNotice = pyqtSignal(str)
+    on_error_exist = Signal(str)
+    adbErr = Signal(bool)
+    adbNotice = Signal(str)
     def __init__(self, simulator_data):
         super(Adb, self).__init__()
         self.cmd = Cmd('./bin/adb')

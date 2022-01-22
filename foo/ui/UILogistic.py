@@ -1,8 +1,8 @@
-from PyQt5.QtWidgets import (QComboBox, QDesktopWidget,
+from PySide6.QtWidgets import (QComboBox, #QDesktopWidget,
                              QGridLayout, QLabel, QLineEdit,
                              QListView, QPushButton, QWidget, QTextBrowser)
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QIcon
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QIcon
 from sys import path
 from os import getcwd, startfile, path as osPath
 from json import dumps
@@ -13,7 +13,7 @@ from foo.ui.screen import ScreenRateMonitor
 from common import user_data, theme
 
 class UILogistic(QWidget):
-    configUpdate = pyqtSignal()
+    configUpdate = Signal()
     def __init__(self,  rulePath, app, ico = ''):
         super(UILogistic, self).__init__()
         self.app = app
@@ -145,7 +145,7 @@ class UILogistic(QWidget):
         self.setDefaultState()
 
     def resizeUI(self):
-        rate = self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
+        rate = 1#self.app.screens()[QDesktopWidget().screenNumber(self)].logicalDotsPerInch()/96
         if rate < 1.1:
             rate = 1.0
         elif rate < 1.4:

@@ -3,12 +3,12 @@ from foo.configParser.tomlParser import configToml, simulatorToml, scheduleToml
 from foo.ui.theme import Theme
 import sys
 from time import strftime, localtime
-from PyQt5.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import QObject, Signal
 from os import remove
 
 def beforeLaunch():
-    sys.stdout = EmittingStr(sgnConsole=logWrite)
-    sys.stderr = EmittingStr(sgnConsole=logWrite)
+    sys.stdout = EmittingStr()
+    sys.stderr = EmittingStr()
 
 def logWrite(text):
     try:
@@ -20,7 +20,7 @@ def logWrite(text):
             log.write(text)
 
 class EmittingStr(QObject):
-    sgnConsole = pyqtSignal(str)
+    sgnConsole = Signal(str)
 
     def write(self, text):
         if text != '\n':

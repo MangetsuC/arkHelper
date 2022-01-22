@@ -1,7 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QSplashScreen, QWidget, QPushButton, QGridLayout, QTextBrowser, QApplication
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PySide6.QtWidgets import QSplashScreen, QWidget, QPushButton, QGridLayout, QTextBrowser, QApplication
+from PySide6.QtGui import QPixmap, QIcon
+from PySide6.QtCore import Qt, QThread, Signal
 from os import getcwd, path, remove, rename
 from time import sleep
 import requests
@@ -79,10 +79,10 @@ class BlackBoard(QWidget):
         #self.show()
 
 class AfterInit(QThread):
-    boardNeedShow = pyqtSignal()
-    reloadPcModule = pyqtSignal()
-    logisticReady = pyqtSignal()
-    widgetShow = pyqtSignal(int) #0:公告按钮 1:升级按钮
+    boardNeedShow = Signal()
+    reloadPcModule = Signal()
+    logisticReady = Signal()
+    widgetShow = Signal(int) #0:公告按钮 1:升级按钮
     def __init__(self, app, cwd):
         super(AfterInit, self).__init__()
         self.app = app
