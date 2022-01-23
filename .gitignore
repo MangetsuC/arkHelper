@@ -150,3 +150,4 @@ simulator.toml
 schedule.toml
 data.json
 logisticRule.ahrule
+*.7z
