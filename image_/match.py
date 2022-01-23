@@ -69,7 +69,7 @@ def find_template(im_source, im_search, threshold=0.5, rgb=False, bgremove=True)
         confidence=max_val)
     return result
 
-def match_pic(source, target, rgb=False, bgremove=True):
+def match_pic(source, target, bgremove=True, rgb=False):
     #imshow('s_gray', source)
     #waitKey(0)
     temp = find_template(source, target, 0.9, rgb, bgremove)
@@ -80,9 +80,9 @@ def match_pic(source, target, rgb=False, bgremove=True):
     return ans
 
 if __name__ == '__main__':
-    from user_res import in_battle, finish_battle
-    picname = 'MuMu20220123140634'
-    temp = match_pic(load_res(f'C:\\Users\\deman\\Documents\\MuMu共享文件夹\\{picname}.png'), finish_battle)
+    from user_res import in_battle, finish_battle, start_a
+    picname = 'MuMu20220123195317'
+    temp = match_pic(load_res(f'C:\\Users\\deman\\Documents\\MuMu共享文件夹\\{picname}.png'), start_a[0])
     print(temp)
     pass
 
