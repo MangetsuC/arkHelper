@@ -2,13 +2,13 @@ from cv2 import (COLOR_BGR2GRAY, MORPH_RECT, THRESH_BINARY, THRESH_BINARY_INV,
                  TM_CCOEFF_NORMED, Canny, connectedComponentsWithStats, copyTo,
                  cvtColor, dilate, erode, fillConvexPoly,
                  getStructuringElement, imdecode, imshow, matchTemplate,
-                 minMaxLoc, resize)
+                 minMaxLoc, resize, mixChannels)
 from cv2 import split as cvsplit
 from cv2 import threshold, waitKey
 from numpy import array, bitwise_and, fromfile, zeros
 
 
-def binary_rgb(img, rthres, gthres, bthres):
+def binary_rgb(img, rthres, gthres, bthres, is_single_channel = True):
     b, g, r, _ = cvsplit(img)
     _, binaryb = threshold(b, bthres[0], 255, THRESH_BINARY)
     _, binaryb2 = threshold(b, bthres[1], 255, THRESH_BINARY_INV)
@@ -25,8 +25,12 @@ def binary_rgb(img, rthres, gthres, bthres):
     binaryg = bitwise_and(binaryg, binaryg2)
     binary = bitwise_and(binaryb, binaryr)
     binary = bitwise_and(binary, binaryg)
-
-    return binary
+    if is_single_channel:
+        return binary
+    else:
+        temp = zeros(shape = img.shape, dtype = 'uint8')
+        mixChannels([binary], [temp], [0,0,0,1,0,2]) #转为多通道
+        return temp
 
 def findColorBlock(img, thresholds):
     binary = binary_rgb(img, thresholds[0], thresholds[1], thresholds[2])

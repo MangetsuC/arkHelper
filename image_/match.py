@@ -9,6 +9,7 @@ from numpy import array, fromfile, zeros, ndarray, sqrt, mat, power, random, sha
 from sys import path as spath
 
 spath.append(getcwd())
+from foo.pictureR.colorDetect import binary_rgb
 
 def load_res(resPath):
     return imdecode(fromfile(resPath, dtype="uint8"),-1)
@@ -50,9 +51,9 @@ def find_template(im_source, im_search, threshold=0.5, rgb=False, bgremove=True)
         if bgremove:
             s_gray = Canny(s_gray, 100, 200)
             i_gray = Canny(i_gray, 100, 200)
-            #imshow('s_gray', s_gray)
-            #imshow('i_gray', i_gray)
-            #waitKey(0)
+        '''imshow('s_gray', s_gray)
+        imshow('i_gray', i_gray)
+        waitKey(0)'''
 
         res = matchTemplate(i_gray, s_gray, method)
     w, h = im_search.shape[1], im_search.shape[0]
@@ -69,20 +70,26 @@ def find_template(im_source, im_search, threshold=0.5, rgb=False, bgremove=True)
         confidence=max_val)
     return result
 
-def match_pic(source, target, bgremove=True, rgb=False):
-    #imshow('s_gray', source)
-    #waitKey(0)
-    temp = find_template(source, target, 0.9, rgb, bgremove)
+def match_pic(source, target:dict):
+    target_pattern = target.get('pattern', None)
+    bgremove = target.get('bgremove', True)
+    rgb = target.get('rgb', False)
+    binary = target.get('thresholds', [])
+
+    if binary != []:
+        source = binary_rgb(source, binary[0], binary[1], binary[2], is_single_channel = False)
+    temp = find_template(source, target_pattern, 0.8, rgb, bgremove)
     if temp == None:
-        ans = (-1, -1)
+        ans = [-1, -1]
     else:
-        ans = (int(temp['result'][0]), int(temp['result'][1]))
+        ans = [int(temp['result'][0]), int(temp['result'][1])]
     return ans
 
 if __name__ == '__main__':
-    from user_res import in_battle, finish_battle, start_a
-    picname = 'MuMu20220123195317'
-    temp = match_pic(load_res(f'C:\\Users\\deman\\Documents\\MuMu共享文件夹\\{picname}.png'), start_a[0])
+    from user_res import in_battle, finish_battle, start_a, sanity_lack
+    picname = '0'
+    temp = match_pic(load_res(f'C:\\Users\\deman\\Documents\\MuMu共享文件夹\\{picname}.png'), 
+                        sanity_lack)
     print(temp)
     pass
 
