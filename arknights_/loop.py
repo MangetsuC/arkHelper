@@ -5,13 +5,13 @@ spath.append(getcwd())
 
 from time import sleep
 
-from user_res import in_battle, finish_battle, start_a, start_b, auto_on, auto_switch, btn_back, sanity_lack
+from user_res import R
 from common2 import adb
 from image_.match import match_pic
 
 adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
 
-res = [in_battle, finish_battle, start_a, start_b, sanity_lack]
+res = [R.in_battle, R.finish_battle, R.start_a, R.start_b, R.sanity_lack]
 
 def start_once():
     is_auto_on = True
@@ -26,14 +26,14 @@ def start_once():
                     case 'start_a':
                         count_in_battle = 0
                         if not is_auto_on:
-                            pos_auto_switch = match_pic(capture, auto_switch)
+                            pos_auto_switch = match_pic(capture, R.auto_switch)
                             adb.click(pos_auto_switch[0], pos_auto_switch[1])
                             is_auto_on = True
                     case 'start_b':
                         count_in_battle = 0
-                        is_auto_on = True if match_pic(capture, auto_on)[0] >= 0 else False
+                        is_auto_on = True if match_pic(capture, R.auto_on)[0] >= 0 else False
                         if not is_auto_on:
-                            pos_btn_back = match_pic(capture, btn_back)
+                            pos_btn_back = match_pic(capture, R.btn_back)
                             adb.click(pos_btn_back[0], pos_btn_back[1])
                             continue
                     case 'in_battle':
@@ -59,7 +59,7 @@ def start_once():
 def start_loop():
     while True:
         pos_ = start_once()
-        while match_pic(adb.getScreen_std(), start_a)[0] < 0:
+        while match_pic(adb.getScreen_std(), R.start_a)[0] < 0:
             adb.click(pos_[0], pos_[1])
         if pos_[2] < 0:
             break

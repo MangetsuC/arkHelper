@@ -29,20 +29,26 @@ def load_user_res(res_name, extra_option = dict()):
     
     return {**res, **options}
 
-btn_back = load_user_res('btn_back')
+class RES:
+    '用户资源'
+    def __init__(self):
+        self.init()
 
-start_a = load_user_res('start_a', dict(bgremove = False))
-start_b = load_user_res('start_b')
-auto_on = load_user_res('auto_on')
-auto_switch = load_user_res('auto_switch')
-finish_battle = load_user_res('finish_battle')
-in_battle = load_user_res('in_battle')
-sanity_lack = load_user_res('sanity_lack', dict(thresholds = [(254, 255), (254, 255), (254, 255)],
-                                                bgremove = False))
-sanity_lack['pattern'] = binary_rgb(sanity_lack['pattern'], (254, 255), (254, 255), (254, 255), 
-                                is_single_channel = False) #提取sanity_lack图样中的白色部分
+    def init(self):
+        self.btn_back = load_user_res('btn_back')
 
+        self.start_a = load_user_res('start_a', dict(bgremove = False))
+        self.start_b = load_user_res('start_b')
+        self.auto_on = load_user_res('auto_on')
+        self.auto_switch = load_user_res('auto_switch')
+        self.finish_battle = load_user_res('finish_battle')
+        self.in_battle = load_user_res('in_battle')
+        self.sanity_lack = load_user_res('sanity_lack', dict(thresholds = [(254, 255), (254, 255), (254, 255)],
+                                                        bgremove = False))
+        self.sanity_lack['pattern'] = binary_rgb(self.sanity_lack['pattern'], (254, 255), (254, 255), (254, 255), 
+                                        is_single_channel = False) #提取sanity_lack图样中的白色部分
 
+R = RES()
 
 
 

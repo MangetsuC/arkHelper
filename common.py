@@ -28,7 +28,7 @@ class EmittingStr(QObject):
             text = '[{logTime}]{logText}'.format(logTime = timeNow, logText = str(text))
         self.sgnConsole.emit(text)
 
-beforeLaunch()
+#beforeLaunch()
 config_path = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper' #如果非开发模式则创建配置文件目录
 if not (path.exists('./config.ini') or path.exists('./config.toml')):
     #正常用户模式

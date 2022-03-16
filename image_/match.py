@@ -86,10 +86,10 @@ def match_pic(source, target:dict):
     return ans
 
 if __name__ == '__main__':
-    from user_res import in_battle, finish_battle, start_a, sanity_lack
+    from user_res import R
     picname = '0'
     temp = match_pic(load_res(f'C:\\Users\\deman\\Documents\\MuMu共享文件夹\\{picname}.png'), 
-                        sanity_lack)
+                        R.sanity_lack)
     print(temp)
     pass
 
