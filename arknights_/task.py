@@ -85,7 +85,7 @@ def submit_task(column_chosen):
     while True:
         capture = adb.getScreen_std()
         temp = find_color_block(capture, [[210,220],[210,220],[210,220]])
-        temp.sort(key = lambda x:(x['x'], x['y']))
+        temp.sort(key = lambda x:(x['y'], x['x']))
         if temp != []:
             temp = temp[0]
             if temp['x'] < column_chosen['border']['left'] and temp['y'] < column_chosen['border']['bottom']:
