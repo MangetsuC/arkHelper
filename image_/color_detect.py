@@ -44,8 +44,8 @@ def find_color_block(img, thresholds, eroded_iter = 1, dilated_iter = 10):
     kernel = getStructuringElement(MORPH_RECT,(3, 3))
     eroded = erode(binary, kernel, iterations = eroded_iter)        #腐蚀图像
     dilated = dilate(eroded, kernel, iterations = dilated_iter)      #膨胀图像
-    imshow('dilated', dilated)
-    waitKey(0)
+    #imshow('dilated', dilated)
+    #waitKey(0)
 
 
     temp = list(connectedComponentsWithStats(dilated)[2])

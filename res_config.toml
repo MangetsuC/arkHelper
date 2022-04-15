@@ -1,4 +1,7 @@
-ress = [ "auto_on", "auto_switch", "btn_back", "finish_battle", "in_battle", "sanity_lack", "start_a", "start_b",]
+ress = [ "auto_on", "auto_switch", "btn_back", "finish_battle", "in_battle", "sanity_lack", "start_a", "start_b", "visit",]
+
+[visit]
+readme = "访问基建按钮的标志"
 
 [auto_on]
 readme = "判断自动作战已启用的标志"

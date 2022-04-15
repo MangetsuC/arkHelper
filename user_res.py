@@ -63,7 +63,7 @@ class RES:
         self.init()
 
     def init(self):
-        self.test = load_user_res('test') #指代测试的特定图片
+        #self.test = load_user_res('test') #指代测试的特定图片
 
         for i in res_config.get_res_list():
             self.__setattr__(i, load_user_res(i, res_config.get_res_config(i, 'common')))
