@@ -1,5 +1,5 @@
 from os import getcwd, getlogin, path, mkdir
-from foo.configParser.tomlParser import configToml, simulatorToml, scheduleToml
+from configParser.tomlParser import configToml, simulatorToml, scheduleToml, res_config
 from foo.ui.theme import Theme
 import sys
 from time import strftime, localtime
@@ -45,6 +45,8 @@ else:
 user_data = configToml()
 simulator_data = simulatorToml()
 schedule_data = scheduleToml()
+
+res_config = res_config()
 
 theme = Theme(user_data, True)
 

@@ -10,10 +10,7 @@ from sys import path as spath
 
 spath.append(getcwd())
 from foo.pictureR.colorDetect import binary_rgb
-
-def load_res(resPath):
-    return imdecode(fromfile(resPath, dtype="uint8"),-1)
-
+from image_.image_io import load_res
 
 def find_template(im_source, im_search, threshold=0.5, rgb=False, bgremove=True):
     '''
@@ -75,14 +72,20 @@ def match_pic(source, target:dict):
     bgremove = target.get('bgremove', True)
     rgb = target.get('rgb', False)
     binary = target.get('thresholds', [])
+    confidence = target.get('confidence', 0.8)
 
     if binary != []:
         source = binary_rgb(source, binary[0], binary[1], binary[2], is_single_channel = False)
-    temp = find_template(source, target_pattern, 0.8, rgb, bgremove)
+    
+    #imshow('source', source)
+    #waitKey(0)
+
+    temp = find_template(source, target_pattern, confidence, rgb, bgremove)
     if temp == None:
-        ans = [-1, -1]
+        ans = [-1, -1, {}]
     else:
-        ans = [int(temp['result'][0]), int(temp['result'][1])]
+        ans = [int(temp['result'][0]), int(temp['result'][1]), 
+                dict(rectangle = [temp['rectangle'][0], temp['rectangle'][3]])]
     return ans
 
 if __name__ == '__main__':

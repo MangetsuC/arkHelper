@@ -1,0 +1,38 @@
+ress = [ "auto_on", "auto_switch", "btn_back", "finish_battle", "in_battle", "sanity_lack", "start_a", "start_b",]
+
+[auto_on]
+readme = "判断自动作战已启用的标志"
+
+[auto_switch]
+readme = "自动作战开关的标志"
+
+[btn_back]
+readme = "返回按钮的标志"
+
+[finish_battle]
+readme = "作战结束的标志"
+
+[in_battle]
+readme = "正在作战中的标志"
+
+[sanity_lack]
+readme = "出现恢复理智窗口的标志"
+
+[start_a]
+readme = "第一个开始行动的标志"
+
+[start_b]
+readme = "第二个开始行动的标志"
+
+[finish_battle.common]
+thresholds = [ [ 254, 255,], [ 254, 255,], [ 254, 255,],]
+
+[sanity_lack.common]
+bgremove = false
+thresholds = [ [ 254, 255,], [ 254, 255,], [ 254, 255,],]
+
+[sanity_lack.self]
+thresholds = [ [ 254, 255,], [ 254, 255,], [ 254, 255,],]
+
+[start_a.common]
+bgremove = false

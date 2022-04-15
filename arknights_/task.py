@@ -1,4 +1,3 @@
-from gettext import find
 from sys import path as spath
 from os import getcwd
 from time import sleep

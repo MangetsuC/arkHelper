@@ -5,7 +5,7 @@ from toml import dumps, loads
 
 syspath.append(getcwd())
 
-from foo.configParser import iniParser, jsonParser
+from configParser import iniParser, jsonParser
 
 
 def defaultConfig():

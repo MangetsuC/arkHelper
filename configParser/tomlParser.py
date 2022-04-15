@@ -5,7 +5,7 @@ from toml import dumps
 
 syspath.append(getcwd())
 
-from foo.configParser import tomlBase
+from configParser import tomlBase
 
 
 class Toml:
@@ -86,7 +86,27 @@ class scheduleToml(Toml):
     def __init__(self):
         super(scheduleToml, self).__init__('schedule.toml', tomlBase.defaultSchedule(), tomlBase.json2toml())
 
+class res_config(Toml):
+    def __init__(self):
+        super().__init__('res_config.toml', None, None)
+
+    def get_res_config(self, key, part):
+        try:
+            ans = self.get('{}.{}'.format(key, part))
+        except:
+            ans = dict()
+
+        return ans
+
+    def get_res_list(self):
+        return list(set(self.get('ress')))
+
+    def get_res_readme(self, key):
+        return self.get(f'{key}.readme')
+
+
 if __name__ == '__main__':
-    test1 = configToml()
-    test2 = simulatorToml()
+    test1 = res_config()
+    #print(test1.get_res_config('sanity_lack', 'a'))
+    print(test1.get_res_list())
 
