@@ -1,7 +1,7 @@
 import sys
 from time import localtime, strftime, time
 
-from PySide6.QtCore import QObject, Qt, Signal
+from PySide6.QtCore import QObject, Qt, Signal, SIGNAL
 from PySide6.QtGui import QIcon, QTextCursor
 from PySide6.QtWidgets import QDialog, QGridLayout, QTextBrowser, QWidget#, QDesktopWidget
 
@@ -23,8 +23,10 @@ class Console(QWidget):
         self.grid.addWidget(self.textBrowser, 0, 0, 1, 1)
         self.setLayout(self.grid)
         if ver != "DEV":
-            sys.stdout = EmittingStr(sgnConsole=self.outputWritten)
-            sys.stderr = EmittingStr(sgnConsole=self.outputWritten)
+            self.stream = EmittingStr()
+            self.stream.sgnConsole.connect(self.outputWritten)
+            sys.stdout = self.stream
+            sys.stderr = self.stream
         else:
             self.textBrowser.setText('In DEV')
             sys.stdout = sys.__stdout__
