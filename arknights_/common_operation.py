@@ -12,20 +12,26 @@ from common2 import adb
 from image_.match import match_pic
 from image_.color_detect import find_color_block
 
-adb.ip = '127.0.0.1:7555'
+#adb.ip = '127.0.0.1:7555'
 
 def goto_mainpage():
     capture = adb.getScreen_std()
     task_pos = match_pic(capture, R.task)
     if task_pos[0] < 0:
-        btn_home_pos = match_pic(capture, R.btn_home)
-        if btn_home_pos[0] > -1:
-            adb.click(btn_home_pos[0], btn_home_pos[1])
-
+        while True:
             capture = adb.getScreen_std()
-            mainpage_pos = match_pic(capture, R.mainpage)
-            if mainpage_pos[0] > -1:
-                adb.click(mainpage_pos[0], mainpage_pos[1])
+            btn_home_pos = match_pic(capture, R.btn_home)
+            if btn_home_pos[0] > -1:
+                break
+        if btn_home_pos[0] > -1:
+            while True:
+                adb.click(btn_home_pos[0], btn_home_pos[1])
+
+                capture = adb.getScreen_std()
+                mainpage_pos = match_pic(capture, R.mainpage)
+                if mainpage_pos[0] > -1:
+                    adb.click(mainpage_pos[0], mainpage_pos[1])
+                    break
 
         while True:
             capture = adb.getScreen_std()
@@ -56,7 +62,7 @@ def enter_friends():
 
 
 if __name__ == '__main__':
-    enter_friends()
+    goto_mainpage()
         
 
 

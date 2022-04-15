@@ -39,6 +39,9 @@ readme = "第一个开始行动的标志"
 [start_b]
 readme = "第二个开始行动的标志"
 
+[btn_home.common]
+bgremove = false
+
 [finish_battle.common]
 bgremove = false
 rgb = true
