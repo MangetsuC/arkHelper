@@ -9,7 +9,7 @@ from common2 import adb
 from image_.match import match_pic
 from image_.color_detect import find_color_block
 
-adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
+#adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
 
 def find_tab_chosen():
     capture = adb.getScreen_std()
@@ -49,14 +49,16 @@ def visit_next():
     else:
         return False
 
-
-if __name__ == '__main__':
+def main():
     tab_chosen = find_tab_chosen()
     target_btn = get_btn_pos(tab_chosen)
     while not (find_tab_chosen()['border']['top'] < target_btn['y'] < find_tab_chosen()['border']['bottom']):
         adb.click(target_btn['x'], target_btn['y'])
     visit()
     while visit_next(): pass
+
+if __name__ == '__main__':
+    main()
 
 
 

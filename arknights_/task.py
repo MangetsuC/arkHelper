@@ -9,9 +9,9 @@ from common2 import adb
 from image_.match import match_pic
 from image_.color_detect import find_color_block
 
-adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
-adb.screenX = 1280
-adb.screenY = 720
+#adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
+#adb.screenX = 1280
+#adb.screenY = 720
 
 def find_column_chosen():
     capture = adb.getScreen_std()
@@ -92,8 +92,7 @@ def submit_task(column_chosen):
                 return 
         adb.click(ans['x'], ans['y'])
 
-
-if __name__ == '__main__':
+def main():
     column_chosen = find_column_chosen()
     task_pos = get_btn_pos(column_chosen)
     
@@ -102,6 +101,9 @@ if __name__ == '__main__':
 
     column_switch(task_pos, 'weekly')
     submit_task(column_chosen)
+
+if __name__ == '__main__':
+    main()
     
     
     

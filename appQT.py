@@ -21,7 +21,7 @@ from foo.arknight.recruit import Recruit
 from foo.pictureR import pictureFind
 from foo.ui.console import Console
 from foo.ui.launch import AfterInit, BlackBoard, Launch
-from foo.ui.screen import Screen, ScreenRateMonitor
+#from foo.ui.screen import Screen, ScreenRateMonitor
 from foo.ui.UItheme import ThemeEditor
 from foo.ui.UILogistic import UILogistic
 from foo.ui.UIPublicCall import UIPublicCall
@@ -29,6 +29,10 @@ from foo.ui.UIschedule import JsonEdit
 from foo.ui.messageBox import AMessageBox
 from foo.win.exitThread import forceThreadStop
 from foo.pictureR.spoils import spoilsCheck
+
+from arknights_ import loop, task, visit, common_operation
+from gui.res_manager import Res_manager
+
 from common import user_data, simulator_data, config_path, theme
 from common2 import adb
 
@@ -57,6 +61,7 @@ class App(QWidget):
         #for i in range(QDesktopWidget().screenCount()):
         #    tempScreenList.append(QDesktopWidget().availableGeometry(i))
         #self.screen = Screen(tempScreenList)
+        self.res_manager = Res_manager()
 
         self.initVar()
         self.initNormalPicRes()
@@ -71,7 +76,13 @@ class App(QWidget):
 
         self.isRun = False
         self.center()
+        self.hide_unable_function()
         self.show()
+
+    def hide_unable_function(self):
+        self.tbSchedule.hide()
+        self.tbAutoPC.hide()
+        self.tbLogistic.hide()
 
     def getRealSize(self, size):
         return size
@@ -179,6 +190,10 @@ class App(QWidget):
         self.tbAutoPC.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
         self.tbAutoPC.clicked[bool].connect(self.functionSel)
         self.tbAutoPC.setToolTip('自动进行公开招募，在右键菜单中进行配置')
+
+        self.btn_res_manager = QPushButton('资源管理器!必须先设置资源!', self)
+        self.btn_res_manager.setMinimumSize(self.getRealSize(235), self.getRealSize(40))
+        self.btn_res_manager.clicked.connect(self.res_manager.show)
 
 
         self.actRecruitSet = QAction('配置自动公招')
@@ -317,7 +332,7 @@ class App(QWidget):
         self.grid.addWidget(self.tbLogistic, 1, 1, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbSchedule, 2, 1, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbAutoPC, 1, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btn_res_manager, 1, 1, 1, 3, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
         #self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbCredit, 0, 3, 1, 1, alignment=Qt.AlignCenter)
@@ -596,10 +611,11 @@ class App(QWidget):
 
     
     def initClass(self):
-        self.rateMonitor = ScreenRateMonitor([self])
+        #self.rateMonitor = ScreenRateMonitor([self])
 
         self.themeEditor = ThemeEditor(self.app, ico = self.ico)
-        self.rateMonitor.addWidget(self.themeEditor)
+        #self.rateMonitor.addWidget(self.themeEditor)
+
 
         adb.changeSimulator(user_data)
         #adb.adbErr.connect(self.stop)
@@ -634,7 +650,7 @@ class App(QWidget):
         
         
         self.schJsonEditer = JsonEdit(self.app, self.ico)
-        self.rateMonitor.addWidget(self.schJsonEditer)
+        #self.rateMonitor.addWidget(self.schJsonEditer)
 
         self.board = BlackBoard()
 
@@ -690,7 +706,7 @@ class App(QWidget):
 
     def mousePressEvent(self, event):
         self.moveFlag = False
-        self.mousePos = event.globalPos() - self.pos() #获取鼠标相对窗口的位置
+        self.mousePos = event.globalPosition().toPoint() - self.pos() #获取鼠标相对窗口的位置
         if event.button() == Qt.LeftButton:
             if self.mousePos.y() < self.btnStartAndStop.y(): #判断是否在可移动区域
                 self.moveFlag = True
@@ -698,17 +714,17 @@ class App(QWidget):
             
     def mouseMoveEvent(self, QMouseEvent):
         if Qt.LeftButton and self.moveFlag:  
-            self.move(QMouseEvent.globalPos() - self.mousePos) #更改窗口位置
+            self.move(QMouseEvent.globalPosition().toPoint() - self.mousePos) #更改窗口位置
             QMouseEvent.accept()
             
     def mouseReleaseEvent(self, QMouseEvent):
         #停止窗口移动
         if Qt.LeftButton and self.moveFlag:
             self.moveFlag = False
-            newPos = self.screen.checkWidget(QMouseEvent.globalPos().x() - self.mousePos.x(),
-                                             QMouseEvent.globalPos().y() - self.mousePos.y(), 
-                                             self.width(), self.height())
-            self.move(newPos[0], newPos[1])
+            #newPos = self.screen.checkWidget(QMouseEvent.globalPos().x() - self.mousePos.x(),
+            #                                 QMouseEvent.globalPos().y() - self.mousePos.y(), 
+            #                                 self.width(), self.height())
+            #self.move(newPos[0], newPos[1])
             #self.resizeUI()
     
     def functionSetMeun(self):
@@ -915,7 +931,7 @@ class App(QWidget):
 
         #退出两个窗口的放大倍率检测线程
         #self.schJsonEditer.rateMonitor.stop()
-        self.rateMonitor.stop()
+        #self.rateMonitor.stop()
 
         tempCmd = Cmd(getcwd()) #退出ocr
         pids = tempCmd.getTaskList('ocrForArkhelper.exe')
@@ -978,7 +994,22 @@ class App(QWidget):
                 self.startUpdate()
 
     def start(self):
-        self.doctorFlag = self.battle.connect()
+        adb.connect()
+        if self.battleFlag:
+            loop.main()
+            common_operation.goto_mainpage()
+
+        if self.creditFlag:
+            common_operation.enter_friends()
+            visit.main()
+            common_operation.goto_mainpage()
+
+        if self.taskFlag:
+            common_operation.enter_task()
+            task.main()
+            common_operation.goto_mainpage()
+
+        '''self.doctorFlag = self.battle.connect()
         if self.doctorFlag and self.scheduleFlag:
             self.schedule.run(self.doctorFlag)
         if self.doctorFlag and self.battleFlag:
@@ -990,7 +1021,7 @@ class App(QWidget):
         if self.doctorFlag and self.creditFlag:
             self.credit.run(self.doctorFlag)
         if self.doctorFlag and self.taskFlag:
-            self.task.run(self.doctorFlag)
+            self.task.run(self.doctorFlag)'''
         if self.shutdownFlag and self.doctorFlag:
             adb.cmd.shutdown(time=120)
             self.exitBeforeShutdown.emit()
@@ -1035,11 +1066,14 @@ class App(QWidget):
             forceThreadStop(self.thRun)
             self.forceStop = True
             print('收到用户指令强制终止，可能存在部分未释放的资源')
+            self.btnMainClicked = not self.btnMainClicked
+            self.btnStartAndStop.setText('启动虚拟博士')
         else:
             self.btnMainClicked = not self.btnMainClicked
             if self.btnMainClicked:
                 self.forceStop = False
-                self.btnStartAndStop.setText('停止虚拟博士')
+                self.btnStartAndStop.setText('停止')
+                #self.btnStartAndStop.setText('停止虚拟博士')
                 self.thRun = Thread(target=self.start)
                 self.thRun.setDaemon(True)
                 self.thRun.start()
@@ -1078,7 +1112,7 @@ class App(QWidget):
 
         self.logisticFlag = user_data.get('logistic.default')
         self.tbLogistic.setChecked(self.logisticFlag)
-        self.rateMonitor.addWidget(self.logistic)
+        #self.rateMonitor.addWidget(self.logistic)
 
     def widgetShow(self, widgetNo):
         if widgetNo == 0:
@@ -1150,5 +1184,5 @@ if __name__ == '__main__':
     ex = App(app)
     exLaunch.finish(ex)
     ex.afterInit_Q.start()
-    ex.rateMonitor.start()
-    sys.exit(app.exec_())
+    #ex.rateMonitor.start()
+    sys.exit(app.exec())

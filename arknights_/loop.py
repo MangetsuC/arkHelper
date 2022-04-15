@@ -9,7 +9,7 @@ from user_res import R
 from common2 import adb
 from image_.match import match_pic
 
-adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
+#adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
 
 res = [R.in_battle, R.finish_battle, R.start_a, R.start_b, R.sanity_lack]
 
@@ -64,9 +64,11 @@ def start_loop():
         if pos_[3] < 0:
             break
 
+def main():
+    start_loop()
 
 if __name__ == '__main__':
-    start_loop()
+    main()
 
 
 

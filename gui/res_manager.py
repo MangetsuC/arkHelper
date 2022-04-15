@@ -12,6 +12,7 @@ from common import res_config
 from common2 import adb
 from image_.image_io import del_image, output_image
 from foo.ui.messageBox import AMessageBox
+from user_res import R
 
 adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
 
@@ -27,7 +28,7 @@ class Res_manager(QWidget):
         self.init_ui()
 
 
-        self.show()
+        #self.show()
 
     def init_ui(self):
         self.mainLayout = QVBoxLayout(self)
@@ -174,6 +175,8 @@ class Res_manager(QWidget):
 
         self.advanced_option_editor_common.setText(str(res_config.get_res_config(self.res_selected, 'common')))
         self.advanced_option_editor_self.setText(str(res_config.get_res_config(self.res_selected, 'self')))
+
+        R.init()
         
 
 if __name__ == '__main__':
