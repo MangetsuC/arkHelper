@@ -50,7 +50,7 @@ def start_once():
                 adb.click(pos_[0], pos_[1])
         else:
             if count_in_battle > 0:
-                adb.click(500, 50)
+                adb.click(adb.screenX - 1, 1)
     return pos_ + [1] #返回作战结束的坐标，用于返回开始界面
 
 
@@ -59,7 +59,7 @@ def start_once():
 def start_loop():
     while True:
         pos_ = start_once()
-        while match_pic(adb.getScreen_std(), R.start_a)[0] < 0:
+        while match_pic(adb.getScreen_std(), R.finish_battle)[0] > 0:
             adb.click(pos_[0], pos_[1])
         if pos_[3] < 0:
             break
