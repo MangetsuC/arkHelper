@@ -324,7 +324,8 @@ class App(QWidget):
         self.HBox.addWidget(self.btnMinimize)
         self.HBox.addWidget(self.btnExit)
 
-        self.grid = QGridLayout()
+        self.control_panel_widget = QWidget()
+        self.grid = QGridLayout(self.control_panel_widget)
         self.grid.setVerticalSpacing(5)
         self.grid.setHorizontalSpacing(5)
         
@@ -344,10 +345,65 @@ class App(QWidget):
         #self.grid.addWidget(self.btnUpdateRight, 3, 2, 1, 1, alignment=Qt.AlignCenter)
         #self.grid.addWidget(self.lNotice, 3, 3, 1, 2, alignment=Qt.AlignRight)
 
+        self.ui_adb_connect()
+
         self.topLayout.addLayout(self.HBox)
-        self.topLayout.addLayout(self.grid)
+        self.topLayout.addWidget(self.control_panel_widget)
+        self.topLayout.addWidget(self.connect_widget)
+        self.control_panel_widget.hide()
+        
 
         #self.show()
+
+
+    def ui_adb_connect(self):
+        self.connect_widget = QWidget()
+        self.connect_layout = QGridLayout(self.connect_widget)
+        self.label_chosen_sim = QLabel('当前选择的模拟器为：{}'.format(user_data.get('simulator')))
+        self.label_size = QLabel('分辨率：?*?')
+        self.btn_connect = QPushButton('连接')
+        self.btn_connect.setMinimumSize(75, 40)
+        self.btn_connect.clicked.connect(self.adb_connect)
+        self.label_issucceed = QLabel('状态：尚未连接')
+        self.connect_layout.addWidget(self.label_chosen_sim, 0, 0)
+        self.connect_layout.addWidget(self.label_size, 1, 0)
+        self.connect_layout.addWidget(self.btn_connect, 0, 1)
+        self.connect_layout.addWidget(self.label_issucceed, 1, 1)
+
+        
+        self.label_chosen_sim.setStyleSheet(f'''
+                                    QLabel{{color:{self.theme.getFontColor()};
+                                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
+                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}}
+                                    ''')
+        
+        self.label_size.setStyleSheet(f'''
+                                    QLabel{{color:{self.theme.getFontColor()};
+                                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
+                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}}
+                                    ''')
+        self.btn_connect.setStyleSheet(f'''QPushButton{{border:0px;background:{self.theme.getFgColor()};
+                                        color:{self.theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:15pt;}}
+                                        QPushButton:hover{{border-style:solid;border-width:1px;border-color:{self.theme.getBorderColor()};}}
+                                        QPushButton:pressed{{background:{self.theme.getPressedColor()};font:9pt;}}
+                                        QPushButton:checked{{background:{self.theme.getThemeColor()};color:{self.theme.getCheckedFontColor()}}}
+                                            ''')
+        self.label_issucceed.setStyleSheet(f'''
+                                    QLabel{{color:{self.theme.getFontColor()};
+                                    font-family:"Microsoft YaHei", SimHei, SimSun;font:11pt;
+                                    padding-left:5px; padding-top:0px; padding-bottom:5px;}}
+                                    ''')
+
+    def adb_connect(self):
+        self.label_issucceed.setText('状态：连接中……')
+        QApplication.processEvents()
+        issucceed = adb.connect()
+        if issucceed:
+            self.connect_widget.hide()
+            self.control_panel_widget.show()
+        else:
+            self.label_issucceed.setText('状态：失败')
+
 
     def applyStyleSheet(self):
         self.setStyleSheet(f'''QWidget{{background:{self.theme.getBgColor()}}}
@@ -708,8 +764,8 @@ class App(QWidget):
         self.moveFlag = False
         self.mousePos = event.globalPosition().toPoint() - self.pos() #获取鼠标相对窗口的位置
         if event.button() == Qt.LeftButton:
-            if self.mousePos.y() < self.btnStartAndStop.y(): #判断是否在可移动区域
-                self.moveFlag = True
+            #if self.mousePos.y() < self.btnStartAndStop.y(): #判断是否在可移动区域
+            self.moveFlag = True
             event.accept()
             
     def mouseMoveEvent(self, QMouseEvent):
@@ -912,6 +968,8 @@ class App(QWidget):
         slr = self.sender()
         user_data.change('simulator', slr.key)
 
+        self.label_chosen_sim.setText('当前选择的模拟器为：{}'.format(slr.key))
+
         for each in self.simulators:
             each.setIcon(QIcon(''))
 
@@ -994,7 +1052,7 @@ class App(QWidget):
                 self.startUpdate()
 
     def start(self):
-        adb.connect()
+        #adb.connect()
         if self.battleFlag:
             loop.main()
             common_operation.goto_mainpage()
