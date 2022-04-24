@@ -7,6 +7,17 @@ from cv2 import split as cvsplit
 from cv2 import threshold, waitKey
 from numpy import array, bitwise_and, fromfile, zeros
 
+class Color_Point:
+    def __init__(self, r, g, b) -> None:
+        self.r = r
+        self.g = g
+        self.b = b
+    
+    def __sub__(self, x):
+        return (self.r - x.r)**2 + (self.g - x.g)**2 + (self.b - x.b)**2
+
+    def __str__(self) -> str:
+        return 'r:{} g:{} b:{}'.format(self.r, self.g, self.b)
 
 def binary_rgb(img, rthres, gthres, bthres, is_single_channel = True):
     #imshow('img', img)
@@ -67,6 +78,22 @@ def find_color_block(img, thresholds, eroded_iter = 1, dilated_iter = 10):
                 )
     
     return ans
+
+def get_point_color(img, x, y) -> Color_Point:
+    temp = img[y, x]
+    return Color_Point(temp[2], temp[1], temp[0])
+
+def check_point_color(img, point_color_dict:dict, tolerance_e = 1) -> bool:
+    tolerance_e = tolerance_e ** 2
+    ans = True
+    for key in point_color_dict.keys():
+        pos = key.split('*')
+        if get_point_color(img, int(pos[0]), int(pos[1])) - point_color_dict[key] >= tolerance_e:
+            ans = False
+            break
+    
+    return ans
+
 
 
 
