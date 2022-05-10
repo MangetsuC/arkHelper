@@ -23,27 +23,27 @@ def start_once():
             pos_ = match_pic(capture, i)
             if pos_[0] >= 0:
                 match i['res_name']:
-                    case 'start_a':
+                    case name if 'start_a' in name:
                         count_in_battle = 0
                         if not is_auto_on:
                             pos_auto_switch = match_pic(capture, R.auto_switch)
                             adb.click(pos_auto_switch[0], pos_auto_switch[1])
                             is_auto_on = True
-                    case 'start_b':
+                    case name if 'start_b' in name:
                         count_in_battle = 0
                         is_auto_on = True if match_pic(capture, R.auto_on)[0] >= 0 else False
                         if not is_auto_on:
                             pos_btn_back = match_pic(capture, R.btn_back)
                             adb.click(pos_btn_back[0], pos_btn_back[1])
                             continue
-                    case 'in_battle':
+                    case name if 'in_battle' in name:
                         count_in_battle += 1
                         sleep(1)
                         continue
-                    case 'finish_battle':
+                    case name if 'finish_battle' in name:
                         is_finish = True
                         break
-                    case 'sanity_lack':
+                    case name if 'sanity_lack' in name:
                         return pos_ + [-1]
                     case _:
                         count_in_battle = 0
