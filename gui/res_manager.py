@@ -14,7 +14,7 @@ from image_.image_io import del_image, output_image
 from foo.ui.messageBox import AMessageBox
 from user_res import R
 
-adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
+#adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
 
 
 class Res_manager(QWidget):

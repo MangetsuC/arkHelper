@@ -11,7 +11,6 @@ from xmlrpc.client import boolean
 from PySide6.QtWidgets import QFileDialog
 
 from cv2 import imdecode, merge
-from foo.win import toast
 from numpy import frombuffer, zeros, ones
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QMessageBox, QWidget

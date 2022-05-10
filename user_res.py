@@ -60,15 +60,25 @@ def pattern_pre_treatment(pattern, extra_option = dict()):
 class RES:
     '用户资源'
     def __init__(self):
+        self.first_init = True
         self.init()
 
     def init(self):
         #self.test = load_user_res('test') #指代测试的特定图片
+        if self.first_init:
+            for i in res_config.get_res_list():
+                self.__setattr__(i, load_user_res(i, res_config.get_res_config(i, 'common')))
+                self.__getattribute__(i)['pattern'] = pattern_pre_treatment(self.__getattribute__(i)['pattern'], 
+                                                                            res_config.get_res_config(i, 'self'))
+            self.first_init = False
+        else:
+            for i in res_config.get_res_list():
+                self.__delattr__(i)
 
-        for i in res_config.get_res_list():
-            self.__setattr__(i, load_user_res(i, res_config.get_res_config(i, 'common')))
-            self.__getattribute__(i)['pattern'] = pattern_pre_treatment(self.__getattribute__(i)['pattern'], 
-                                                                        res_config.get_res_config(i, 'self'))
+            for i in res_config.get_res_list():
+                self.__setattr__(i, load_user_res(i, res_config.get_res_config(i, 'common')))
+                self.__getattribute__(i)['pattern'] = pattern_pre_treatment(self.__getattribute__(i)['pattern'], 
+                                                                            res_config.get_res_config(i, 'self'))
 
 R = RES()
 
