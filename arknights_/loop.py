@@ -61,6 +61,8 @@ def start_loop():
         pos_ = start_once()
         while match_pic(adb.getScreen_std(), R.finish_battle)[0] > 0:
             adb.click(pos_[0], pos_[1])
+        while match_pic(adb.getScreen_std(), R.sanity_lack)[0] > 0:
+            adb.click(pos_[0], pos_[1])
         if pos_[3] < 0:
             break
 
