@@ -133,10 +133,6 @@ class Res_manager(QWidget):
         common_options = self.advanced_option_editor_common.toPlainText()
         self_options = self.advanced_option_editor_self.toPlainText()
 
-        if (common_options == '{}' or common_options.strip() == '') and\
-            (self_options == '{}' or self_options.strip() == ''):
-            res_config.delete(f'{self.res_selected}')
-
         if common_options == '{}' or common_options.strip() == '':
             res_config.delete(f'{self.res_selected}.common')
         else:

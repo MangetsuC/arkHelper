@@ -60,7 +60,8 @@ class Toml:
                 break #找不到对应键直接返回
             temp = temp[i]
         else:
-            temp.pop(keys[-1])
+            if keys[-1] in temp.keys():
+                temp.pop(keys[-1])
         self.write()
 
 
