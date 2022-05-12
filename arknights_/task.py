@@ -25,7 +25,7 @@ def find_column_chosen():
 
 def get_btn_pos(column_chosen):
     task_pos = dict(
-                    daliy = [],
+                    daily = [],
                     weekly = [],
     )
 
@@ -71,10 +71,19 @@ def submit_task(column_chosen):
     border_top = column_chosen['border']['bottom']
     capture = adb.getScreen_std()
     
-    temp = find_color_block(capture, [[-1,5],[150,155],[215,225]])
+    temp_orange = find_color_block(capture, [[254,256],[103,105],[0,2]]) #有可提交任务时的小橘点
+    is_task_completed = False
+    for i in temp_orange:
+        if i['y'] < column_chosen['border']['bottom'] and column_chosen['border']['left'] < i['x'] < column_chosen['border']['right']:
+            is_task_completed = True
+            break
+    if not is_task_completed:
+        return
+
+    temp = find_color_block(capture, [[-1,5],[150,155],[215,225]]) #收集全部按钮
     ans = []
     for i in temp:
-        if i['border']['top'] > border_top and not (abs(i['width'] - i['height']) < i['height']/8):
+        if i['border']['top'] > border_top and i['width'] > i['height'] and not (abs(i['width'] - i['height']) < i['height']/8): #下方未完成任务右侧图章也为蓝色
             ans.append(i)
 
     ans.sort(key = lambda x:x['y'])
@@ -82,15 +91,18 @@ def submit_task(column_chosen):
         return 
     ans = ans[0]
     adb.click(ans['x'], ans['y'])
-    while True:
+    for i in range(5):
         capture = adb.getScreen_std()
-        temp = find_color_block(capture, [[210,220],[210,220],[210,220]])
-        temp.sort(key = lambda x:(x['y'], x['x']))
-        if temp != []:
-            temp = temp[0]
-            if temp['x'] < column_chosen['border']['left'] and temp['y'] < column_chosen['border']['bottom']:
-                return 
+        if match_pic(capture, R.tips_icon)[0] > 0: #确定重新回到了任务交付界面
+            return 
+        #temp = find_color_block(capture, [[210,220],[210,220],[210,220]]) #确定重新回到了任务交付界面
+        #temp.sort(key = lambda x:(x['y'], x['x']))
+        #if temp != []:
+        #    temp = temp[0]
+        #    if temp['x'] < column_chosen['border']['left'] and temp['y'] < column_chosen['border']['bottom']:
+        #        return 
         adb.click(ans['x'], ans['y'])
+    return 
 
 def main():
     column_chosen = find_column_chosen()
