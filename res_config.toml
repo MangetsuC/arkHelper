@@ -1,4 +1,7 @@
-ress = [ "auto_on", "auto_switch", "btn_back", "finish_battle", "in_battle", "sanity_lack", "start_a", "start_b", "visit", "task", "friends", "btn_home", "mainpage",]
+ress = [ "auto_on", "auto_switch", "btn_back", "finish_battle", "in_battle", "sanity_lack", "start_a", "start_b", "visit", "task", "friends", "btn_home", "mainpage", "tips_icon",]
+
+[tips_icon]
+readme = "各界面上提示按键的标志"
 
 [btn_home]
 readme = "主页按钮的标志"
