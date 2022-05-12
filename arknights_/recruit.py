@@ -3,11 +3,12 @@ from sys import path as spath
 from os import getcwd
 from time import sleep
 from random import choice
+from tracemalloc import start
 from turtle import distance
 
 spath.append(getcwd())
 
-from numpy import dtype, ones, uint8
+from numpy import dtype, mat, ones, uint8
 from cv2 import imshow, waitKey, COLOR_GRAY2BGRA, cvtColor
 from user_res import R
 from common import recruit_data
@@ -161,9 +162,41 @@ def locate_cancel_btn(confirm_btn):
             distance2 = (i['x']-confirm_btn['x'])**2 + (i['y']-confirm_btn['y'])**2
     return cancel_btn
 
+def enter_recruit():
+    while match_pic(adb.getScreen_std(), R.tips_icon)[0] < 0:
+        capture = adb.getScreen_std()
+        entrance_btn = match_pic(capture, R.recruit_entrance)
+        if entrance_btn[0] > 0:
+            adb.click(entrance_btn[0], entrance_btn[1])
 
-if __name__ == '__main__':
-    #print(get_tags_to_chose(['医疗干员', '术师干员','特种干员','支援','快速复活']))
+def start_recruit():
+    capture = adb.getScreen_std()
+    start_btn = match_pic(capture, R.recruit_start)
+    if start_btn[0] > 0:
+        for i in range(5):
+            adb.click(start_btn[0], start_btn[1])
+            if match_pic(adb.getScreen_std(), R.recruit_start)[0] < 0:
+                return 1
+    return -1
+
+adb.screenX = 1280
+adb.screenY = 720
+def employ_recruit():
+    capture = adb.getScreen_std()
+    blocks = find_color_block(capture, [[-1,10],[145,160],[210,225]])
+    ans = []
+    for i in blocks:
+        if i['y'] > adb.screenY/3:
+            ans.append(i)
+    for i in ans:
+        for j in range(5):
+            adb.click(i['x'], i['y'])
+            if match_pic(adb.getScreen_std(), R.tips_icon)[0] < 0:
+                break
+        while match_pic(adb.getScreen_std(), R.tips_icon)[0] < 0:
+            adb.click(adb.screenX - 10, 10)
+
+def confirm_single_recruit(recruit_rule:dict):
     time_to_chose = ['09', '00', '00']
     for i in range(5): #某一公招槽位选取标签
         tags_location = locate_tags_block()
@@ -172,7 +205,7 @@ if __name__ == '__main__':
             chose_result = -3 #错误：标签数目不足5
             break
         print(tags_name)
-        tags_to_chose, time_to_chose = get_tags_to_chose(tags_name, tags_location)
+        tags_to_chose, time_to_chose = get_tags_to_chose(tags_name, tags_location, recruit_rule)
         chose_result = chose_tags(tags_to_chose, tags_location)
         if chose_result == -2:
             continue
@@ -201,6 +234,16 @@ if __name__ == '__main__':
     else:
         cancel_btn = locate_cancel_btn(confirm_btn)
         adb.click(cancel_btn['x'], cancel_btn['y'])
+
+def main(recruit_rule = dict()):
+    enter_recruit()
+    employ_recruit()
+    while start_recruit() > 0:
+        confirm_single_recruit(recruit_rule)
+
+if __name__ == '__main__':
+    #print(get_tags_to_chose(['医疗干员', '术师干员','特种干员','支援','快速复活']))
+    main()
     
     #input()
     #print(check_tags_chosen(tags_location, [2,4]))

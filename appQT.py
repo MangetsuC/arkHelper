@@ -30,7 +30,7 @@ from foo.ui.messageBox import AMessageBox
 from foo.win.exitThread import forceThreadStop
 from foo.pictureR.spoils import spoilsCheck
 
-from arknights_ import loop, task, visit, common_operation
+from arknights_ import loop, task, visit, recruit, common_operation
 from gui.res_manager import Res_manager
 
 from common import user_data, simulator_data, config_path, theme
@@ -981,21 +981,21 @@ class App(QWidget):
         '退出按钮'
         self.schJsonEditer.close()
         self.hide()
-        self.stop(isExit = True)
+        forceThreadStop(self.thRun)
         self.console.close()
-        if self.publicCall != None:
-            self.publicCall.close()
+        #if self.publicCall != None:
+        #    self.publicCall.close()
         adb.killAdb()
 
         #退出两个窗口的放大倍率检测线程
         #self.schJsonEditer.rateMonitor.stop()
         #self.rateMonitor.stop()
 
-        tempCmd = Cmd(getcwd()) #退出ocr
-        pids = tempCmd.getTaskList('ocrForArkhelper.exe')
-        if pids != []:
-            for i in pids:
-                tempCmd.killTask(i)
+        #tempCmd = Cmd(getcwd()) #退出ocr
+        #pids = tempCmd.getTaskList('ocrForArkhelper.exe')
+        #if pids != []:
+        #    for i in pids:
+        #        tempCmd.killTask(i)
 
         sys.exit() #为了解决Error in atexit._run_exitfuncs:的问题，实际上我完全不知道这为什么出现
 
@@ -1123,7 +1123,7 @@ class App(QWidget):
         if not '虚拟博士' in self.btnStartAndStop.text():
             forceThreadStop(self.thRun)
             self.forceStop = True
-            print('收到用户指令强制终止，可能存在部分未释放的资源')
+            #print('收到用户指令强制终止，可能存在部分未释放的资源')
             self.btnMainClicked = not self.btnMainClicked
             self.btnStartAndStop.setText('启动虚拟博士')
         else:
@@ -1133,7 +1133,7 @@ class App(QWidget):
                 self.btnStartAndStop.setText('停止')
                 #self.btnStartAndStop.setText('停止虚拟博士')
                 self.thRun = Thread(target=self.start)
-                self.thRun.setDaemon(True)
+                self.thRun.daemon = True
                 self.thRun.start()
             else:
                 self.stop()  
