@@ -60,7 +60,7 @@ def find_color_block(img, thresholds, eroded_iter = 1, dilated_iter = 10):
 
 
     temp = list(connectedComponentsWithStats(dilated)[2])
-    temp.sort(key = lambda x:(x[1], x[0]))
+    #temp.sort(key = lambda x:(x[1], x[0]))
     ans = []
     for i in temp:
         if i[0] <= 5 and i[1] <= 5:
@@ -77,6 +77,7 @@ def find_color_block(img, thresholds, eroded_iter = 1, dilated_iter = 10):
                             )
                 )
     
+    ans.sort(key = lambda x:(x['y'], x['x'])) 
     return ans
 
 def get_point_color(img, x, y) -> Color_Point:

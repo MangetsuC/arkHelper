@@ -66,11 +66,11 @@ class Toml:
 
 
 
-class configToml(Toml):
+class ConfigToml(Toml):
     def __init__(self):
-        super(configToml, self).__init__('config.toml', tomlBase.defaultConfig(), tomlBase.ini2toml_config())
+        super().__init__('config.toml', tomlBase.defaultConfig(), tomlBase.ini2toml_config())
 
-class simulatorToml(Toml):
+class SimulatorToml(Toml):
     def __init__(self):
         self.releasePath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/simulator.toml'
         self.devPath = './simulator.toml'
@@ -83,11 +83,11 @@ class simulatorToml(Toml):
     def get_simulators(self):
         return self.toml.keys()
 
-class scheduleToml(Toml):
+class ScheduleToml(Toml):
     def __init__(self):
-        super(scheduleToml, self).__init__('schedule.toml', tomlBase.defaultSchedule(), tomlBase.json2toml())
+        super().__init__('schedule.toml', tomlBase.defaultSchedule(), tomlBase.json2toml())
 
-class res_config(Toml):
+class Res_config(Toml):
     def __init__(self):
         super().__init__('res_config.toml', None, None)
 
@@ -105,9 +105,88 @@ class res_config(Toml):
     def get_res_readme(self, key):
         return self.get(f'{key}.readme')
 
+class Recruit_data(Toml):
+    def __init__(self):
+        super().__init__('recruit_data.toml', None, None)
+
+    def get_tags_ops(self, tags_on_screen:list) -> dict:
+        tags_combs = \
+        [[0], [1], [2], [3], [4], 
+        [0, 1], [0, 2], [0, 3], [0, 4], [1, 2], [1, 3], [1, 4], [2, 3], [2, 4], [3, 4], 
+        [0, 1, 2], [0, 1, 3], [0, 1, 4], [0, 2, 3], [0, 2, 4], [0, 3, 4], [1, 2, 3], [1, 2, 4], [1, 3, 4], [2, 3, 4],
+        [0, 1, 2, 3], [0, 1, 2, 4], [0, 1, 3, 4], [0, 2, 3, 4], [1, 2, 3, 4],
+        [0, 1, 2, 3, 4]]
+        ans_star = []
+        ans_detailed = []
+        for i in tags_combs:
+            is_may_get_6 = False
+            for j in i:
+                if tags_on_screen[j] == '高级资深干员':
+                    is_may_get_6 = True
+                    break
+
+            temp = [[], []]
+            for op in self.toml.keys():
+                if self.toml[op]['star'] == 6 and not is_may_get_6:
+                    continue
+
+                for j in i:
+                    if not tags_on_screen[j] in self.toml[op]['tags']:
+                        break
+                else:
+                    temp[0].append(self.toml[op]['star'])
+                    temp[1].append([op, self.toml[op]['star']])
+            ans_star.append(temp[0])
+            ans_detailed.append(temp[1])
+        
+        min_4 = [[],[]]
+        min_5 = [[],[]]
+        min_6 = [[],[]]
+        max_2 = [[],[]]
+        max_1 = [[],[]]
+        other = [[],[]]
+        
+        for i in range(len(tags_combs)):
+            if ans_star[i] == []:
+                continue
+            ans_star[i].sort()
+            if ans_star[i][-1] != 1 and ans_star[i][-1] != 2: #9小时滤除一星二星
+                for k in range(len(ans_star)):
+                    if ans_star[i][k] > 2:
+                        break
+                ans_star[i] = ans_star[i][k:]
+
+            if ans_star[i][0] == 4:
+                min_4[0].append(tags_combs[i])
+                min_4[1].append(ans_detailed[i])
+            elif ans_star[i][0] == 5:
+                min_5[0].append(tags_combs[i])
+                min_5[1].append(ans_detailed[i])
+            elif ans_star[i][0] == 6:
+                min_6[0].append(tags_combs[i])
+                min_6[1].append(ans_detailed[i])
+            elif ans_star[i][-1] == 2:
+                max_2[0].append(tags_combs[i])
+                max_2[1].append(ans_detailed[i])
+            elif ans_star[i][-1] == 1:
+                max_1[0].append(tags_combs[i])
+                max_1[1].append(ans_detailed[i])
+            else:
+                other[0].append(tags_combs[i])
+                other[1].append(ans_detailed[i])
+
+        return dict(min_4 = min_4,
+                    min_5 = min_5,
+                    min_6 = min_6,
+                    max_2 = max_2,
+                    max_1 = max_1,
+                    other = other)
+
+
+
 
 if __name__ == '__main__':
-    test1 = res_config()
-    #print(test1.get_res_config('sanity_lack', 'a'))
-    print(test1.get_res_list())
+    test1 = Recruit_data()
+    tags_on_screen = ['医疗干员', '术师干员','特种干员','支援','快速复活']
+    print(test1.get_tags_ops(tags_on_screen))
 

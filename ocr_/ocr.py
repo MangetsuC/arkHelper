@@ -8,6 +8,8 @@ from sys import path
 app_path = getcwd()
 
 path.append(app_path)
+from numpy import dtype, ones, uint8
+from cv2 import imshow, waitKey, COLOR_GRAY2BGRA, cvtColor
 from image_ import image_io
 
 def get_text_ocr(image):
@@ -23,6 +25,22 @@ def get_text_ocr(image):
     except UnicodeDecodeError:
         strout = cmdReturn[0].decode('UTF-8').replace('\r\n', '\n')
     return strout.strip()
+
+def resize_text_img(text_img, enlarge_rate):
+    bg = ones((text_img.shape[1]*enlarge_rate, text_img.shape[1]*enlarge_rate), dtype = uint8)
+    bg = cvtColor(bg, COLOR_GRAY2BGRA)
+    bg[:,:,0] = 255
+    bg[:,:,1] = 255
+    bg[:,:,2] = 255
+    bg[:,:,3] = 255
+    y_cover = [int(text_img.shape[0]/2), int(text_img.shape[0]/2)]
+    x_cover = [int(text_img.shape[1]/2), int(text_img.shape[1]/2)]
+    if int(text_img.shape[0]/2)*2 != text_img.shape[0]:
+        y_cover[1] = y_cover[1] + 1
+    if int(text_img.shape[1]/2)*2 != text_img.shape[1]:
+        x_cover[1] = x_cover[1] + 1  
+    bg[int(bg.shape[0]/2)-y_cover[0]:int(bg.shape[0]/2)+y_cover[1],int(bg.shape[1]/2)-x_cover[0]:int(bg.shape[1]/2)+x_cover[1]] = text_img
+    return bg
 
 
 if __name__ == '__main__':
