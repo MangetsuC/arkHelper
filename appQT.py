@@ -32,6 +32,7 @@ from foo.pictureR.spoils import spoilsCheck
 
 from arknights_ import loop, task, visit, recruit, common_operation
 from gui.res_manager import Res_manager
+from gui.recruit_control_panel import set_recruit_rule
 
 from common import user_data, simulator_data, config_path, theme
 from common2 import adb
@@ -46,6 +47,7 @@ class App(QWidget):
     startBtnPressed = Signal(str)
     def __init__(self, app):
         super(App, self).__init__()
+        self.thRun = None
         self.app = app
 
         self.cwd = getcwd().replace('\\', '/')
@@ -81,7 +83,7 @@ class App(QWidget):
 
     def hide_unable_function(self):
         self.tbSchedule.hide()
-        self.tbAutoPC.hide()
+        #self.tbAutoPC.hide()
         self.tbLogistic.hide()
 
     def getRealSize(self, size):
@@ -330,13 +332,14 @@ class App(QWidget):
         self.grid.setHorizontalSpacing(5)
         
         self.grid.addWidget(self.btnStartAndStop, 0, 0, 3, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbLogistic, 1, 1, 1, 2, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.tbLogistic, 1, 1, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.tbSchedule, 2, 1, 1, 1, alignment=Qt.AlignCenter)
+        #self.grid.addWidget(self.tbSchedule, 2, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.btn_res_manager, 1, 1, 1, 3, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
         #self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbCredit, 0, 3, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.tbAutoPC, 2, 1, 1, 1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbShutdown, 2, 2, 1, 2)
         #self.grid.addWidget(self.btnMin, 2, 2, 1, 2, alignment=Qt.AlignCenter)
         #self.grid.addWidget(self.btnClose, 1, 4, 2, 1, alignment=Qt.AlignCenter)
@@ -792,8 +795,8 @@ class App(QWidget):
                 text = '设为默认关闭'
             else:
                 text = '设为默认开启'
-            self.rightClickMenu.addAction(self.actBattleTimes)
-            self.rightClickMenu.addAction(self.line)
+            #self.rightClickMenu.addAction(self.actBattleTimes)
+            #self.rightClickMenu.addAction(self.line)
         elif self.source.text() == '计划战斗':
             if user_data.get('function.schedule.default'):
                 text = '设为默认关闭'
@@ -839,7 +842,7 @@ class App(QWidget):
             self.rightClickMenu.addAction(self.line)
         self.actionSetDeafult = self.rightClickMenu.addAction(text)
         self.actionSetDeafult.triggered.connect(self.setDefault)
-        self.rightClickMenu.exec_(QCursor.pos())
+        self.rightClickMenu.exec(QCursor.pos())
     
     def setDefault(self):
         if self.source == self.tbBattle:
@@ -888,34 +891,7 @@ class App(QWidget):
             self.logisticFlag = isChecked
 
     def setRecruit(self):
-        if self.recruit != None:
-            temp = self.recruit.priority
-            temp1 = []
-            for i in temp:
-                temp1.append(str(i))
-            temp2 = '>'.join(temp1)
-            temp2 = temp2.replace('10', '1') #小车实际上对应的级别数为10
-            ans = AMessageBox.input(self, '输入配置', '{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n当前配置为：{}'
-                                                        .format('配置示例:-6>5>4>-3', '其代表按6、5、4、3的优先级进行招募', 
-                                                                '如果有必出6星的tag组合则不招募', '如果有必出5、4星的tag组合则随机选择进行招募(优先5星)',
-                                                                '如果没必出6、5、4星的tag组合，仅有3星tag组则不招募', 
-                                                                '如果出3星的tag组合都没有(不可能)则不选择tag进行招募',
-                                                                '其中数字代表星级，负号-代表出现则保留', 
-                                                                '看不懂就别改！',
-                                                                temp2))
-            if ans[1]:
-                ans = ans[0]
-                ans = ans.replace('1', '10')
-                ans = ans.split('>')
-                temp = []
-                if ans != []:
-                    for i in ans:
-                        try:
-                            temp.append(int(i))
-                        except:
-                            return 
-                    self.recruit.priority = temp
-                    user_data.change('function.recruit.priority', temp)
+        set_recruit_rule()
 
     def setAutoPCFunc(self):
         source = self.sender()
@@ -981,7 +957,8 @@ class App(QWidget):
         '退出按钮'
         self.schJsonEditer.close()
         self.hide()
-        forceThreadStop(self.thRun)
+        if self.thRun != None:
+            forceThreadStop(self.thRun)
         self.console.close()
         #if self.publicCall != None:
         #    self.publicCall.close()
@@ -1055,6 +1032,10 @@ class App(QWidget):
         #adb.connect()
         if self.battleFlag:
             loop.main()
+            common_operation.goto_mainpage()
+
+        if self.autoPCFlag:
+            recruit.main()
             common_operation.goto_mainpage()
 
         if self.creditFlag:

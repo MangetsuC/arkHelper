@@ -150,4 +150,5 @@ simulator.toml
 schedule.toml
 data.json
 logisticRule.ahrule
+drag_test.py
 *.7z

@@ -160,13 +160,13 @@ class Res_manager(QWidget):
         if (path.exists(f'./nres/{self.res_selected}.png')):
             self.tempPic_example.load(f'./nres/{self.res_selected}.png')
         else:
-            self.tempPic_user_res.load('./nres/unkown.png')
+            self.tempPic_user_res.load('./gres/unknown.png')
         self.pic_example.setPixmap(self.tempPic_example.scaledToWidth(120, Qt.FastTransformation))
 
         if (path.exists(f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/ures/{self.res_selected}.png')):
             self.tempPic_user_res.load(f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/ures/{self.res_selected}.png')
         else:
-            self.tempPic_user_res.load('./nres/unkown.png')
+            self.tempPic_user_res.load('./gres/unknown.png')
         self.pic_user_res.setPixmap(self.tempPic_user_res.scaledToWidth(120, Qt.FastTransformation))
 
         self.advanced_option_editor_common.setText(str(res_config.get_res_config(self.res_selected, 'common')))

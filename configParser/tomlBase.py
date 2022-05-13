@@ -64,6 +64,16 @@ def defaultConfig():
     schedule.medicine.enable = false #计划作战中使用理智药剂恢复理智
     schedule.stone.enable = false #计划作战中使用源石恢复理智
     schedule.stone.max = 0 #计划作战中使用源石的最大数量
+
+    [recruit]
+    skip_config.min_6 = false
+    skip_config.min_5 = false
+    skip_config.min_4 = false
+    skip_config.other = false
+    skip_config.max_2 = false
+    skip_config.max_1 = false
+
+    star_priority = ['min_6', 'min_5', 'min_4', 'refresh', 'other', 'max_1', 'max_2']
     '''
     return loads(default)
 

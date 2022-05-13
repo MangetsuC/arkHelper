@@ -1,4 +1,3 @@
-import re
 from sys import path as spath
 from os import getcwd
 from time import sleep
@@ -11,7 +10,7 @@ spath.append(getcwd())
 from numpy import dtype, mat, ones, uint8
 from cv2 import imshow, waitKey, COLOR_GRAY2BGRA, cvtColor
 from user_res import R
-from common import recruit_data
+from common import recruit_data, user_data
 from common2 import adb
 from image_.match import match_pic
 from image_.color_detect import find_color_block
@@ -235,7 +234,8 @@ def confirm_single_recruit(recruit_rule:dict):
         cancel_btn = locate_cancel_btn(confirm_btn)
         adb.click(cancel_btn['x'], cancel_btn['y'])
 
-def main(recruit_rule = dict()):
+def main():
+    recruit_rule = user_data.get('recruit')
     enter_recruit()
     employ_recruit()
     while start_recruit() > 0:
