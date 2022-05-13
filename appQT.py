@@ -957,12 +957,11 @@ class App(QWidget):
         '退出按钮'
         self.schJsonEditer.close()
         self.hide()
-        if self.thRun != None:
-            forceThreadStop(self.thRun)
+        
         self.console.close()
         #if self.publicCall != None:
         #    self.publicCall.close()
-        adb.killAdb()
+        #adb.killAdb()
 
         #退出两个窗口的放大倍率检测线程
         #self.schJsonEditer.rateMonitor.stop()

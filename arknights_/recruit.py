@@ -20,7 +20,7 @@ from ocr_.ocr import get_text_ocr, resize_text_img
 
 def locate_tags_block():
     capture = adb.getScreen_std()
-    blocks = find_color_block(capture, [[48,50],[48,50],[48,50]])
+    blocks = find_color_block(capture, [[46,52],[46,52],[46,52]])
     temp = []
     lasty = -1
     for i in blocks:
@@ -168,18 +168,21 @@ def enter_recruit():
         if entrance_btn[0] > 0:
             adb.click(entrance_btn[0], entrance_btn[1])
 
-def start_recruit():
+def start_recruit(skip_btn = []):
     capture = adb.getScreen_std()
+    for i in skip_btn: #将已被跳过的公招位置涂黑避免检测
+        capture[i[2]['rectangle'][0][1]:i[2]['rectangle'][1][1], i[2]['rectangle'][0][0]:i[2]['rectangle'][1][0]] = (0, 0, 0, 1)
+
     start_btn = match_pic(capture, R.recruit_start)
     if start_btn[0] > 0:
         for i in range(5):
             adb.click(start_btn[0], start_btn[1])
             if match_pic(adb.getScreen_std(), R.recruit_start)[0] < 0:
-                return 1
-    return -1
+                return [1,start_btn]
+    return [-1,start_btn]
 
-adb.screenX = 1280
-adb.screenY = 720
+#adb.screenX = 1280
+#adb.screenY = 720
 def employ_recruit():
     capture = adb.getScreen_std()
     blocks = find_color_block(capture, [[-1,10],[145,160],[210,225]])
@@ -206,11 +209,11 @@ def confirm_single_recruit(recruit_rule:dict):
         print(tags_name)
         tags_to_chose, time_to_chose = get_tags_to_chose(tags_name, tags_location, recruit_rule)
         chose_result = chose_tags(tags_to_chose, tags_location)
-        if chose_result == -2:
+        if chose_result == -2: #-2代表刷新
             continue
         else:
             break
-    if chose_result > 0:
+    if chose_result > 0: #-1代表跳过
         for i in range(50): #调整时间
             time_location = locate_time_block(tags_location)
             time_name = get_name(time_location[2:5])
@@ -233,13 +236,20 @@ def confirm_single_recruit(recruit_rule:dict):
     else:
         cancel_btn = locate_cancel_btn(confirm_btn)
         adb.click(cancel_btn['x'], cancel_btn['y'])
+    return chose_result
 
 def main():
     recruit_rule = user_data.get('recruit')
     enter_recruit()
     employ_recruit()
-    while start_recruit() > 0:
-        confirm_single_recruit(recruit_rule)
+    skip_btn = []
+    while True:
+        temp = start_recruit(skip_btn)
+        if temp[0] < 0: break
+
+        chose_result = confirm_single_recruit(recruit_rule)
+        if chose_result < 0:
+            skip_btn.append(temp[1]) #记录被跳过的公招位置
 
 if __name__ == '__main__':
     #print(get_tags_to_chose(['医疗干员', '术师干员','特种干员','支援','快速复活']))

@@ -49,6 +49,7 @@ readme = "第一个开始行动的标志"
 readme = "第二个开始行动的标志"
 
 [recruit_start.common]
+bgremove = false
 thresholds = [ [ 254, 256,], [ 254, 256,], [ 254, 256,],]
 
 [recruit_start.self]
