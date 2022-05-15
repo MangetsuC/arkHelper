@@ -33,6 +33,7 @@ from foo.pictureR.spoils import spoilsCheck
 from arknights_ import loop, task, visit, recruit, common_operation
 from gui.res_manager import Res_manager
 from gui.recruit_control_panel import set_recruit_rule
+from gui.res_scope import Res_scope
 
 from common import user_data, simulator_data, config_path, theme
 from common2 import adb
@@ -64,6 +65,7 @@ class App(QWidget):
         #    tempScreenList.append(QDesktopWidget().availableGeometry(i))
         #self.screen = Screen(tempScreenList)
         self.res_manager = Res_manager()
+        self.res_scope = Res_scope()
 
         self.initVar()
         self.initNormalPicRes()
@@ -193,9 +195,12 @@ class App(QWidget):
         self.tbAutoPC.clicked[bool].connect(self.functionSel)
         self.tbAutoPC.setToolTip('自动进行公开招募，在右键菜单中进行配置')
 
-        self.btn_res_manager = QPushButton('资源管理器!必须先设置资源!', self)
-        self.btn_res_manager.setMinimumSize(self.getRealSize(235), self.getRealSize(40))
+        self.btn_res_manager = QPushButton('资源管理器', self)
+        self.btn_res_manager.setMinimumSize(self.getRealSize(75), self.getRealSize(40))
         self.btn_res_manager.clicked.connect(self.res_manager.show)
+        self.btn_res_scope = QPushButton('资源状态观测器', self)
+        self.btn_res_scope.setMinimumSize(self.getRealSize(155), self.getRealSize(40))
+        self.btn_res_scope.clicked.connect(self.res_scope.show)
 
 
         self.actRecruitSet = QAction('配置自动公招')
@@ -335,7 +340,8 @@ class App(QWidget):
         #self.grid.addWidget(self.tbLogistic, 1, 1, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbBattle, 0, 1, 1, 1, alignment=Qt.AlignCenter)
         #self.grid.addWidget(self.tbSchedule, 2, 1, 1, 1, alignment=Qt.AlignCenter)
-        self.grid.addWidget(self.btn_res_manager, 1, 1, 1, 3, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btn_res_manager, 1, 1, 1, 1, alignment=Qt.AlignCenter)
+        self.grid.addWidget(self.btn_res_scope, 1, 2, 1, 2, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbTask, 0, 2, 1, 1, alignment=Qt.AlignCenter)
         #self.grid.addWidget(self.btnSet, 2, 1, 1,1, alignment=Qt.AlignCenter)
         self.grid.addWidget(self.tbCredit, 0, 3, 1, 1, alignment=Qt.AlignCenter)
