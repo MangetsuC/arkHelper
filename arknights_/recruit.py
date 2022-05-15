@@ -196,7 +196,8 @@ def employ_recruit():
             if match_pic(adb.getScreen_std(), R.tips_icon)[0] < 0:
                 break
         while match_pic(adb.getScreen_std(), R.tips_icon)[0] < 0:
-            adb.click(adb.screenX - 10, 10)
+            #adb.click(adb.screenX - 10, 10)
+            adb.click(1280 - 10, 10)
 
 def confirm_single_recruit(recruit_rule:dict):
     time_to_chose = ['09', '00', '00']

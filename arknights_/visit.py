@@ -8,6 +8,7 @@ from user_res import R
 from common2 import adb
 from image_.match import match_pic
 from image_.color_detect import find_color_block
+from ocr_.ocr import get_text_ocr
 
 #adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
 
@@ -25,11 +26,14 @@ def get_btn_pos(tab_chosen):
     return btn_friends_pos
 
 def visit():
+    '进入他人基建'
     capture = adb.getScreen_std()
     pos = match_pic(capture, R.visit)
-    while find_color_block(capture, [[250,255],[100,105],[0,5]]) == [] or pos[0] > -1:
+    text_on_screen = ''
+    while (not '会客室' in text_on_screen) or (pos[0] > -1):
         adb.click(pos[0], pos[1])
         capture = adb.getScreen_std()
+        text_on_screen = get_text_ocr(capture)
         pos = match_pic(capture, R.visit)
 
 def visit_next():

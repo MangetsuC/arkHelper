@@ -1,3 +1,4 @@
+import imp
 from os import getcwd, listdir, path, remove
 from re import split as resplit
 
@@ -6,11 +7,20 @@ from cv2 import (COLOR_BGR2GRAY, TM_CCOEFF_NORMED, Canny, copyTo, cvtColor,
 from cv2 import split as cvsplit
 from cv2 import SIFT_create, BFMatcher
 from numpy import array, fromfile, zeros, ndarray, sqrt, mat, power, random, shape, nonzero, mean, inf, where
+from PySide6.QtCore import Signal, QObject
+from PySide6.QtWidgets import QWidget
 from sys import path as spath
 
 spath.append(getcwd())
 from foo.pictureR.colorDetect import binary_rgb
 from image_.image_io import load_res
+
+class Match_pic_signal(QObject):
+    pic_send = Signal(str)
+    def __init__(self):
+        super().__init__()
+
+match_pic_signal = Match_pic_signal()
 
 def find_template(im_source, im_search, threshold=0.5, rgb=False, bgremove=True):
     '''
@@ -86,6 +96,8 @@ def match_pic(source, target:dict):
     else:
         ans = [int(temp['result'][0]), int(temp['result'][1]), 
                 dict(rectangle = [temp['rectangle'][0], temp['rectangle'][3]])]
+
+        match_pic_signal.pic_send.emit(target['res_name'])
     return ans
 
 if __name__ == '__main__':

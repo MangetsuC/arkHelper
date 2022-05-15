@@ -29,7 +29,8 @@ def get_btn_pos(column_chosen):
                     weekly = [],
     )
 
-    width = adb.screenX - column_chosen['border']['left']
+    #width = adb.screenX - column_chosen['border']['left']
+    width = 1280 - column_chosen['border']['left']
     column_num = int(width/column_chosen['width'] + 0.5)
     match(column_num):
         #列表内容为[坐标x, 坐标y, [左边界, 右边界]]

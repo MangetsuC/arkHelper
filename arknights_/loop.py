@@ -51,6 +51,7 @@ def start_once():
         else:
             if count_in_battle > 0:
                 adb.click(adb.screenX - 1, 1)
+                adb.click(1280 - 1, 1)
     return pos_ + [1] #返回作战结束的坐标，用于返回开始界面
 
 

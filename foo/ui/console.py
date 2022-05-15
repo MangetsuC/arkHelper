@@ -3,7 +3,7 @@ from time import localtime, strftime, time
 
 from PySide6.QtCore import QObject, Qt, Signal, SIGNAL
 from PySide6.QtGui import QIcon, QTextCursor
-from PySide6.QtWidgets import QDialog, QGridLayout, QTextBrowser, QWidget#, QDesktopWidget
+from PySide6.QtWidgets import QGridLayout, QTextBrowser, QWidget
 
 from common import theme
 

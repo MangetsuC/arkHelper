@@ -1,3 +1,4 @@
+from cgitb import reset
 from os import getcwd
 from sys import path as syspath
 from os import path, remove
@@ -10,7 +11,7 @@ from time import sleep
 from xmlrpc.client import boolean
 from PySide6.QtWidgets import QFileDialog
 
-from cv2 import imdecode, merge
+from cv2 import imdecode, merge, resize, INTER_AREA
 from numpy import frombuffer, zeros, ones
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QMessageBox, QWidget
@@ -108,8 +109,8 @@ class Adb(QObject):
         self.cmd = Cmd('./bin/adb')
         self.ip = None
         self.simulator = None
-        self.screenX = 1440
-        self.screenY = 810
+        self.screenX = 1280
+        self.screenY = 720
         self.simulator_data = simulator_data
 
         self.backPos = None
@@ -283,11 +284,15 @@ class Adb(QObject):
                     self.adbErr.emit(True)
                     print('长时间提示正在连接至神经网络，请检查网络连接')
                     return zeros((810, 1440, 3), dtype='uint8')'''
+            pic = resize(pic, (int(self.screenX*720/self.screenY), 720), interpolation=INTER_AREA)
             return pic
 
     def click(self, x, y, isSleep = True):
-        x = int(x)#int((x / 1440) * self.screenX)
-        y = int(y)#int((y / 810) * self.screenY)
+        #x = int(x)#int((x / 1440) * self.screenX)
+        #y = int(y)#int((y / 810) * self.screenY)
+        x = int(x*self.screenY/720)
+        y = int(y*self.screenY/720)
+
         self.cmd.run('adb -s {device} shell input tap {0} {1}'.format(x, y, device = self.ip))
         if isSleep:
             sleep(1)

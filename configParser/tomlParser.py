@@ -36,6 +36,9 @@ class Toml:
         '获取值'
         keys = key.split('.')
         temp = self.toml
+        if not keys[0] in keys:
+            return 'NULL'
+            
         for i in keys:
             temp = temp[i]
         return temp
