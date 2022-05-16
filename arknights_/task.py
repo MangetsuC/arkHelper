@@ -9,10 +9,6 @@ from common2 import adb
 from image_.match import match_pic
 from image_.color_detect import find_color_block
 
-#adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
-#adb.screenX = 1280
-#adb.screenY = 720
-
 def find_column_chosen():
     capture = adb.getScreen_std()
     ans = find_color_block(capture, [[45,50],[45,50],[45,50]])
@@ -29,7 +25,6 @@ def get_btn_pos(column_chosen):
                     weekly = [],
     )
 
-    #width = adb.screenX - column_chosen['border']['left']
     width = 1280 - column_chosen['border']['left']
     column_num = int(width/column_chosen['width'] + 0.5)
     match(column_num):
@@ -96,12 +91,6 @@ def submit_task(column_chosen):
         capture = adb.getScreen_std()
         if match_pic(capture, R.tips_icon)[0] > 0: #确定重新回到了任务交付界面
             return 
-        #temp = find_color_block(capture, [[210,220],[210,220],[210,220]]) #确定重新回到了任务交付界面
-        #temp.sort(key = lambda x:(x['y'], x['x']))
-        #if temp != []:
-        #    temp = temp[0]
-        #    if temp['x'] < column_chosen['border']['left'] and temp['y'] < column_chosen['border']['bottom']:
-        #        return 
         adb.click(ans['x'], ans['y'])
     return 
 
@@ -113,6 +102,7 @@ def main():
     submit_task(column_chosen)
 
     column_switch(task_pos, 'weekly')
+    column_chosen = find_column_chosen()
     submit_task(column_chosen)
 
 if __name__ == '__main__':
