@@ -1,18 +1,18 @@
 import sys
+from os import getcwd
 from time import localtime, strftime, time
 
 from PySide6.QtCore import QObject, Qt, Signal, SIGNAL
 from PySide6.QtGui import QIcon, QTextCursor
 from PySide6.QtWidgets import QGridLayout, QTextBrowser, QWidget
 
-from common import theme
+from common import theme, app_ico
 
 class Console(QWidget):
-    adbCloseError = Signal()
-    def __init__(self, cwd, ver, parent=None, flags=Qt.WindowFlags(1)):
+    def __init__(self, ver):
         super().__init__()
-        self.cwd = cwd
-        self.setWindowIcon(QIcon(self.cwd + '/res/ico.ico'))
+        self.cwd = getcwd()
+        self.setWindowIcon(app_ico)
         self.isShow = False
         self.isExit = False
         self.setWindowTitle('控制台')
@@ -56,10 +56,7 @@ class Console(QWidget):
 
     def outputWritten(self, text):
         text = text.strip()
-        if 'error: closed' in text:
-            print('发现adb端口关闭！请检查您的模拟器设置！')
-            self.adbCloseError.emit()
-        elif text != '':
+        if text != '':
             text = text + '\n'
             cursor = self.textBrowser.textCursor()
             cursor.movePosition(QTextCursor.End)
@@ -67,12 +64,6 @@ class Console(QWidget):
             with open(self.cwd + '/arkhelper.log', 'a', encoding='UTF-8') as log:
                 log.write(text)
             self.textBrowser.setTextCursor(cursor)
-
-    def showOrHide(self):
-        if not self.isVisible():
-            self.show()
-            #cp = QDesktopWidget().availableGeometry().center()
-            #self.move(int(cp.x() - self.width()/2), int(cp.y() - self.height()/2))
 
 class EmittingStr(QObject):
     sgnConsole = Signal(str)

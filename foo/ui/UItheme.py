@@ -4,13 +4,11 @@ from PySide6.QtWidgets import (QWidgetAction, QApplication, #QDesktopWidget,
                              QPushButton, QVBoxLayout, QWidget, QLineEdit, QColorDialog)
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIcon, QColor
-from common import user_data, theme
+from common import user_data, theme, app_ico
 
 class ThemeEditor(QWidget):
-    def __init__(self, app, ico = ''):
+    def __init__(self):
         super(ThemeEditor, self).__init__()
-
-        self.app = app
 
         self.colorSelector = QColorDialog()
         self.colorSelector.colorSelected.connect(self.colorOK)
@@ -33,7 +31,7 @@ class ThemeEditor(QWidget):
 
 
         self.setWindowTitle('重启后生效')
-        self.setWindowIcon(QIcon(ico))
+        self.setWindowIcon(app_ico)
         self.labelThemeColor = QLabel('打开的开关的颜色')
         self.labelFontColor = QLabel('字体颜色')
         self.labelCheckedFontColor = QLabel('打开的开关的字体颜色')

@@ -147,6 +147,7 @@ schedule.json
 config.ini
 config.toml
 simulator.toml
+simulator_config.toml
 schedule.toml
 data.json
 logisticRule.ahrule

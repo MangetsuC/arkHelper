@@ -8,6 +8,7 @@ import requests
 from json import loads, dumps
 from hashlib import md5
 from common import config_path, user_data, theme
+from common2 import version
 
 class Launch(QSplashScreen):
     def __init__(self):
@@ -79,18 +80,15 @@ class BlackBoard(QWidget):
         #self.show()
 
 class AfterInit(QThread):
-    boardNeedShow = Signal()
-    reloadPcModule = Signal()
-    logisticReady = Signal()
-    widgetShow = Signal(int) #0:公告按钮 1:升级按钮
-    def __init__(self, app, cwd):
+    need_update = Signal(str)
+    notice_msg = Signal(str)
+    notice_show = Signal()
+    def __init__(self):
         super(AfterInit, self).__init__()
-        self.app = app
-        self.cwd = cwd
 
     def run(self):
-        self.getLogisticRule()
-        self.checkPublicCallData()
+        #self.getLogisticRule()
+        #self.checkPublicCallData()
         self.checkMessage()
         self.checkUpdate()
 
@@ -109,14 +107,10 @@ class AfterInit(QThread):
         updateData = requests.get('http://www.mangetsuc.top/arkhelper/update.json')
         if updateData.status_code == 200:
             updateData.encoding = 'utf-8'
-            self.app._updateData = loads(updateData.text)
-            updateEXE = self.app._updateData.get('updateEXE', 'update.exe')
-            if updateEXE != 'update.exe' and path.exists(self.cwd + '/update.exe') and path.exists(self.cwd + '/' + updateEXE):
-                remove(self.cwd + '/update.exe')
-                rename(self.cwd + '/' + updateEXE, self.cwd + '/update.exe')
-            newVersion =self.app._updateData['version'].split('.')
-            if self.app.ver != 'DEV' and self.app.ver != 'ERR':
-                tempSelfVersion = self.app.ver.split('.')
+            updateData = loads(updateData.text)
+            newVersion =updateData['version'].split('.')
+            if version != 'DEV' and version != 'ERR':
+                tempSelfVersion = version.split('.')
                 ver0 = int(newVersion[0]) == int(tempSelfVersion[0])
                 ver1 = int(newVersion[1]) == int(tempSelfVersion[1])
                 ver2 = int(newVersion[2]) == int(tempSelfVersion[2])
@@ -133,7 +127,8 @@ class AfterInit(QThread):
                     if int(newVersion[0]) > int(tempSelfVersion[0]):
                         isNeedUpdate = True
                 if isNeedUpdate:
-                    self.widgetShow.emit(1)
+                    self.need_update.emit('*有新版本*！')
+            #self.need_update.emit('*有新版本*！')
 
     def checkMessage(self):
         noticeData = requests.get('http://www.mangetsuc.top/arkhelper/notice.html')
@@ -141,13 +136,15 @@ class AfterInit(QThread):
             noticeData.encoding = 'utf-8'
             noticeMd5 = md5()
             noticeMd5.update(noticeData.text.encode("utf8"))
-            self.app.noticeMd5 = noticeMd5.hexdigest()
-            self.app._notice = noticeData.text
-            self.widgetShow.emit(0)
-            if noticeMd5.hexdigest() != user_data.get('notice'):
-                self.boardNeedShow.emit()
+            notice_str = noticeData.text
+            md5_str = noticeMd5.hexdigest()
+            self.notice_msg.emit(notice_str)
+            if md5_str != user_data.get('notice'):
+                user_data.change('notice', md5_str)
+                self.notice_show.emit()
+            
 
-    def checkPublicCallData(self):
+    '''def checkPublicCallData(self):
         pcData = requests.get('http://www.mangetsuc.top/arkhelper/pcData.json')
         if pcData.status_code == 200:
             pcData.encoding = 'utf-8'
@@ -157,9 +154,9 @@ class AfterInit(QThread):
             if tempData != self.app._data:
                 with open(self.cwd + '/data.json', 'w', encoding='UTF-8') as f:
                     f.write(dumps(tempData, ensure_ascii=False, sort_keys=True, indent=4, separators=(',', ': ')))
-                self.reloadPcModule.emit()
+                self.reloadPcModule.emit()'''
 
-    def getLogisticRule(self):
+    '''def getLogisticRule(self):
         #自动下载基建规则文件
         if not path.exists(config_path + '/logisticRule.ahrule'):
             rule = requests.get('http://www.mangetsuc.top/arkhelper/logisticRule.txt')
@@ -168,7 +165,13 @@ class AfterInit(QThread):
                 temp = rule.text.strip('\ufeff')
                 with open(config_path + '/logisticRule.ahrule', 'w', encoding = 'utf-8') as f:
                     f.write('\n'.join([s for s in temp.splitlines() if s.strip()]))
-                self.logisticReady.emit()
+                self.logisticReady.emit()'''
+
+blackboard = BlackBoard()
+after_init = AfterInit()
+
+after_init.notice_msg.connect(blackboard.updateText)
+after_init.notice_show.connect(blackboard.show)
 
 
 if __name__ == '__main__':

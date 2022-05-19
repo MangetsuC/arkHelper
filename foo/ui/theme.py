@@ -73,9 +73,9 @@ class Theme:
         selectedColor = config.get('theme.selectedcolor')
         if selectedColor == 'dark':
             #设置勾为深色，实际上用于浅色模式
-            self.selectedIcon = getcwd() + '/res/gui/selectedLightMode.png'
+            self.selectedIcon = getcwd() + '/gres/selectedLightMode.png'
         elif selectedColor == 'light':
-            self.selectedIcon = getcwd() + '/res/gui/selected.png'
+            self.selectedIcon = getcwd() + '/gres/selected.png'
 
     def getThemeColor(self):
         return self.themeColor

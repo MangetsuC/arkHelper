@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (QApplication, QDialog, QGridLayout, QHBoxLayout,
                                QPushButton, QTextBrowser, QVBoxLayout, QWidget, QScrollArea, QLabel, QTextEdit)
 
 sys.path.append(getcwd())
-from common import res_config
+from common import res_config, app_ico
 from common2 import adb
 from image_.image_io import del_image, output_image
 from foo.ui.messageBox import AMessageBox
@@ -21,6 +21,7 @@ class Res_manager(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('资源管理器')
+        self.setWindowIcon(app_ico)
 
         self.res_selected = 'start_a'
 

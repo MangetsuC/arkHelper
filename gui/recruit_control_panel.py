@@ -7,7 +7,7 @@ from os import getcwd
 sys.path.append(getcwd())
 
 from common import user_data
-from common import theme
+from common import theme, app_ico
 
 class Label_with_pictext(QLabel):
     def __init__(self, pictext):
@@ -115,6 +115,7 @@ class DragIndexWidget(QWidget):
 class RecruitControlPanel(QDialog):
     def __init__(self):
         super().__init__()
+        self.setWindowIcon(app_ico)
         self.top_layout = QVBoxLayout(self)
         self.setWindowTitle('公开招募控制面板')
         self.createComponent()

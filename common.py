@@ -3,7 +3,9 @@ from configParser.tomlParser import ConfigToml, Recruit_data, SimulatorToml, Sch
 from foo.ui.theme import Theme
 import sys
 from time import strftime, localtime
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal, Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication
 from os import remove
 
 def beforeLaunch():
@@ -50,4 +52,10 @@ recruit_data = Recruit_data()
 res_config = Res_config()
 
 theme = Theme(user_data, True)
+
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+app = QApplication(sys.argv)
+
+
+app_ico = QIcon('./gres/ico.ico')
 

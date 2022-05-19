@@ -75,9 +75,9 @@ class ConfigToml(Toml):
 
 class SimulatorToml(Toml):
     def __init__(self):
-        self.releasePath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/simulator.toml'
-        self.devPath = './simulator.toml'
-        self.toml = tomlBase.tomlRead('simulator.toml')
+        self.releasePath = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/simulator_config.toml'
+        self.devPath = './simulator_config.toml'
+        self.toml = tomlBase.tomlRead('simulator_config.toml')
         if self.toml == dict(): #将旧类型配置合并到新配置中
             self.toml = tomlBase.dictUpdate(tomlBase.defaultSimulator(), self.toml)
         self.write()

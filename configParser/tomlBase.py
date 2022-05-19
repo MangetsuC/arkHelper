@@ -56,6 +56,15 @@ def defaultConfig():
     credit.default = false #自动访问好友获取信用点
     shutdown.default = false #自动关机
 
+    [loop]
+    default = true
+
+    [task]
+    default = false
+
+    [credit]
+    default = false
+
     [recover]
     loop.medicine.enable = false #循环作战中使用理智药剂恢复理智
     loop.stone.enable = false #循环作战中使用源石恢复理智
@@ -66,6 +75,7 @@ def defaultConfig():
     schedule.stone.max = 0 #计划作战中使用源石的最大数量
 
     [recruit]
+    default = false
     skip_config.min_6 = false
     skip_config.min_5 = false
     skip_config.min_4 = false
@@ -79,30 +89,25 @@ def defaultConfig():
 
 def defaultSimulator():
     default = '''
-    [bluestacks]
+    ["蓝叠(设置中开启adb)"]
     ip = '127.0.0.1:5555'
     adb = 'internal'
-    name = '蓝叠(设置中开启adb)'
 
-    [mumu]
+    ["蓝色mumu"]
     ip = '127.0.0.1:7555'
     adb = 'internal'
-    name = '蓝色mumu(旧版)'
 
-    [yeshen]
+    ["夜神模拟器"]
     ip = '*req*'
     adb = 'external'
-    name = '夜神模拟器'
 
-    [leidian]
+    ["雷电模拟器"]
     ip = 'emulator-5554'
     adb = 'internal'
-    name = '雷电模拟器'
 
-    [xiaoyao]
+    ["逍遥模拟器"]
     ip = '127.0.0.1:21503'
     adb = 'internal'
-    name = '逍遥模拟器'
     '''
     return loads(default)
 
