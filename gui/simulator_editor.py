@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QDialog, QGridLayout,
 sys.path.append(getcwd())
 
 from common import app_ico, simulator_data, theme, user_data, app
+from gui.QLeftTabWidget import QLeftTabWidget
 
 
 class Simulator_Editor(QDialog):
@@ -24,7 +25,7 @@ class Simulator_Editor(QDialog):
     def init_ui(self):
         self.setWindowFlag(Qt.FramelessWindowHint)
 
-        self.title = QLabel('模拟器编辑器(可用滚轮切换)')
+        self.title = QLabel('模拟器编辑器')
 
         self.btn_close = QPushButton('×')
         self.btn_close.setMinimumSize(30, 30)
@@ -40,7 +41,7 @@ class Simulator_Editor(QDialog):
         tab_add_simulator[1]['btn_confirm'].setText('新增')
         tab_add_simulator[1]['btn_delete'].hide()
 
-        self.tab_widget = QTabWidget()
+        self.tab_widget = QLeftTabWidget()
         self.tab_widget.addTab(tab_add_simulator[0], '新建模拟器')
 
         for i in simulator_data.get_simulators():
@@ -81,6 +82,7 @@ class Simulator_Editor(QDialog):
 
             self.tab_widget.addTab(tab_temp_simulator[0], i)
 
+        self.tab_widget.finish_add()
         
         #self.tab_widget.addTab(tab_add_simulator1[0], '新增1')
 
@@ -266,40 +268,11 @@ class Simulator_Editor(QDialog):
                                 QInputDialog{{background-color:{theme.getBgColor()};}}
                                 QLineEdit{{color:{theme.getFontColor()};font-family: "Microsoft YaHei", SimHei, SimSun;font:12pt;
                                        border-style:solid;border-width:1px;border-color:{theme.getBorderColor()};}}
-                            ''')
-        self.tab_widget.setStyleSheet(f'''
-                            QTabWidget::pane {{border: 2px solid {theme.getFgColor()};}}
-                            QTabWidget::tab-bar {{left: 5px;}}
-                            QTabBar::tab {{
-                                color:{theme.getFontColor()};font-family:"Microsoft YaHei", SimHei, SimSun;font:12pt;
-                                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                                            stop: 0 {theme.getFgColor()}, stop: 0.4 {theme.getFgColor()},
-                                                            stop: 0.5 {theme.getFgColor()}, stop: 1.0 {theme.getFgColor()});
-                                border: 2px solid {theme.getFgColor()};
-                                border-bottom-color: {theme.getFgColor()}; /* same as the pane color */
-                                border-top-left-radius: 2px;
-                                border-top-right-radius: 2px;
-                                min-width: 8ex;
-                                padding: 2px;
-                            }}
-                            QTabBar::tab:hover{{
-                                font:11pt;
-                                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                                            stop: 0 {theme.getPressedColor()}, stop: 0.4 {theme.getPressedColor()},
-                                                            stop: 0.5 {theme.getPressedColor()}, stop: 1.0 {theme.getPressedColor()});
-                                border: 2px solid {theme.getBorderColor()};
-                                border-bottom-color: {theme.getFgColor()};
-                            }}
-                            QTabBar::tab:selected{{
-                                border: 2px solid {theme.getBorderColor()};
-                                border-bottom-color: {theme.getFgColor()};
-                            }}
-                            
-                            QTabBar::tab:!selected {{margin-top: 6px;margin-left: 1px;margin-right: 1px;}}
-                            QTabBar::tab:selected {{margin-left: 1px;margin-right: 1px;}}
-
-                            QTabBar::tab:only-one {{margin: 0;}}
-                            QTabBar::scroller {{width: 0px;}}
+                                QToolTip{{font-family:"Microsoft YaHei", SimHei, SimSun; font-size:10pt; 
+                                        color:{theme.getFontColor()};
+                                        padding:5px;
+                                        border-style:solid; border-width:1px; border-color:gray;
+                                        background-color:{theme.getBgColor()};}}
                             ''')
         self.btn_close.setStyleSheet(f'''QPushButton{{background:{theme.getBgColor()};font-family:SimHei, SimSun;font:20pt;}}
                                         QPushButton:pressed{{background:{theme.getBgColor()};font:16pt;}}
