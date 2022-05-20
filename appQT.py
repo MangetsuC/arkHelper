@@ -10,6 +10,7 @@ from foo.win.exitThread import forceThreadStop
 
 from arknights_ import loop, task, visit, recruit, common_operation
 from gui.recruit_control_panel import set_recruit_rule
+from gui.simulator_editor import edit_simulator
 
 from common import user_data, simulator_data, config_path, theme, app
 from common2 import adb, version
@@ -126,6 +127,11 @@ class Arkhelper(UI_Arkhelper):
         adb.changeSimulator(user_data)
 
     def add_simulator(self):
+        edit_simulator()
+        self.init_simulator_choices()
+        self.init_simulator_selected()
+        self.act_simulator_slot_connect()
+        adb.changeSimulator(user_data)
         pass
 
         

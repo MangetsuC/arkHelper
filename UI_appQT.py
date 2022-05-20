@@ -325,7 +325,7 @@ class UI_Arkhelper(QWidget):
 
     def init_simulator_choices(self):
         '添加模拟器菜单中的选项'
-        self.actSimulator_add = QAction('添加')
+        self.actSimulator_add = QAction('添加/修改')
 
         self.actSimulator.clear()
         self.actSimulator_del.clear()
