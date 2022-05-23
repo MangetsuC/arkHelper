@@ -100,6 +100,14 @@ def match_pic(source, target:dict):
         match_pic_signal.pic_send.emit(target['res_name'])
     return ans
 
+def match_pics(source, targets:list):
+    ans = [-1, -1, {}]
+    for i in targets:
+        ans = match_pic(source, i)
+        if ans[0] > -1:
+            break
+    return ans
+
 if __name__ == '__main__':
     from user_res import R
     picname = '0'

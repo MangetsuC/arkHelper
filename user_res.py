@@ -64,21 +64,28 @@ class RES:
         self.init()
 
     def init(self):
+        for i in res_config.get_res_list():
+            self.__setattr__(i, load_user_res(i, res_config.get_res_config(i, 'common')))
+            self.__getattribute__(i)['pattern'] = pattern_pre_treatment(self.__getattribute__(i)['pattern'], 
+                                                                        res_config.get_res_config(i, 'self'))
         #self.test = load_user_res('test') #指代测试的特定图片
-        if self.first_init:
-            for i in res_config.get_res_list():
-                self.__setattr__(i, load_user_res(i, res_config.get_res_config(i, 'common')))
-                self.__getattribute__(i)['pattern'] = pattern_pre_treatment(self.__getattribute__(i)['pattern'], 
-                                                                            res_config.get_res_config(i, 'self'))
-            self.first_init = False
-        else:
-            for i in res_config.get_res_list():
-                self.__delattr__(i)
 
-            for i in res_config.get_res_list():
-                self.__setattr__(i, load_user_res(i, res_config.get_res_config(i, 'common')))
-                self.__getattribute__(i)['pattern'] = pattern_pre_treatment(self.__getattribute__(i)['pattern'], 
-                                                                            res_config.get_res_config(i, 'self'))
+    def get_loop_res(self):
+        loop_res_names = ['start_a', 'start_b', 'in_battle', 'finish_battle', 'sanity_lack']
+        ans = dict(all = [],
+                    finish_battle = [],
+                    sanity_lack = [])
+        for i in self.__dict__.keys():
+            if isinstance(self.__dict__[i], dict):
+                for j in loop_res_names:
+                    if j in i:
+                        ans['all'].append(self.__dict__[i])
+                        if 'finish_battle' in i:
+                            ans['finish_battle'].append(self.__dict__[i])
+                        if 'sanity_lack' in i:
+                            ans['sanity_lack'].append(self.__dict__[i])
+                        break
+        return ans
 
 R = RES()
 

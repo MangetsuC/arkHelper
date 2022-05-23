@@ -7,13 +7,13 @@ from time import sleep
 
 from user_res import R
 from common2 import adb
-from image_.match import match_pic
+from image_.match import match_pic, match_pics
 
 #adb.ip = '127.0.0.1:7555' #测试时选定模拟器用
 
-res = [R.in_battle, R.finish_battle, R.start_a, R.start_b, R.sanity_lack]
+#res = [R.in_battle, R.finish_battle, R.start_a, R.start_b, R.sanity_lack]
 
-def start_once():
+def start_once(res):
     is_auto_on = True
     is_finish = False
     count_in_battle = 0
@@ -58,11 +58,12 @@ def start_once():
 
 
 def start_loop():
+    res = R.get_loop_res()
     while True:
-        pos_ = start_once()
-        while match_pic(adb.getScreen_std(), R.finish_battle)[0] > 0:
+        pos_ = start_once(res['all'])
+        while match_pics(adb.getScreen_std(), res['finish_battle'])[0] > 0:
             adb.click(pos_[0], pos_[1])
-        while match_pic(adb.getScreen_std(), R.sanity_lack)[0] > 0:
+        while match_pics(adb.getScreen_std(), res['sanity_lack'])[0] > 0:
             adb.click(pos_[0], pos_[1])
         if pos_[3] < 0:
             break
