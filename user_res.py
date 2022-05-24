@@ -37,9 +37,14 @@ def load_user_res(res_name, extra_option = dict()):
             pattern = load_res(f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/ures/{res_name}.png'),
             res_name = res_name
         )
-    else:
+    elif path.exists(f'./nres/{res_name}.png'):
         res = dict(
             pattern = load_res(f'./nres/{res_name}.png'),
+            res_name = res_name
+        )
+    else:
+        res = dict(
+            pattern = load_res(f'./gres/unknown.png'),
             res_name = res_name
         )
     
@@ -60,11 +65,17 @@ def pattern_pre_treatment(pattern, extra_option = dict()):
 class RES:
     '用户资源'
     def __init__(self):
-        self.first_init = True
+        self.ress = []
         self.init()
 
     def init(self):
+        for i in self.ress:
+            if not i in res_config.get_res_list(): #删除已被用户移除的自添加素材
+                self.__delattr__(i)
+        self.ress.clear()
+
         for i in res_config.get_res_list():
+            self.ress.append(i)
             self.__setattr__(i, load_user_res(i, res_config.get_res_config(i, 'common')))
             self.__getattribute__(i)['pattern'] = pattern_pre_treatment(self.__getattribute__(i)['pattern'], 
                                                                         res_config.get_res_config(i, 'self'))

@@ -78,8 +78,9 @@ class Res_scope(QWidget):
         self.mainLayout.addWidget(self.scroll)
 
     def set_pic_checked(self, pic_name):
-        pic_index = self.res_names.index(pic_name)
-        self.res_states[pic_index].setText('已识别')
+        if pic_name in self.res_names:
+            pic_index = self.res_names.index(pic_name)
+            self.res_states[pic_index].setText('已识别')
         
 
 if __name__ == '__main__':

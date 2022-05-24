@@ -97,19 +97,19 @@ class AMessageBox(QDialog):
     def warning(cls, parent, title, msg):
         warningDialog = cls(parent)
         warningDialog.warningInit(title, msg)
-        warningDialog.exec_()
+        warningDialog.exec()
         return warningDialog.ans[1]
 
     @classmethod
     def question(cls, parent, title, msg):
         questionDialog = cls(parent)
         questionDialog.questionInit(title, msg)
-        questionDialog.exec_()
+        questionDialog.exec()
         return questionDialog.ans[1]
 
     @classmethod
     def input(cls, parent, title, msg):
         inputDialog = cls(parent)
         inputDialog.inputInit(title, msg)
-        inputDialog.exec_()
+        inputDialog.exec()
         return inputDialog.ans

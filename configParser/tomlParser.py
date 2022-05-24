@@ -36,8 +36,6 @@ class Toml:
         '获取值'
         keys = key.split('.')
         temp = self.toml
-        if not keys[0] in keys:
-            return 'NULL'
             
         for i in keys:
             temp = temp[i]
@@ -103,10 +101,16 @@ class Res_config(Toml):
         return ans
 
     def get_res_list(self):
-        return list(set(self.get('ress')))
+        ans = list(set(self.get('ress')))
+        ans.sort()
+        return ans
 
     def get_res_readme(self, key):
-        return self.get(f'{key}.readme')
+        try:
+            ans = self.get(f'{key}.readme')
+        except:
+            ans = ''
+        return ans
 
 class Recruit_data(Toml):
     def __init__(self):
