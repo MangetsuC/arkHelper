@@ -27,7 +27,10 @@ def get_text_ocr(image):
     return strout.strip()
 
 def resize_text_img(text_img, enlarge_rate):
-    bg = ones((text_img.shape[1]*enlarge_rate, text_img.shape[1]*enlarge_rate), dtype = uint8)
+    if enlarge_rate < 2:
+        return text_img
+    base_size = max(text_img.shape[1], text_img.shape[0])
+    bg = ones((base_size*enlarge_rate, base_size*enlarge_rate), dtype = uint8)
     bg = cvtColor(bg, COLOR_GRAY2BGRA)
     bg[:,:,0] = 255
     bg[:,:,1] = 255

@@ -1,5 +1,6 @@
 from os import getcwd, getlogin, path, mkdir
 from configParser.tomlParser import ConfigToml, Recruit_data, SimulatorToml, ScheduleToml, Res_config
+from configParser.ahruleParser import Logistic_Rule
 from foo.ui.theme import Theme
 import sys
 from time import strftime, localtime
@@ -48,6 +49,8 @@ user_data = ConfigToml()
 simulator_data = SimulatorToml()
 schedule_data = ScheduleToml()
 recruit_data = Recruit_data()
+
+logistic_rule = Logistic_Rule()
 
 res_config = Res_config()
 

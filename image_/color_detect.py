@@ -1,11 +1,10 @@
-from cv2 import (COLOR_BGR2GRAY, MORPH_RECT, THRESH_BINARY, THRESH_BINARY_INV,
-                 TM_CCOEFF_NORMED, Canny, connectedComponentsWithStats, copyTo,
-                 cvtColor, dilate, erode, fillConvexPoly,
-                 getStructuringElement, imdecode, imshow, matchTemplate,
-                 minMaxLoc, resize, mixChannels)
+from cv2 import (FLOODFILL_FIXED_RANGE, MORPH_RECT, THRESH_BINARY,
+                 THRESH_BINARY_INV, connectedComponentsWithStats, dilate,
+                 erode, floodFill, getStructuringElement, imshow, mixChannels)
 from cv2 import split as cvsplit
 from cv2 import threshold, waitKey
-from numpy import array, bitwise_and, fromfile, zeros
+from numpy import bitwise_and, uint8, zeros
+
 
 class Color_Point:
     def __init__(self, r, g, b) -> None:
@@ -18,6 +17,16 @@ class Color_Point:
 
     def __str__(self) -> str:
         return 'r:{} g:{} b:{}'.format(self.r, self.g, self.b)
+
+class Rectangle:
+    def __init__(self, x:int, y:int, w:int, h:int) -> None:
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+
+    def check_inside(self, x:int, y:int) -> bool:
+        return self.x <= x <= self.x + self.w and self.y < y < self.y + self.h
 
 def binary_rgb(img, rthres, gthres, bthres, is_single_channel = True):
     #imshow('img', img)
@@ -49,6 +58,10 @@ def binary_rgb(img, rthres, gthres, bthres, is_single_channel = True):
         temp = zeros(shape = img.shape, dtype = 'uint8')
         mixChannels([binary], [temp], [0,0,0,1,0,2]) #转为多通道
         return temp
+
+def flood_fill(src) -> None:
+    mask = zeros([src.shape[0] + 2, src.shape[1] + 2], uint8)
+    floodFill(src, mask, (0, 0), (255, 255, 255), FLOODFILL_FIXED_RANGE)
 
 def find_color_block(img, thresholds, eroded_iter = 1, dilated_iter = 10):
     binary = binary_rgb(img, thresholds[0], thresholds[1], thresholds[2])
