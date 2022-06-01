@@ -1,11 +1,11 @@
-from os import path
+from os import path, getlogin
 
 class Ahrule_Parser:
     def __init__(self, filename) -> None:
         if path.exists(f'./{filename}.ahrule'):
             self.path = f'./{filename}.ahrule'
-        elif path.exists(f'%AppData%/arkhelper/{filename}.ahrule'):
-            self.path = f'%AppData%/arkhelper/{filename}.ahrule'
+        elif path.exists(f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/{filename}.ahrule'):
+            self.path = f'C:/Users/{getlogin()}/AppData/Roaming/arkhelper/{filename}.ahrule'
         else:
             #无对应文件
             pass
